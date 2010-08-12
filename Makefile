@@ -9,7 +9,6 @@
 
 # Project options
 LIB              = potentials
-BIN              = $(LIB)_test
 SRCDIRS          = src
 SRCEXT           = cpp
 HEADEXT          = hpp
@@ -23,6 +22,8 @@ include makefiles/Makefile.rules
 #################################################################
 # Project specific options
 
+LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $(OBJ) ) )
+
 ### Just build "full" and install
 .PHONY: f
 f:
@@ -34,6 +35,11 @@ ifneq (,$(filter $(host), $(HPCVL_MACHINES) ))
     CFLAGS      += -DHPCVL
 endif
 
+
+test:
+	# LIB = $(LIB)
+	# OBJ = $(OBJ)
+	# LIB_OBJ = $(LIB_OBJ)
 
 .PHONY: shared lib_shared
 shared: lib_shared
@@ -55,22 +61,6 @@ $(build_dir)/lib$(LIB).a: $(LIB_OBJ)
 	ar rc $(build_dir)/lib$(LIB).a $(LIB_OBJ)
 	######## Done ##############################################
 #   ranlib $(build_dir)/lib$(LIB).a
-
-.PHONY: test_static
-test_static: static $(OBJ)
-	############################################################
-	######## Test static library ###############################
-	$(LD) $(TEST_OBJ) $(build_dir)/Main.o $(build_dir)/lib$(LIB).a -o $(BIN) $(filter-out -l$(LIB),$(LDFLAGS))
-	./$(BIN)
-	######## Done ##############################################
-
-.PHONY: test_shared
-test_shared: shared $(OBJ)
-	############################################################
-	######## Test shared library ###############################
-	$(LD) $(TEST_OBJ) $(build_dir)/Main.o -L$(build_dir) -l$(LIB) $(filter-out $(build_dir)/lib$(LIB).a,$(LDFLAGS)) -o $(BIN)
-	LD_LIBRARY_PATH=$(build_dir) ./$(BIN)
-	######## Done ##############################################
 
 ### Install #####################################################
 INSTALL          = $(GNU)install -m644 -D

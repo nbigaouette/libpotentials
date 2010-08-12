@@ -1,0 +1,1003 @@
+#ifdef __SUNPRO_CC
+#include <string.h>
+#else
+#include <cstring>
+#endif
+
+#include <cfloat>
+#include <iostream>
+#include <cstdlib>
+#include <cassert>
+#include <cstdio>
+
+#include "Constants.hpp"
+#include "General.hpp"
+#include "Particles_Operations.hpp"
+#include "Potentials.hpp"
+#include "Code_Functions_Declarations.hpp"
+
+// **************************************************************
+void Ionization_Print(
+        void *al, void *el,
+        const int &t,
+        const int &Nb_atoms, const int &Nb_atoms_max,
+        const int &Nb_electrons, const int &Nb_electrons_max
+)
+{
+    void *pv;
+
+    std_cout << "\n--------\nt = " << t << "\n";
+    std_cout << "     Id ";
+    std_cout << " Address";
+    std_cout << "    (pos bohr)";
+    std_cout << "                         (vel a.u.)";
+    std_cout << "                         CS";
+    std_cout << " Type  K [eV]    U [eV] ";
+    std_cout << " Mass [au]";
+    std_cout << " E [V/m]";
+    std_cout << "                  Potential [V]";
+    std_cout << "\n";
+    if (Nb_atoms_max > 0)
+        std_cout << "Atoms: (" << Nb_atoms << "/" << Nb_atoms_max << ")\n";
+    for (int j = 0 ; j < Nb_atoms ; j++)
+    {
+        pv = get_voidp(al, j);
+        std_cout << "a"<<j<<" Id." << Get_Id(pv);
+        std_cout << " ("<<pv<<")";
+        std_cout << " ("<<Get_Position(pv)[0] * m_to_bohr<<","<<Get_Position(pv)[1] * m_to_bohr<<","<<Get_Position(pv)[2] * m_to_bohr<<")";
+        std_cout << " ("<<Get_Velocity(pv)[0] * si_to_au_vel<<","<<Get_Velocity(pv)[1] * si_to_au_vel<<","<<Get_Velocity(pv)[2] * si_to_au_vel<<")";
+        std_cout << " "<<Get_Charge_State(pv)<<" ";
+        std_cout << " "<<Get_Type(pv)<<" ";
+        std_cout << " " << 0.5 * Get_Mass(pv) * (
+            Get_Velocity(pv)[0]*Get_Velocity(pv)[0] + Get_Velocity(pv)[1]*Get_Velocity(pv)[1] + Get_Velocity(pv)[2]*Get_Velocity(pv)[2]
+        ) * J_to_eV;
+        std_cout << " " << Get_Charge_State(pv) * Get_Potential(pv);
+        //std_cout << " " << Get_Mass(pv) * (1000.0 * Na);
+        std_cout << " " << Get_Mass(pv) * si_to_au_mass;
+        std_cout << " ("<<Get_E(pv)[0]<<","<<Get_E(pv)[1]<<","<<Get_E(pv)[2]<<")";
+        std_cout << " " << Get_Potential(pv);
+        std_cout << "\n";
+    }
+    if (Nb_electrons > 0)
+    {
+    std_cout << "Electrons: (" << Nb_electrons << "/" << Nb_electrons_max << ")\n";
+//     for (int j = 0 ; j < Nb_electrons_max ; j++)
+    for (int j = 0 ; j < Nb_electrons ; j++)
+    {
+        pv = get_voidp(el, j);
+        std_cout << "e"<<j<<" Id." << Get_Id(pv);
+        std_cout << " ("<<pv<<")";
+        std_cout << " ("<<Get_Position(pv)[0] * m_to_bohr<<","<<Get_Position(pv)[1] * m_to_bohr<<","<<Get_Position(pv)[2] * m_to_bohr<<")";
+        std_cout << " ("<<Get_Velocity(pv)[0] * si_to_au_vel<<","<<Get_Velocity(pv)[1] * si_to_au_vel<<","<<Get_Velocity(pv)[2] * si_to_au_vel<<")";
+        std_cout << " "<<Get_Charge_State(pv)<<" ";
+        std_cout << " "<<Get_Type(pv)<<" ";
+        std_cout << " " << 0.5 * Get_Mass(pv) * (
+            Get_Velocity(pv)[0]*Get_Velocity(pv)[0] + Get_Velocity(pv)[1]*Get_Velocity(pv)[1] + Get_Velocity(pv)[2]*Get_Velocity(pv)[2]
+        ) * J_to_eV;
+        std_cout << " " << Get_Charge_State(pv) * Get_Potential(pv);
+        //std_cout << " " << Get_Mass(pv) * (1000.0 * Na);
+        std_cout << " " << Get_Mass(pv) * si_to_au_mass;
+        std_cout << " ("<<Get_E(pv)[0]<<","<<Get_E(pv)[1]<<","<<Get_E(pv)[2]<<")";
+        std_cout << " " << Get_Potential(pv);
+        std_cout << "\n";
+    }
+    }
+    std_cout << "--------\n\n";
+}
+
+// **************************************************************
+int ** Find_Classical_Electrons(void *al, void *el,
+                                  const int t,
+                                  const int &Nb_atoms, const int &Nb_atoms_max,
+                                  int &Nb_electrons, const int &Nb_electrons_max)
+{
+    // Allocate memory for the classical orbiting electrons
+    static int **ions_w_classical_electrons = (int **) calloc_and_check(Nb_atoms_max, sizeof(int *));
+    static bool first_run = true;
+
+    // The function is called by both Ionization_Impact() and Ionization_SinglePhoton().
+    // Since this function sets some value which needs being set only once per time step,
+    // we should skip work when a second call to Find_Classical_Electrons() is done for the
+    // same time step. Here, store the first time step called.
+    static int previous_t = 0;
+
+    // Do work only if the previous time is different then the current one.
+    if (previous_t != t)
+    {
+        // Initialize all the pointers to NULL
+        if (first_run){
+          for (int i = 0 ; i < Nb_atoms_max ; i++)
+              ions_w_classical_electrons[i] = NULL;
+          first_run=false;
+        }
+
+        if (Nb_electrons > 0)
+        {
+            test_for_classically_orbiting_electrons(ions_w_classical_electrons, al,
+                                                    Nb_electrons, Nb_atoms);
+        }
+
+        // The electrons have been found. We now need to store the number
+        // in the array used for the average.
+        int *N_t = NULL;    // Array containing number of electrons at each time steps
+        int N = 0;          // Current number of electrons
+        void *ion = NULL;
+        const int nb_timesteps = Get_orbiting_electrons_Size();
+        if (nb_timesteps > 0)
+        {
+            for (int ai = 0 ; ai < Nb_atoms ; ai++)
+            {
+                ion = get_voidp(al, ai);
+                N_t = Get_orbiting_electrons_Pointer(ion);
+                N = 0;
+                if (ions_w_classical_electrons[ai] != NULL)
+                {
+                    N = ions_w_classical_electrons[ai][0];
+                }
+                N_t[t % nb_timesteps] = N;
+            }
+        }
+
+        // Update the "previous" time step to be the current one, so next
+        // time Find_Classical_Electrons() is called for the same time step,
+        // the work will be skipped.
+        previous_t = t;
+    }
+
+    return ions_w_classical_electrons;
+}
+
+// **************************************************************
+void Set_Ids_and_Index(
+        void *al, void *el,
+        const int &Nb_atoms, const int &Nb_electrons)
+{
+    void *pv;
+
+    int index = 0;
+
+    // Set the id as the index of the array:
+    for (int i = 0 ; i < Nb_atoms ; i++)
+    {
+        pv = get_voidp(al, i);
+        Set_Id(pv, index);
+        Set_Indx(pv, index);
+        index++;
+    }
+    for (int i = 0 ; i < Nb_electrons ; i++)
+    {
+        pv = get_voidp(el, i);
+        Set_Id(pv, index);
+        Set_Indx(pv, index);
+        index++;
+    }
+}
+
+// **************************************************************
+void Ionization_ParticleList_Defragmentation(void *pl, const int Nb_particles_max)
+{
+    const size_t sizeof_particle = Get_Sizeof_particle();
+
+    // Two pointers are initialized as first and last list elements
+    int i_up     = 0;
+    int i_down   = Nb_particles_max - 1;
+    void *p_up   = get_voidp(pl, i_up);
+    void *p_down = get_voidp(pl, i_down);
+
+    // Find the last particle in the list
+    while(!Get_Is_on(p_down) && i_down > i_up)
+    {
+        i_down--;
+        p_down = get_voidp(pl, i_down);
+    }
+
+    while (i_up < i_down)
+    {
+        // If "p_up" is a hole in the list...
+        if (!Get_Is_on(p_up))
+        {
+            // Move the last particle into the hole
+//             Ionization_Delete_Particle(p_down);
+            //memmove(p_up, p_down, sizeof_particle);
+            memcpy(p_up, p_down, sizeof_particle);
+            memset(p_down, 0, sizeof_particle);
+
+            // Find new "last particle"
+            while(!Get_Is_on(p_down))
+        {
+                i_down--;
+                p_down = get_voidp(pl, i_down);
+        }
+    }
+        i_up++;
+        p_up = get_voidp(pl, i_up);
+    }
+}
+
+// **************************************************************
+int Ionization_Recombine_Electron_With_Ion(
+        void *e, void *ion,
+        void *al, void *el,
+        const int &Nb_atoms, const int &Nb_atoms_max,
+        int &Nb_electrons, const int &Nb_electrons_max,
+        const elem_props &element)
+/**
+ * Recombine an electron with an ion
+ * @param e     Pointer to a (generic) structure containing
+ *              the electron's information
+ * @param ion   Pointer to a (generic) structure containing
+ *              the ion's information
+ * @param al    Pointer to the atoms/ions list
+ * @param el    Pointer to electrons list
+ * @param Nb_atoms          Number of atoms/ions in system
+ * @param Nb_atoms_max      Maximum number of atoms/ions
+ * @param Nb_electrons      Number of electrons in system
+ * @param Nb_electrons_max  Maximum number of electrons
+ * @param element           Atoms/ions element
+ */
+{
+    // *** Add electron's momentum to the ion *******************
+    double electron_momentum[3], ion_momentum[3], new_ion_velocity[3];
+
+    // Get electron's momentum
+    for (int d = 0 ; d < 3 ; d++)
+        electron_momentum[d] = Get_Velocity(e)[d] * me;
+
+    // Get ion's momentum
+    for (int d = 0 ; d < 3 ; d++)
+        ion_momentum[d] = Get_Velocity(ion)[d] * Get_Mass(ion);
+
+    // Add the electron's momentum to the ion's
+    for (int d = 0 ; d < 3 ; d++)
+        ion_momentum[d] += electron_momentum[d];
+
+    // Get new ion's velocity
+    // Legacy: macro MULVS() was used with (1.0 / Get_Mass(ion))
+    for (int d = 0 ; d < 3 ; d++)
+        new_ion_velocity[d] = ion_momentum[d] * (1.0 / Get_Mass(ion));
+
+    // Set ion's new velocity
+    Set_Velocity(ion, new_ion_velocity);
+
+//     // Keep track of the configuration energy change
+//     ion->delta_en += Recombination_Get_Delta_E(
+//         e, ion, al, el,
+//         Nb_atoms, Nb_atoms_max, Nb_electrons, Nb_electrons_max, element);
+
+    // Add electron's charge to the ion
+    Set_Charge_State(ion, Get_Charge_State(ion)-1);
+    Set_Charge(ion, Get_Charge(ion)-e0);
+    Set_Chargea(ion, fabs(Get_Charge(ion)));
+
+    // Delete the electron
+    Ionization_Delete_Particle(e);
+
+    return EXIT_SUCCESS;
+}
+
+// **************************************************************
+double Recombination_Get_Delta_E(
+        void *e, void *ion,
+        void *al, void *el,
+        const int &Nb_atoms, const int &Nb_atoms_max,
+        int &Nb_electrons, const int &Nb_electrons_max,
+        const elem_props &element)
+/**
+ * Calculate the change in configuration energy when recombination
+ * occurs.
+ * This function assumes that the charge state of the ion is
+ * updated AFTER the call.
+ * @param e     Pointer to a (generic) structure containing
+ *              the electron's information
+ * @param ion   Pointer to a (generic) structure containing
+ *              the ion's information
+ * @param al    Pointer to the atoms/ions list
+ * @param el    Pointer to electrons list
+ * @param Nb_atoms          Number of atoms/ions in system
+ * @param Nb_atoms_max      Maximum number of atoms/ions
+ * @param Nb_electrons      Number of electrons in system
+ * @param Nb_electrons_max  Maximum number of electrons
+ * @param element           Atoms/ions element
+ */
+{
+    double Delta_E;
+    double Vel2_e, Vel_e_Vel_i;
+    double potential_e_ion, pot_at_e_without_ion, potential_ion_e;
+    double pot_at_ion_without_e, e_kinetic_energy, pot_en_between_e_and_ion;
+    double e_pot_en_without_ion, pot_en_between_ion_cs, momentum_correction;
+
+    double Vel_e[3];
+    for (int d = 0 ; d < 3 ; d++) Vel_e[d] = Get_Velocity(e)[d];
+
+    // *** Correction from notes ******************************
+    Vel2_e =
+          Vel_e[0]*Vel_e[0]
+        + Vel_e[1]*Vel_e[1]
+        + Vel_e[2]*Vel_e[2];
+
+
+    potential_paramaters potparams;
+    Potentials_Set_Parameters(e, ion, element, potparams);
+    potential_e_ion = Calculate_Potential(e, ion, element, potparams);
+    pot_at_e_without_ion = Get_Potential(e) - potential_e_ion;
+
+    // The potential from ion-electron is not necessarily
+    // symmetric (for instance for the HS potentials)
+    Potentials_Set_Parameters(ion, e, element, potparams);
+    potential_ion_e = Calculate_Potential(ion, e, element, potparams);
+    pot_at_ion_without_e = Get_Potential(ion) - potential_ion_e;
+
+    // The following two terms are the Ip plus any amount the
+    // electron went below the Ip
+    e_kinetic_energy         = 0.5 * me * Vel2_e;
+    pot_en_between_e_and_ion = potential_e_ion * (-e0);
+    e_pot_en_without_ion     = (-e0) * pot_at_e_without_ion;
+    pot_en_between_ion_cs    = e0 * pot_at_ion_without_e;
+    // Add the correction of the energy from the momentum transfer
+    momentum_correction      = 0.5 * me * me / Get_Mass(ion) * Vel2_e;
+    Vel_e_Vel_i =
+          Vel_e[0]*Get_Velocity(ion)[0]
+        + Vel_e[1]*Get_Velocity(ion)[1]
+        + Vel_e[2]*Get_Velocity(ion)[2];
+    momentum_correction     += me * Vel_e_Vel_i;
+
+    Delta_E =
+          e_kinetic_energy
+        + pot_en_between_e_and_ion
+        + e_pot_en_without_ion
+        + pot_en_between_ion_cs
+    ;
+
+    // Add the energy of the momentum transfer
+    Delta_E += momentum_correction;
+
+    return Delta_E;
+}
+
+// **************************************************************
+double Ionization_Get_Delta_E(
+        void *e, void *ion,
+        void *al, void *el,
+        const int &Nb_atoms, const int &Nb_atoms_max,
+        int &Nb_electrons, const int &Nb_electrons_max,
+        const elem_props &element)
+/**
+ * Calculate the change in configuration energy when recombination
+ * occurs.
+ * This function assumes that the charge state of the ion is
+ * updated AFTER the call.
+ * @param e     Pointer to a (generic) structure containing
+ *              the electron's information
+ * @param ion   Pointer to a (generic) structure containing
+ *              the ion's information
+ * @param al    Pointer to the atoms/ions list
+ * @param el    Pointer to electrons list
+ * @param Nb_atoms          Number of atoms/ions in system
+ * @param Nb_atoms_max      Maximum number of atoms/ions
+ * @param Nb_electrons      Number of electrons in system
+ * @param Nb_electrons_max  Maximum number of electrons
+ * @param element           Atoms/ions element
+ */
+{
+
+    // FIXME: Adapt for ionization
+
+    double Delta_E, Vel2_e;
+    double potential_e_ion, e_kinetic_energy;
+    double e_pot_en_without_ion, pot_en_between_ion_cs;
+
+    double Vel_e[3];
+    for (int d = 0 ; d < 3 ; d++) Vel_e[d] = Get_Velocity(e)[d];
+
+    // *** Correction from notes ********************************
+    Vel2_e =
+          Vel_e[0]*Vel_e[0]
+        + Vel_e[1]*Vel_e[1]
+        + Vel_e[2]*Vel_e[2];
+
+    // *** Calulate the potential at the new electron's location
+    potential_e_ion = 0.0;
+    void *other_ion;
+    potential_paramaters potparams;
+    for (int a = 0 ; a < Nb_atoms ; a++)
+    {
+        other_ion = get_voidp(al, a);
+        Potentials_Set_Parameters(e, other_ion, element, potparams);
+      potential_e_ion += Calculate_Potential(e, other_ion, element, potparams);
+    }
+    void *other_e;
+    for (int a = 0 ; a < Nb_electrons ; a++)
+    {
+        other_e = get_voidp(el, a);
+        // Don't count the new electron
+        // FIXME: Verify a==e with pointers
+        if (other_e == e) continue;
+        Potentials_Set_Parameters(e, other_e, element, potparams);
+      potential_e_ion += Calculate_Potential(e, other_e, element, potparams);
+    }
+
+    // The following two terms are the Ip plus any amount the
+    // electron went below the Ip
+    e_kinetic_energy         = 0.5 * me * Vel2_e;
+    // This includes the potential of the new electron with its ion:
+    e_pot_en_without_ion     = (-e0) * potential_e_ion;
+    pot_en_between_ion_cs    = e0 * Get_Potential(ion);
+
+    Delta_E =
+          e_kinetic_energy
+        + e_pot_en_without_ion
+        + pot_en_between_ion_cs
+    ;
+
+    return -Delta_E;
+}
+
+// **************************************************************
+int Ionization_Recombination(
+        void *al, void *el,
+        const int &Nb_atoms, const int &Nb_atoms_max,
+        int &Nb_electrons, const int &Nb_electrons_max,
+        const double time, const int t,
+        const elem_props &element,
+        bool &did_recombination_occured,FILE *fh_out)
+/**
+ * @param al    Pointer to a (generic) structure array containing
+ *              atoms/ions information
+ * @param el    Pointer to a (generic) structure array containing
+ *              electrons information
+ * @param Nb_atoms          Number of atoms/ions in system
+ * @param Nb_atoms_max      Maximum number of atoms (allocated space)
+ * @param Nb_electrons      Number of electrons in system
+ * @param Nb_electrons_max  Maximum number of electrons (allocated space)
+ * @param t     Iteration of the main loop
+ * @param element           Element structure defining the atoms
+ * @param did_recombination_occured a digit stating if recombination occured
+ * @param fh_out The file handle of the output log file for recombination
+ *
+ */
+{
+    // FIXME
+    const double wait_time = 20e-18;
+
+    double e_total_energy, e_kinetic_energy, e_potential_energy, Vel2;
+    void *closest_ion;
+    bool e_can_recombine;
+    double tmp[3];
+
+    // Store the number of electrons
+    int Old_Nb_electrons = Nb_electrons;
+
+    // ci = Closest Ion
+    // e  = Electron
+    // cs = Charge State
+    // c = Charge
+    // id = Id of particle
+    // Ip = Ionization potential (Joules)
+    int    ci_id;
+    int    ci_cs;
+    double ci_Ip;
+
+    static void *testparticle;
+    if (testparticle  == NULL)
+    {
+        //testparticle = new ParticleList;
+        testparticle = calloc(1, Get_Sizeof_particle());
+        Set_Type(testparticle, BODY);
+        Set_Charge_State(testparticle, 1);
+        Set_Charge(testparticle, e0);
+    }
+
+    int **ions_w_classical_electrons = Find_Classical_Electrons(al, el, t, Nb_atoms, Nb_atoms_max, Nb_electrons, Nb_electrons_max);
+
+    // Get_Charge_State(electron) will always be -1
+    const int e_cs = -1;
+    potential_paramaters potparams;
+
+    for (int ei = 0 ; ei < Nb_electrons ; ei++)
+    {
+        void *e = get_voidp(el, ei);
+        e_can_recombine = false;
+        if (
+            (Get_Rcb_mark(e) == 1 )
+            && (Get_NextIon(e) < t)
+            )
+            e_can_recombine = true;
+
+        if (e_can_recombine)
+        {
+            // Closest ion information
+            ci_id = Get_Rcb_indx(e);                // Id
+            closest_ion = get_voidp(al, ci_id);     // Pointer
+            ci_cs = Get_Charge_State(closest_ion);  // Charge state
+
+            //make sure it is an ion! It can happen that two electrons try to recombine to the same ion in one function call.
+            assert(ci_cs > 0);
+            if (ci_cs != 0 ){
+              //The Ip is w.r.t. the potential at the ion's location ONLY
+              //But without the recombining electron
+              // Potentials variables name convention:
+              //      Pot_W[Where]_D[Due to]
+              Potentials_Set_Parameters(closest_ion, e, element, potparams);
+              const double Pot_WIon_DRcbE = Calculate_Potential(closest_ion, e, element, potparams);
+              const double Pot_WIon_DOrbitingE =
+                   Get_Potential_From_Orbiting_Electrons(closest_ion, al, ions_w_classical_electrons[Get_Id(closest_ion)], element, Get_Id(e));
+              //The electron pots below are + because they are -(-1)*pot
+              ci_Ip = -element.IpsLowest[ci_cs-1] -
+                  (Get_Potential(closest_ion) -Pot_WIon_DRcbE -Pot_WIon_DOrbitingE);
+
+              ci_Ip  *= eV_to_J;
+
+              // Velocity squared
+              for (int d = 0 ; d < 3 ; d++) tmp[d] = Get_Velocity(e)[d];
+              Vel2 = tmp[0]*tmp[0] + tmp[1]*tmp[1] + tmp[2]*tmp[2];
+
+              // Electron's total energy (Joules)
+              e_kinetic_energy   = 0.5 * me * Vel2;
+              e_potential_energy = e_cs * Get_Potential(e) * eV_to_J;
+              e_total_energy =
+                    e_kinetic_energy      // Kinetic part
+                  + e_potential_energy;   // Potential part
+
+
+
+              assert(Get_Charge_State(closest_ion) > 0);
+
+              // If electron has lower energy than the ionization
+              // potential (including the cluster potential)
+              // of the closest ion
+              if (
+                  (e_total_energy < ci_Ip) &&
+                  (Get_NextIon(e) < t) &&
+                  (Get_NextIon(closest_ion) < t) )
+              {
+                      std_cout << "Recombination! e-("<<Get_Position(e)[0]/1e-10<<","<<Get_Position(e)[1]/1e-10<<","<<Get_Position(e)[2]/1e-10<<") #"<<Get_Id(e)<<" to ion #"<<Get_Id(closest_ion)<<" (cs = "<<Get_Charge_State(closest_ion)<<")\n";
+                      fprintf(fh_out,"%5.2g,%10.8g,%10.8g,%10.8g,%4d,%4d,%d,%10.8g,%10.8g,%10.8g,%10.8g,%10.8g,%10.8g\n",
+                              time,
+                              Get_Position(e)[0]/1e-10,Get_Position(e)[1]/1e-10,Get_Position(e)[2]/1e-10,
+                              Get_Id(e), Get_Id(closest_ion),
+                              Get_Charge_State(closest_ion),e_total_energy*J_to_Eh,-ci_Ip*J_to_Eh,
+                              e_kinetic_energy*J_to_Eh,e_potential_energy*J_to_Eh,
+                              Get_Potential(closest_ion),Pot_WIon_DRcbE);
+                  did_recombination_occured = true;
+                  assert(Get_Charge_State(closest_ion) > 0);
+                  Ionization_Recombine_Electron_With_Ion(
+                      e, closest_ion, al, el,
+                      Nb_atoms, Nb_atoms_max,
+                      Nb_electrons, Nb_electrons_max, element);
+                  Old_Nb_electrons--;
+
+                  if (!(Get_Charge_State(closest_ion) >= 0))
+                  {
+                      std::cout << "Get_Charge_State(closest_ion) !>= 0\n"
+                      << "Get_Charge_State(closest_ion) = " << Get_Charge_State(closest_ion) << "\n";
+                  }
+                  assert(Get_Charge_State(closest_ion) >= 0);
+
+                  // No recombination for the ion in the next wait_t
+                  Set_NextIon(closest_ion, time+wait_time);
+              }
+            }
+        }
+    }
+
+    if (did_recombination_occured)
+    {
+        Ionization_ParticleList_Defragmentation(el, Nb_electrons_max);
+    }
+
+    Nb_electrons = Old_Nb_electrons;
+    return EXIT_SUCCESS;
+}
+
+// **************************************************************
+int Ionization_Delete_Particle(void *particle)
+{
+    // Set particle's data to 0
+    memset(particle, 0, Get_Sizeof_particle());
+    Set_Is_on(particle, false);
+
+    return EXIT_SUCCESS;
+}
+
+// **************************************************************
+double Get_Average_N(void *ion)
+{
+    // Calculate average number of orbiting electrons
+    double average_n = 0.0;
+    // Number of time steps over which to do the averaging
+    const int nb_timesteps  = Get_orbiting_electrons_Size();
+    if (nb_timesteps > 0)
+    {
+        const int *orbiting_electrons = Get_orbiting_electrons_Pointer(ion);
+        int sum_N = 0;
+        if (orbiting_electrons != NULL)
+        {
+            for (int t = 0 ; t < nb_timesteps ; t++ )
+            {
+                //std_cout << "Get_Average_N()   t="<<t<<"  orbiting_electrons[t]="<<orbiting_electrons[t]<<"   sum_N="<<sum_N<<"\n";
+                sum_N += orbiting_electrons[t];
+            }
+        }
+        average_n = double(sum_N) / double(nb_timesteps);
+    }
+    //std_cout << "Get_Average_N()  average_n = " << average_n << "\n";
+
+    return average_n;
+}
+
+// **************************************************************
+double Get_aq_Factor(void *ion)
+{
+    double aq_factor = 1.0;
+    if (Get_orbiting_electrons_Size() > 0)
+    {
+        // 6.0 is the max nb of occupied states
+        const double average_n = Get_Average_N(ion);
+        double max_occ;
+        const int ion_cs = Get_Charge_State(ion);
+        if      (ion_cs <= 6)  max_occ = 6.0;   // 6 p orbitals
+        else if (ion_cs <= 8)  max_occ = 2.0;   // 2 s orbitals
+        else if (ion_cs <= 18) max_occ = 10.0;  // 10 d orbitals
+        else
+        {
+            DEBUGP("Ion with too high charge state found!\n");
+            std_cout << "Id(ion) = "<<Get_Id(ion)<<"  ion_cs = "<<ion_cs<<"\n";
+            abort();
+        }
+        aq_factor = (max_occ - (double(ion_cs) - average_n)) / (max_occ - double(ion_cs)); // [-]
+    }
+    return aq_factor;
+}
+
+// **************************************************************
+void test_for_classically_orbiting_electrons(int **ion_list,void *al,
+                                              int Nb_electrons, int Nb_atoms)
+/**
+ * This function will go through the electron list and pick out
+ * all the electrons around each atom/ion. This is done
+ * so that when collisional ionization is run
+ * a 3+ with 2 classical electrons around it are
+ * treated as a 1+ system with Ip=3+ and barrier
+ * lowering of a 1+.
+ *
+ * @param ion_list is a static array which has to have its 1st dimension
+ *                 set to NULL. When it returns ion_list[atom][0] will be
+ *                 the number of electrons and on_list[atom][i] will be the
+ *                 electron such that: al + Nb_atoms_max = Id of the electron
+ *                 orbiting [atom].
+ */
+{
+    //an array that keep tracks of the size of the allocated memmory (includes the count+1)
+    static int *current_size_of_ion_list = (int *) malloc_and_check(Nb_atoms, sizeof(int));
+
+    // The temp array will store the atom/ion associated with each electron
+    // by it's index with -1 for no closest ion
+    //  Worst case is every electron's rcb_indx is different from its imp_nghb
+    int *temp_array     = (int *) malloc_and_check(Nb_electrons, sizeof(int));
+    int *temp_array_Ids = (int *) malloc_and_check(Nb_electrons, sizeof(int));
+    int count = 0;
+    void *el;
+    // std_cout << "TA=";
+    for (int e = 0; e < Nb_electrons; e++, count++)
+    {
+        el = get_voidp(al, Nb_atoms + e);
+        // Test if the electron has an atom/ion neighbor 4 a.u. or closer.
+        // An index of -1 means no neighbor within 4 a.u.
+        temp_array[count] = Get_Rcb_indx(el);
+        // Save the Id's (this is redundant in case the treecode changes, since the Id's should be unchanged)
+        temp_array_Ids[count] = Get_Id(el);
+        //std_cout << "(" << Get_Rcb_indx(el) <<","<< Get_Id(el) << " ";
+
+    }
+    // std_cout << "\n";
+
+    // Now we need to parse the temp_array and sort it by atom/ion
+    int *list_of_electrons_associated_to_atom = (int *) malloc_and_check(Nb_electrons, sizeof(int));
+    int atom, elec;
+
+    for (atom = 0 ; atom < Nb_atoms ; atom++)
+    {
+        // Clear the list
+        memset(list_of_electrons_associated_to_atom, 0, Nb_electrons);
+        count = 0;
+        // Search the list for incidents of 'atom'
+        for (elec = 0 ; elec < Nb_electrons ; elec++)
+        {
+            // Test if it is close enough to Id=atom
+            if(temp_array[elec] == atom )
+            {
+                // Count the number and store the Id
+                list_of_electrons_associated_to_atom[count++] = temp_array_Ids[elec];
+                //list_of_electrons_associated_to_atom[count++] = elec;
+            }
+        }
+
+        // Now the counter has the number of Ids to store and
+        // the list_of_electrons_associated_to_atom has the Ids
+        if (count > 0 )
+        {
+            // So allocate the memmory IF needed
+            //check if none is allocated
+            if (ion_list[atom] == NULL){
+              (ion_list[atom]) = (int *) malloc_and_check((count+1), sizeof(int)); //+1 for the count
+              //store the size permanentlyy
+              current_size_of_ion_list[atom] = (count+1);
+            //if some is allocated check if it is enough  by checking the static array
+            //if not free the past amount and allocate more
+            } else if (current_size_of_ion_list[atom] < count+1 ){
+              free(ion_list[atom]);
+              (ion_list[atom]) = (int *) malloc_and_check((count+1), sizeof(int));
+              //store the amount of memmory stored
+              current_size_of_ion_list[atom] = count+1;
+            }
+
+            // Store the number of elements
+            *(ion_list[atom]) = count;
+            // Store the elements
+            for(elec=0; elec < count;elec++)
+            {
+                (ion_list[atom][elec+1]) = list_of_electrons_associated_to_atom[elec];
+                //(ion_list[atom][elec+1]) = temp_array_Ids[elec];
+            }
+        } //end count>0
+        //if count is 0 make sure the ion_list has a 0 count (if not NULL)
+        else {
+          //if the count is not 0 set it to 0
+          if (ion_list[atom] != NULL){
+            *(ion_list[atom]) = 0;
+          }
+        }
+    }
+
+    free(temp_array);
+    free(list_of_electrons_associated_to_atom);
+    free(temp_array_Ids);
+}
+
+// **************************************************************
+double Get_Potential_From_Orbiting_Electrons(void *p, void *al,
+                                           int *electron_list,
+                                           const elem_props &element,
+                                           int dont_include_Id)
+/**
+ * Calculates the contribution of classically orbiting electrons
+ * to the potential at location of particle "p" (ghost or ion).
+ * @param p                 The particle to get the potential at
+ * @param al                The pointer to the start of the particle list
+ * @param electron_list     The list of Id's of the classically
+ *                          orbiting electrons
+ * @param element           The element structure
+ * @param dont_include_Id   The id to skip for collisional ionization
+ * @return Returns the contribution to the potential [V] of the
+ *         classically orbiting electrons at location of "p"
+ */
+{
+    // Potentials variables name convention:
+    //      Pot_W[Where]_D[Due to]_O[Other]
+    double Pot_Wp_DOrbitingElectrons = 0.0;
+
+    // The list starts at 1 not 0 since 0 has the number of entries
+    potential_paramaters potparams;
+    void *orb_elec;
+    if (electron_list != NULL)
+    {
+        // If we have more then 1 electron in the list AND if it is not the impacting electron
+            for (int elec = 1 ; elec <= electron_list[0] ; elec++)
+            {
+                orb_elec = get_voidp(al, electron_list[elec]);
+                if (Get_Id(orb_elec) != dont_include_Id)
+                {
+                    // std_cout << "removing " << Id(orb_elec) << "\n";
+                    Potentials_Set_Parameters(p, orb_elec, element, potparams);
+
+                    Pot_Wp_DOrbitingElectrons += Calculate_Potential(p, orb_elec, element, potparams);
+                }
+            } // end for look over orbiting electron
+    }
+
+    return Pot_Wp_DOrbitingElectrons;
+}
+
+// **************************************************************
+double Get_Total_Kinetic_Energy_of_Orbiting_Electrons(void *al,
+                                                       int *electron_list,
+                                                       const int dont_include_Id)
+{
+    double K = 0.0;
+    if (electron_list != NULL)
+    {
+        const int nb_electrons = electron_list[0];
+        void *orb_elec;
+        if (nb_electrons > 1)
+        {
+            for (int ei = 1 ; ei <= nb_electrons ; ei++)
+            {
+                orb_elec = get_voidp(al, electron_list[ei]);
+                if (Get_Id(orb_elec) != dont_include_Id)
+                {
+                    K += 0.5 * me * Vector_Length_Squared(Get_Velocity(orb_elec));
+                }
+            }
+        }
+    }
+    return K;
+}
+
+// **************************************************************
+void Remove_IpCorrection_From_Orbiting_Electrons(void *al,
+                                                  int *electron_list,
+                                                  const double Ip_correction,
+                                                  const double K_OrbitingE,
+                                                  const int dont_include_Id)
+{
+    const int nb_electrons = electron_list[0];
+
+    // FIXME: Should it be "greater then", or "greater or equal" to 1?
+    /// NOT needed since only called if electron_list[0] > 0 and
+    /// the dont_include_Id will check to EXclude for the impact electron
+//    if (nb_electrons > 1)
+//    {
+        // Get ratio of the total kinetic energy of orbiting electrons
+        // versus the Ip correction. This will be the pourcentage to
+        // removed from each orbiting electrons. We store the factor
+        // of the remaining energy.
+        const double ratio = fabs(Ip_correction) / K_OrbitingE;
+        if (ratio <= 1.0)
+        {
+            const double K_factor      = 1.0 - ratio;
+            // Each velocity component needs to be scaled by sqrt(K_factor)
+            // since the velocity squared in 1/2 m v^2 is factored by K_factor
+            const double sqrt_K_factor = sqrt(K_factor);
+
+//             std_cout << "K_OrbitingE = " << K_OrbitingE*J_to_eV << "\n";
+//             std_cout << "Ip_correction = " << Ip_correction*J_to_eV << "\n";
+//             std_cout << "K_factor = " << K_factor << "\n";
+//             std_cout << "sqrt_K_factor = " << sqrt_K_factor << "\n";
+
+            void *e;
+            for (int ei = 1 ; ei <= nb_electrons ; ei++)
+            {
+                e = get_voidp(al, electron_list[ei]);
+                if (Get_Id(e) != dont_include_Id)
+                {
+                    Vector_Times_Scalar(Get_Velocity(e), Get_Velocity(e), sqrt_K_factor);
+                }
+            }
+        }
+//    }
+}
+
+// **************************************************************
+int remove_orbiting_electrons_from_part(void *part, void *al,
+                                         int * electron_list,
+                                         double *pot_at_the_particle,
+                                         const elem_props &element,
+                                         int dont_include_Id)
+/**
+ * Removes the potential of classically orbiting
+ * electrons from part (ghost or ion).
+ * @param part The particle to remove the potential from
+ * @param al   The pointer to the start of the particle list
+ * @param electron_list The list of Id's of the classically
+ *                      orbiting electrons
+ * @param pot_at_the_particle The output
+ * @param element the element parameters
+ * @param dont_include_Id The id to skip for collisional ionization
+ * @return
+ */
+{
+  int elec;
+
+  void *orb_elec;
+  //the list starts at 1 not 0 since 0 has the number of entries
+  potential_paramaters potparams;
+  for(elec = 1;elec <= electron_list[0];elec++){
+    orb_elec = get_voidp(al, electron_list[elec]);
+    if (Get_Id(orb_elec) != dont_include_Id){
+// std_cout << "removing " << Id(orb_elec) << "\n";
+      Potentials_Set_Parameters(part, orb_elec, element, potparams);
+
+      *pot_at_the_particle -= Calculate_Potential(part, orb_elec, element, potparams);
+    }
+  }//end for look over orbiting electron
+return 0;
+}
+
+
+// **************************************************************
+int correct_ghost_pot_by_binding_orbiting_elec(int num_clasical_orbiting_el,
+                                                void *ion, void *ghost,
+                                                const elem_props &element,
+                                                double *pot_at_the_ghost)
+/**
+ * This function recalcultes the ions potential at the ghost
+ * by condering classically orbiting electrons as bound.
+ * Thus a 3+ with 2 classically orbing electrons is
+ * taken as a single 1+ ion (thus 2+ poential).
+ ** This should only be called if the closest ion is charge>0 **
+ * @param num_clasical_orbiting_el the number of orbiting
+ *                                  electrons
+ * @param ion  The ion under consideration
+ * @param ghost The ghost under consideration
+ */
+{
+      int original_ion_charge=0;
+    //There are other electrons so we need to recalculate the potential
+    //at the ghost
+
+    //subtract the potential due to the ion
+        potential_paramaters potparams;
+        Potentials_Set_Parameters(ghost, ion, element, potparams);
+        *pot_at_the_ghost -= Calculate_Potential(ghost, ion, element, potparams);
+
+        //save the original charge
+        original_ion_charge = Get_Charge_State(ion);
+
+        //change the charge to refect the total effective charge for the ghost
+        if (num_clasical_orbiting_el <= Get_Charge_State(ion) ){
+          Set_Charge_State(ion, Get_Charge_State(ion)- num_clasical_orbiting_el);
+          Set_Charge(ion, Get_Charge(ion)- e0*num_clasical_orbiting_el);
+          Set_Chargea(ion, fabs(Get_Charge(ion)));
+        }
+        //too many electrons just make the ion neutral for the ghost
+        else
+        {     //which is +1 since the ghost sees +1
+          Set_Charge_State(ion,1);
+          Set_Charge(ion, e0);
+          Set_Chargea(ion, fabs(Get_Charge(ion)));
+        }
+        //add +one charge for the electron which is under consideration
+        Set_Charge_State(ion, Get_Charge_State(ion)+1);
+        Set_Charge(ion, Get_Charge(ion)+e0);
+        Set_Chargea(ion, fabs(Get_Charge(ion)));
+        //add the potential of the effective ion
+        Potentials_Set_Parameters(ghost, ion, element, potparams);
+        *pot_at_the_ghost += Calculate_Potential(ghost, ion, element, potparams);
+// std_cout << "Effective charge="<<Charge_State(ion)<<"  Id="<<Id(ion)<<"\n";
+        //put the charge back
+        Set_Charge_State(ion, original_ion_charge);
+        Set_Charge(ion, e0*original_ion_charge);
+        Set_Chargea(ion, fabs(Get_Charge(ion)));
+   return 0;
+}
+
+
+// **************************************************************
+// FIXME: What is this?
+double calc_rel_Ekin(double vv[3], double *vv2)
+{
+   double lvv2,rel_gamma,Ekin;
+
+   //ABSV2(lvv2,vv);
+   lvv2 = vv[0]*vv[0] + vv[1]*vv[1] + vv[2]*vv[2];
+   *vv2 = lvv2;
+
+   if( lvv2 > co2 )
+   {
+      std_cout << "error in calc_rel_Ekin:\n";
+      std_cout << "velocity of electron was greater than co\n";
+      std_cout << "execution of program aborted\n";
+      abort();
+   }
+
+   rel_gamma = 1.0/sqrt(1.0-(lvv2)*inv_co2);
+
+   Ekin=me*co2*(rel_gamma-1.0);
+
+   return(Ekin);
+}
+
+// **************************************************************
+// FIXME: What is this?
+double calc_vv(double Ekin_au)
+{
+   double vv;
+
+//    vv = co*sqrt(1.0-1.0/pow(1.0+Ekin_au*4.3574E-18/(me*co2),2));
+   vv = co*sqrt(1.0-1.0/pow(1.0+Ekin_au*Eh_to_J/(me*co2),2));
+
+   return(vv);
+}
+
+
+// ********** End of file ***************************************

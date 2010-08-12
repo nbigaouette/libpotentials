@@ -1,0 +1,490 @@
+#include <iostream>
+#include "Constants.hpp"
+#include "SinglePhoton.hpp"
+#include "General.hpp"
+#include "Potentials.hpp"
+#include "Code_Functions_Declarations.hpp"
+#include "Particles_Operations.hpp"
+#include "Global.hpp"
+#include "Std_Cout.hpp"
+
+#ifdef UnorderedMapTR1
+#include <tr1/unordered_map>
+#else
+#ifdef UnorderedMapBoost
+#include <boost/unordered_map.hpp>
+#else
+#include <map>
+#endif // #ifdef UnorderedMapBoost
+#endif // #ifdef UnorderedMapTR1
+
+#include "Auger.hpp"
+//typedef int intpair[2];
+// **************************************************************
+#ifdef UnorderedMapBoost
+typedef boost::unordered_map<int, float> Auger_Map;
+typedef boost::unordered_map<int, boost::unordered_map<float,int> > Single_Auger_Map;
+#else
+#ifdef UnorderedMapTR1
+typedef std::tr1::unordered_map<int, float> Auger_Map;
+typedef std::tr1::map<int, std::tr1::map<float,int> > Single_Auger_Map;
+#else
+typedef std::map<int, float> Auger_Map;
+// typedef std::map<int, intpair> Single_Auger_Map;
+typedef std::map<int, std::map<float, int> > Single_Auger_Map;
+#endif // #ifdef UnorderedMapTR1
+#endif // #ifdef UnorderedMapBoost
+// **************************************************************
+
+Auger_Map doubly_excited_auger; //[key] is ion Id that is going to do double Auger [value] is the time [s] the second excitation happened
+Single_Auger_Map excited_auger; //[key] is ion Id that is in a 4d-1 state and [value][0] is the time [s] excitation happened [value][1] is the excited state
+// **************************************************************
+void Set_Doubly_Excited_Auger_fraction(const int key, const float fr)
+{
+    doubly_excited_auger[key]  = fr;
+}
+
+void Set_Excited_Auger_Time(const int key, const double time, const short int excited_state)
+{
+    //The state does not want to change the original time so -1 is passed
+    if (time >= 0.0)
+      excited_auger[key][0]  = (float) time;
+    excited_auger[key][1]  = excited_state;
+}
+
+short int Get_Excited_Auger_State(const int key)
+{
+    Single_Auger_Map::iterator it = excited_auger.find(key);
+    if (it == excited_auger.end()) return -1;
+    return excited_auger[key][1];
+}
+
+//the key is kept in the excited_auger map. This is ok
+//as decay from the double is programmed to happen first
+short int Get_Doubly_Excited_Auger_State(const int key)
+{
+    Auger_Map::iterator it = doubly_excited_auger.find(key);
+    if (it == doubly_excited_auger.end())  return -1;
+    return excited_auger[key][1];
+}
+
+
+float Get_Doubly_Excited_Auger_Energy(const int key)
+{
+    Auger_Map::iterator it = doubly_excited_auger.find(key);
+    if (it == doubly_excited_auger.end())  return -1;
+    return doubly_excited_auger[key]; //[J]
+}
+
+
+// **************************************************************
+void Print_Doubly_Excited_Auger_Time()
+{
+  for (Auger_Map::iterator it = doubly_excited_auger.begin() ; it != doubly_excited_auger.end(); it++ )
+  {
+        std::cout << it->first << " => " << it->second << std::endl;
+  }
+}
+
+
+double Ionization_Auger_Decay(void *al,void *el,
+                                   int Nb_atoms, int Nb_atoms_max,int Nb_electrons_max,
+                                   const double time,
+                                   double laser_field[3],
+                                   unsigned long int &index_next_empty_space, int &Nb_electrons,const elem_props &element,
+                                   laser_props &laser, Lib_PRNG &prng,FILE *fh_out ){
+
+  double delta_energy = 0.0;
+
+  //use to access Ips
+  const short int l_of_d_states = 2; //the angular quantum number's integer value for 4d
+  const short int n_value_for_4d = 4;//the principle quantum number's integer value for 4d
+  int tmp = excited_4d8_from_d52/10;
+  char excited_from_d52_char;
+  sprintf(&excited_from_d52_char,"%d",tmp);
+
+  //Loop over all particles
+  for (int i = 0 ; i < Nb_atoms ; i++){
+    void *ion = get_voidp(al, i);
+    //obtain useful parameters for the calculations
+    const int ion_id = Get_Id(ion);
+    const int ion_cs = Get_Charge_State(ion);
+
+    short int ion_es_double = Get_Doubly_Excited_Auger_State(ion_id);
+    short int ion_es_single = Get_Excited_Auger_State(ion_id);
+
+    //check if the ion is Auger-excited
+    if (ion_es_single >= Single_Auger_Excited_d52
+        || ion_es_double >= Single_Auger_Excited_d52){
+
+      //set ion_es to be the state we will try to decay.
+      //it will preferencially pick the 4d-2
+      short int ion_es = -1;
+      if (ion_es_double != -1)
+        ion_es = ion_es_double;
+      else //we already know one is not -1
+        ion_es = ion_es_single;
+
+      double Ip = element.IpsLowest[ion_cs]*eV_to_J;
+      double Ip_4d_au = element.Ips[get_element_index(
+                                       l_of_d_states, n_value_for_4d,
+                                       ion_cs, element.max_l,
+                                       element.max_n)]*eV_to_Eh;//this is always the d52
+      double transition_energy = Ip_4d9_5p6_to_4d10_5p5*eV_to_J;//analogous to gamma in single photon
+
+      //Calculate the decay coefficient
+      double decay_time_start = excited_auger[ion_id][0]; // [s]
+
+      //check if the ion is single or Double Auger
+      char digits[5];
+      sprintf(digits,"%d",ion_es);
+      double decay_time = 0.0; //will be in [fs]
+      //First test for 4d-2 Auger which is faster and thus taken by default
+      //set the decay_time and the transition energy
+      if (digits[1] != 0){
+        decay_time = Auger_tau_4d8;
+        Ip_4d_au = Ip_4d9_5p6_to_4d8_5p6*eV_to_Eh;
+        if (digits[1] == excited_from_d52_char)
+          transition_energy = Ip_4d_au*Eh_to_J;
+        else //from a d32 state
+          transition_energy = Ip_4d_au*Eh_to_J+Ip_difference_4d9_5p6_to_4d8_5p6_d32_d52*eV_to_J;//Ip_diff.. is negative
+      }
+      //4d-1 Auger decay
+       else if (digits[0] == '1' ){//single Auger
+        if (digits[2] == excited_from_d52_char ) //d5/2 Auger
+          decay_time = Auger_tau_d52;
+        else                                     //d3/2 decay
+          decay_time = Auger_tau_d32;
+      } else if (digits[0] == '2'){ //double Auger
+        if (digits[2] == excited_from_d52_char ) //d5/2 Auger
+          decay_time = Auger_tau_d52;
+        else {                                     //d3/2 decay
+          decay_time = Auger_tau_d32;
+          transition_energy += -Ip_difference_to_d32_from_d52*eV_to_J; //d32 is closer to threshold
+        }
+      } else {                  //double Auger, second electron
+        decay_time = Double_Auger_tau;
+      }
+       //end Type of Auger
+
+      const double delta_time = (time-decay_time_start)*s_to_fs;
+      const double delta_qq = 1.0 - exp(-time/decay_time);
+      double rand_nmb = prng.Get_Random();
+
+      // Monte-Carlo test for Autoionization
+      if (rand_nmb <= delta_qq){
+
+        //check if the ion is single or double Auger
+        if (digits[1] != '0' ){//4d-2 decay
+          //All work imlplies the deexcitation to the Xe^4+ fast
+          //J. Phys. B 37 2401, J. Phys. B 35 2799 (eq 3),J. Phys. B 25 1785 etc
+          //thetransition energy is doubled since there are two holes to fill
+          do_double_Auger_decay(ion,el,
+                                Nb_atoms,Nb_atoms_max,Nb_electrons_max,
+                                ion_es,
+                                time, transition_energy*2.0, Ip, delta_time,
+                                laser_field,
+                                index_next_empty_space, Nb_electrons,element,
+                                delta_energy, laser, prng,fh_out );
+          //unset the exictation
+          Single_Auger_Map::iterator it = excited_auger.find(ion_id);
+          excited_auger.erase(it);
+        } else if (digits[0] == '1'){ //single Auger
+          do_single_Auger_decay(ion,el,
+                                Nb_atoms,Nb_atoms_max,Nb_electrons_max,
+                                ion_es,
+                                time, transition_energy, Ip, delta_time,
+                                laser_field,
+                                index_next_empty_space, Nb_electrons,element,
+                                delta_energy, laser, prng,1.0,fh_out );
+          //delete the entry
+          Single_Auger_Map::iterator it = excited_auger.find(ion_id);
+          excited_auger.erase(it);
+        } else if (digits[0] == '2'){ //double Auger, 1st electron
+          //it is a cascade process so do the 1st electron then set a single Auger
+          //Nature doi:10.1038/nature05648
+          //Ip = element.Ips[get_element_index(1, 5, ion_cs+1, element.max_l, element.max_n)]*eV_to_J;
+          rand_nmb = prng.Get_Random(); //determine what fraction of the energy goes to this electron
+          do_single_Auger_decay(ion,el,
+                                Nb_atoms,Nb_atoms_max,Nb_electrons_max,
+                                ion_es,
+                                time, transition_energy, Ip, delta_time,
+                                laser_field,
+                                index_next_empty_space, Nb_electrons,element,
+                                delta_energy, laser, prng,rand_nmb,fh_out );
+          //Setup the entry for the second electron's decay
+          Set_Doubly_Excited_Auger_fraction(ion_id,1-rand_nmb);
+          Set_Excited_Auger_Time(ion_id,time,Get_Excited_Auger_State(ion_id)+100);//100 is to set the flag to
+                                           //3xx so we know one electron is gone
+        } else { //double Auger, second electron
+          do_single_Auger_decay(ion,el,
+                                Nb_atoms,Nb_atoms_max,Nb_electrons_max,
+                                ion_es,
+                                time, transition_energy, Ip, delta_time,
+                                laser_field,
+                                index_next_empty_space, Nb_electrons,element,
+                                delta_energy, laser, prng,
+                                doubly_excited_auger[ion_id],fh_out );
+          //delete the entry
+          Single_Auger_Map::iterator it_s = excited_auger.find(ion_id);
+          excited_auger.erase(it_s);
+          Auger_Map::iterator it = doubly_excited_auger.find(ion_id);
+          doubly_excited_auger.erase(it);
+        }//end Double Auger
+      }//test for random decay time (rand_nmb <= delta_qq)
+    }//end if ion is Auger excited
+
+  }//end loop over all ions
+  return delta_energy;
+}
+
+
+
+/*
+int main(int argc, char *argv[])
+{
+    Set_Doubly_Excited_Auger_Time(123, 321);
+    Set_Doubly_Excited_Auger_Time(10, 164);
+    Set_Doubly_Excited_Auger_Time(46598, 6598);
+    Set_Doubly_Excited_Auger_Time(10, 69999);
+
+    Print_Doubly_Excited_Auger_Time();
+}
+*/
+
+
+//Modeled after single photon ionization routine do_a_single_photon_ionization as they are very
+//much the same process with the Ip's being the same and meaning the same and the
+//photon energy, gamma being the transition energy of the upper electron to the 4d level.
+void do_single_Auger_decay(void *ion,void *el,
+                                   int Nb_atoms, int Nb_atoms_max,int Nb_electrons_max,
+                                   const short int ionization_process_code,
+                                   const double time, double transition_energy, double Ip, double time_passed_before_decay_fs,
+                                   double laser_field[3],
+                                   unsigned long int &index_next_empty_space, int &Nb_electrons,const elem_props &element,
+                                   double &delta_energy, laser_props &laser, Lib_PRNG &prng,
+                                   float fraction_for_this_ionization, FILE *fh_out )
+{
+    void *nce = NULL;
+    const double Eabs = Vector_Length(laser_field); // |E|   [V . m^-1]
+    const int ion_id = Get_Id(ion);
+    const int ion_cs = Get_Charge_State(ion);
+
+    //calculate the transition energy which depends on whether this is d52 or d32
+
+
+    std_cout << "single Auger autoionization occured ("<<ion_cs<<"+ --> "<<ion_cs+1<<"+)  Id = "<<ion_id<<" from "<<ionization_process_code<<"\n";
+
+    // The ion-electron system has an intrisinct energy: the Ip.
+    // This energy "disappear" in the code. We also have a net gain
+    // of the energy of the photon.
+    // We return this value so the code can keep track of it.
+    delta_energy += transition_energy -Ip;
+    //std_cout << "delta_energy = " << delta_energy*J_to_eV << " eV\n";
+
+    nce = get_voidp(el, index_next_empty_space);
+
+    Create_Electron(
+        el, ion,
+        time,
+        Nb_atoms, Nb_atoms_max,
+        Nb_electrons, Nb_electrons_max,
+        index_next_empty_space,
+        element,
+        "Called from do_single_Auger_decay() in library"
+    );
+
+    //set the position
+    for (int d = 0 ; d < 3 ; d++) Get_Position(nce)[d] = Get_Position(ion)[d]+electron_creation_distance* (laser_field[d]/Eabs);
+
+    // Potential energy between the new electron and its parent ion (with updated charge)
+    potential_paramaters potparams;
+    Potentials_Set_Parameters(nce, ion, element, potparams);
+    const double U1f     = (-e0) * Calculate_Potential(nce, ion, element, potparams);
+    const double nce_K   = (transition_energy -Ip)*fraction_for_this_ionization  - U1f;
+    const double nce_vel = sqrt(2.0 * nce_K / me);
+
+    // Choose randomly the direction of the new electron's velocity
+    double E_unit[3];
+    double Eabs_rand = Eabs;
+    const double rv = prng.Get_Random();
+    if ( (rv > 0.5) != 1 ) Eabs_rand = -Eabs_rand;
+
+    for (int d = 0 ; d < 3 ; d++) E_unit[d] = laser_field[d] / Eabs_rand;
+    for (int d = 0 ; d < 3 ; d++) Get_Velocity(nce)[d] = nce_vel * E_unit[d];
+
+    // The ion cannot be ionized for dt=hbar/dE
+    // where dE is the transition energy (photon energy)
+    int next_ion = time + next_ion_wait;
+    if( next_ion > Get_NextIon(ion) ) Set_NextIon(ion, next_ion);
+
+  // Save to passed file handle
+    if(Lib_Get_Rank() == 0)
+    {
+      if (fh_out != NULL)
+      {
+        fprintf(fh_out, "%7.4f %5d %2d %4d %4d %3d %10.8g\n",
+                time*1e15, ionization_process_code, Get_Charge_State(ion), Get_Id(ion), Get_Id(nce), -1,time_passed_before_decay_fs*1000.0);
+          fflush(fh_out);
+      }
+    }
+
+      //Debug output
+/*     std_cout << "Id="<<Get_Id(ion)<<"  CS="<<Get_Charge_State(ion)<<"  Pot="<<U1f*J_to_Eh<<"  KE="<<Vector_Length_Squared(Get_Velocity(nce))*me*0.5*J_to_Eh<<" Ip="<<Ip*J_to_Eh<<" KE_theory="<<nce_K*J_to_Eh<<" Get_pot="<<%.15g<<"\n";
+     std_cout << "potparams.r="<<potparams.r/a0<<"\n";
+     std_cout << "Pos=("<<Get_Position(nce)[0]<<","<<Get_Position(nce)[1]<<","<<Get_Position(nce)[2]<<") "<<sqrt(Vector_Length_Squared(Get_Position(nce)))/a0<<"  Ion_Pos=("<<Get_Position(ion)[0]<<","<<Get_Position(ion)[1]<<","<<Get_Position(ion)[2]<<")\n";*/
+}
+
+void do_double_Auger_decay(void *ion,void *el,
+                                   int Nb_atoms, int Nb_atoms_max,int Nb_electrons_max,
+                                   const short int ionization_process_code,
+                                   const double time, double transition_energy, double Ip, double time_passed_before_decay_fs,
+                                   double laser_field[3],
+                                   unsigned long int &index_next_empty_space, int &Nb_electrons,const elem_props &element,
+                                   double &delta_energy, laser_props &laser, Lib_PRNG &prng,FILE *fh_out )
+{
+    void *nce1 = NULL;
+    void *nce2 = NULL;
+    const double Eabs = Vector_Length(laser_field); // |E|   [V . m^-1]
+    const int ion_id = Get_Id(ion);
+    const int ion_cs = Get_Charge_State(ion);
+
+    //The new potential for 3 particles on top of each other
+    //it is Always the same. Each electron sees the bottom (=IP[0]*ion_cs)
+    //of the ion and the other electron (-1 since they are the same charge)
+    const double newpot = (base_pot_well_depth)*((ion_cs+2)*2.0-1)*eV_to_J;
+
+    std_cout << "double Auger autoionization occured ("<<ion_cs<<"+ --> "<<ion_cs+2<<"+)  Id = "<<ion_id<<" from "<<ionization_process_code<<"   "<<newpot*J_to_Eh<<"\n";
+
+
+    nce1 = get_voidp(el, index_next_empty_space);
+
+    Create_Electron(
+        el, ion,
+        time,
+        Nb_atoms, Nb_atoms_max,
+        Nb_electrons, Nb_electrons_max,
+        index_next_empty_space,
+        element,
+        "Called from 1st e- in do_double_Auger_decay() (library)"
+    );
+
+    //index_next_empty_space updated by create electron
+    nce2 = get_voidp(el, index_next_empty_space);
+
+    Create_Electron(
+        el, ion,
+        time,
+        Nb_atoms, Nb_atoms_max,
+        Nb_electrons, Nb_electrons_max,
+        index_next_empty_space,
+        element,
+        "Called from 2nd e- in do_double_Auger_decay() (library)"
+    );
+
+    //set the position
+    for (int d = 0 ; d < 3 ; d++) Get_Position(nce1)[d] = Get_Position(ion)[d]+electron_creation_distance* (laser_field[(d+1)%3]/Eabs);
+    for (int d = 0 ; d < 3 ; d++) Get_Position(nce2)[d] = Get_Position(ion)[d]-electron_creation_distance* (laser_field[(d+1)%3]/Eabs);
+
+
+    // Potential energy between the 1st new electron and its parent ion (with updated charge)
+    potential_paramaters potparams;
+    Potentials_Set_Parameters(nce1, ion, element, potparams);
+    double U1f     = (-e0) * Calculate_Potential(nce1, ion, element, potparams);
+    // add the potential due to the 2nd new electron to find the total
+    Potentials_Set_Parameters(nce1, nce2, element, potparams);
+    U1f     +=       (-e0) * Calculate_Potential(nce1, nce2, element, potparams);
+
+
+    // The potential energy is calculated by bringing one particle to the location
+    //from infinity at a time. The 1st would see a 2+, the second a (total of) 1+.
+    //Thus they would end up with different potential energies
+    //depite being in a symmetric state. So the energy must be divided equally
+    //amongst them. Thus nce1 which is viewed as the second particle brought from
+    //infinity (since it measures the pot of nce2 which is already there), nce
+    //needs to gain 50% more potential energy, thus *=0.5.
+    //U1f *=1.5;
+
+    // Potential energy between the 2nd new electron and its parent ion (with updated charge)
+    // and the 1st new electron is exactly the same
+    const double U2f     =  U1f;
+
+    //PRL 87 053001 showed that double Auger decay is dominanted by 1 e- with all the KE and one with almost none
+    //we randomly pick which e- gets the energy (default is nce1)
+    const double total_KE = transition_energy-Ip;
+    double rand_nmb = prng.Get_Random();
+    //Give just a bit more than zero
+    const double proportion = 0.98;
+    double nce1_K    = proportion*total_KE       - U1f;
+    double nce1_vel  = sqrt(2.0 * nce1_K / me);
+    double nce2_K    =  (1.0-proportion)*total_KE - U2f;
+    double nce2_vel  = sqrt(2.0 * nce2_K / me);
+    //Switch the energy randomly
+    if (rand_nmb <= 0.5){
+      nce2_K    = proportion*total_KE       - U1f;
+      nce2_vel  = sqrt(2.0 * nce2_K / me);
+      nce1_K    =  (1.0-proportion)*total_KE - U2f;
+      nce1_vel  = sqrt(2.0 * nce1_K / me);
+    }
+    // The ion-electron system has an intrisinct energy: the Ip.
+    // This energy "disappear" in the code. We also have a net gain
+    // of the energy of the photon.
+    // We return this value so the code can keep track of it.
+    //delta_energy += total_KE+U1f*0.5;
+    delta_energy += nce1_K+nce2_K- newpot;
+    //std_cout << "delta_energy = " << delta_energy*J_to_eV << " eV\n";
+
+
+std::cout << "nce1_ke = " << nce1_K*J_to_Eh<< " nce2_ke = " << nce2_K*J_to_Eh << std::endl;
+std::cout << "transition_energy " << transition_energy*J_to_Eh << " Ip " << Ip*J_to_Eh << " U1f "
+          << U1f*J_to_Eh  << " dE=" << (total_KE+U1f*0.5)*J_to_Eh << " KE_tot=" << total_KE*J_to_Eh
+<<std::endl;
+
+    // Choose randomly the direction of the new electron's velocity by it's position
+    double temp = rand_nmb*10.0;
+    int rnd = (int) temp/10;
+    int sign = -1;
+    if (rnd %2 == 0 ) sign = 1;//random sign
+    double E_unit[3];
+    for (int d = 0 ; d < 3 ; d++) E_unit[d] = laser_field[d] / Eabs;
+    //assign the velocity to the 1st electron
+    for (int d = 0 ; d < 3 ; d++) Get_Velocity(nce1)[d]  =  sign*nce1_vel  * E_unit[(d+1)%3];
+    //assign the velocity to the 2nd electron
+    for (int d = 0 ; d < 3 ; d++) Get_Velocity(nce2)[d] = -sign*nce2_vel * E_unit[(d+1)%3];
+
+    // ************ conserve momentum ***********************
+    //They are added since Get_Velocity(nce2) < 0  and Get_Velocity(nce) >0
+    for (int d = 0 ; d < 3 ; d++) Get_Velocity(ion)[d] -= me*(Get_Velocity(nce1)[d] + Get_Velocity(nce2)[d] )/Get_Mass(ion);
+
+/*double t_KE1= 0.0,t_KE2 = 0.0;
+for (int d = 0 ; d < 3 ; d++){
+    t_KE1 += me*Get_Velocity(nce1)[d]*Get_Velocity(nce1)[d]*0.5;
+    t_KE2 += me*Get_Velocity(nce2)[d]*Get_Velocity(nce2)[d]*0.5;
+}
+std::cout << "t_KE1=" << t_KE1*J_to_Eh << "  t_KE2=" << t_KE2*J_to_Eh << std::endl;*/
+    // The ion cannot be ionized for dt=hbar/dE
+    // where dE is the transition energy (photon energy)
+    int next_ion = time + next_ion_wait;
+    if( next_ion > Get_NextIon(ion) ) Set_NextIon(ion, next_ion);
+
+  // Save to passed file handle
+    if(Lib_Get_Rank() == 0)
+    {
+      if (fh_out != NULL)
+      {
+        fprintf(fh_out, "%7.4f %5d %2d %4d %4d %3d %10.8g\n",
+                time*1e15, ionization_process_code, Get_Charge_State(ion), ion_id, Get_Id(nce1),Get_Id(nce2),time_passed_before_decay_fs*1000.0);
+          fflush(fh_out);
+      }
+    }
+
+     //Debug output
+/*     std_cout << "Id="<<Get_Id(ion)<<"  CS="<<Get_Charge_State(ion)<<"  Pot="<<U1f*J_to_Eh<<"  KE="<<Vector_Length_Squared(Get_Velocity(nce1))*me*0.5*J_to_Eh<<" Ip="<<Ip*J_to_Eh<<" KE_theory="<<nce1_K*J_to_Eh<<" Get_pot="<<Calculate_Potential(nce1, ion, element, potparams)*eV_to_Eh<<"\n";
+     std_cout << "potparams.r="<<potparams.r/a0<<"\n";
+     std_cout << "Pos=("<<Get_Position(nce1)[0]<<","<<Get_Position(nce1)[1]<<","<<Get_Position(nce1)[2]<<") "<<sqrt(Vector_Length_Squared(Get_Position(nce1)))/a0<<"  Ion_Pos=("<<Get_Position(ion)[0]<<","<<Get_Position(ion)[1]<<","<<Get_Position(ion)[2]<<") \nPos2=("<<Get_Position(nce2)[0]<<","<<Get_Position(nce2)[1]<<","<<Get_Position(nce2)[2]<<") "<<sqrt(Vector_Length_Squared(Get_Position(nce2)))/a0<<" \n";
+*/
+}
+
+
+// ********** End of file ***************************************
+

@@ -1,0 +1,44 @@
+#ifndef INC_IMPACT_hpp
+#define INC_IMPACT_hpp
+
+#include "Structure_Element.hpp"
+#include "PseudoRandomNumberGenerator.hpp"
+
+double Ionization_Impact_Simple(void *al, void *el,
+                          const int t, const double dt, const double time,
+                          const int &Nb_atoms, const int &Nb_atoms_max,
+                          int &Nb_electrons, const int &Nb_electrons_max,
+                          unsigned long int &index_next_empty_space,
+                          const elem_props &element, bool &did_ionization_occur,
+                          int *ionizedlist,
+                          FILE *fh_out = NULL);
+
+double Ionization_Impact_Excitation(void *al, void *el,
+                                    const int t, const double time,
+                                    const int &Nb_atoms, const int &Nb_atoms_max,
+                                    int &Nb_electrons, const int &Nb_electrons_max,
+                                    unsigned long int &index_next_empty_space,
+                                    const elem_props &element, bool &did_ionization_occur,
+                                    int *ionizedlist, Lib_PRNG &prng,
+                                    FILE *fh_out = NULL,
+                                    bool do_excitation = true,
+                                    const bool do_instantaneous_electron_screening=false);
+
+double LotzFormula(const int chargeState,
+                    const double E,
+                    const elem_props &element,
+                    const double Delta_Ip = 0.0,
+                    const double aq_factor = 1.0);
+double Ionization_Impact_Cross_Section_si(const int chargeState,
+                                           const double E,
+                                           const elem_props &element,
+                                           const double Delta_Ip = 0.0,
+                                           const double aq_factor = 1.0);
+
+// double formula_lotz_three_states(const int chargeState,
+//                                   const double Ekin_au,
+//                                   const elem_props &elm_p_local);
+
+#endif // INC_IMPACT_hpp
+
+// ********** End of file ***************************************

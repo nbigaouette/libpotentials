@@ -1,0 +1,1579 @@
+/****************************************************************
+
+    Routines for impact ionization
+
+    Important references:
+
+        MDCluster code
+        Lotz, W. An empirical formula for the electron-impact
+        ionization cross-section
+        Zeitschrift fur Physik, 1967, 206, 205-211
+        http://www.springerlink.com/index/Q7W770277565VM55.pdf
+
+****************************************************************/
+
+#include <cstdlib>
+#include <iostream>
+#include <cstdio>
+#include <cfloat>
+#include <cstring>  // memset()
+#include <unistd.h> // usleep()
+
+#include "Constants.hpp"
+#include "General.hpp"
+#include "Impact.hpp"
+#include "Particles_Operations.hpp"
+#include "Code_Functions_Declarations.hpp"
+#include "Potentials.hpp"
+#include "Global.hpp"
+#include "Std_Cout.hpp"
+
+// **************************************************************
+// ********** Variables global to this cpp file *****************
+// **************************************************************
+// Keep the index of the accessible excited states
+short int Accessible_es[Nb_excited_states_total];
+// Keep the xsection of the accessible excited states
+double    Accessible_es_xsec[Nb_excited_states_total];
+
+// **************************************************************
+// ********** Local functions prototypes ************************
+// **************************************************************
+double Excitation_xsection_for_state(short int final_state_index,
+                                     int ion_cs, double ke_au);
+double Ionization_xsection_for_state(short int initial_excited_state_index,
+                                     int ion_cs, double ke_au);
+
+void output_xsec(const elem_props &element);
+double Get_es_Xsecs_for(const short int * index_accessible_es,
+                     int Nb_accesible_states,
+                     int ion_cs, double ke_au);
+short int Get_Index_of_Final_State(const double xsec_es_tot,
+                                   const double xsec_ionization,
+                                   const short int Nb_accesible_states,
+                                   const bool do_excitation,
+                                   const short int * Accessible_es,
+                                   Lib_PRNG &prng);
+inline void Print_Impact_Ionization_Information(void *ion, void *impe, void *nce,
+                                                const int &ion_id,
+                                                const int &ion_cs,
+                                                const double &Vb,
+                                                const double &Pot_WIon_DAllWithoutCellE,
+                                                const double &Ip,
+                                                const elem_props &element,
+                                                const double &impe_K,
+                                                const double &impe_new_K,
+                                                const double &nce_W,
+                                                const double &nce_K)
+{
+    std_cout << "# II: Ion ";
+    std_cout << "Id="; std_cout.Format(3,0,'d'); std_cout << ion_id << " ";
+    std_cout << "CS=("<<ion_cs <<" --> "<<Get_Charge_State(ion)<<") ";
+    std_cout << "Vb="; std_cout.Format(0,3,'g'); std_cout << Vb << " V  ";
+    std_cout << "Pot_WIon_DAllWithoutCellE="; std_cout.Format(0,3,'g'); std_cout << Pot_WIon_DAllWithoutCellE << " V  ";
+    std_cout << "** BI: "; // Before Impact
+    std_cout << "Ip="; std_cout.Format(0,3,'g'); std_cout << Ip*J_to_eV << " eV ";
+    std_cout << "** AI: "; // After Impact
+    std_cout << "Ip="; std_cout.Format(0,3,'g'); std_cout << element.IpsLowest[Get_Charge_State(ion)] << " eV ";
+    std_cout << "# ImpE: ";
+    std_cout << "Id="; std_cout.Format(3,0,'d'); std_cout << Get_Id(impe) << " ";
+    std_cout << "** BI: ";
+    std_cout << "impe_K="; std_cout.Format(0,3,'g'); std_cout << impe_K*J_to_eV << " eV ";
+    std_cout << "** AI: ";
+    std_cout << "impe_new_K="; std_cout.Format(0,3,'g'); std_cout << impe_new_K*J_to_eV << " eV ";
+    if (nce != NULL)
+    {
+        std_cout << "# NcE: ";
+        std_cout << "Id="; std_cout.Format(3,0,'d'); std_cout << Get_Id(nce) << " ";
+        std_cout << "W="; std_cout.Format(0,3,'g'); std_cout << nce_W*J_to_eV << " eV ";
+        std_cout << "nce_K = "; std_cout.Format(0,3,'g'); std_cout <<  nce_K*J_to_eV << " eV ";
+    }
+    std_cout << "\n";
+}
+
+// **************************************************************
+// ********** Accessible functions implementations **************
+// **************************************************************
+
+double Ionization_Impact_Simple(void *al, void *el,
+                                const int t, const double dt, const double time,
+                                const int period,
+                                const int &Nb_atoms,
+                                const int &Nb_atoms_max,
+                                int &Nb_electrons,
+                                const int &Nb_electrons_max,
+                                unsigned long int &index_next_empty_space,
+                                const elem_props &element,
+                                bool &did_ionization_occur,
+                                int *ionizedlist,
+                                FILE *fh_out)
+/**
+ * Test all electrons to see if they impact ionize an atom/ion.
+ * @param al            Pointer to begining of atoms/ions list
+ * @param el            Pointer to begining of electrons list
+ * @param t             Time iteration
+ * @param dt            Time step [s]
+ * @param period        Period of calls to Ionization_Impact(). Ionization routines might not be
+ *                      called at each time steps but with a certain period, resulting in
+ *                      an equivalent time and time step scaled by this period.
+ * @param Nb_atoms      Current number of atoms/ions in the list
+ * @param Nb_atoms_max  Maximum number of atoms/ions in the list
+ * @param Nb_electrons  Current number of electrons in the list
+ * @param Nb_electrons_max          Maximum number of electrons in the list
+ * @param index_next_empty_space    Next empty space in electrons' list index
+ * @param element       Atoms/ions element properties
+ * @param did_ionization_occur      Did ionization occured in this function?
+ * @param ionizedlist   List of ions Ids which ionized here
+ * @param fh_out        File handle where output should be made. Note that the file
+ *                      should already be opened by the calling conde. Default to NULL.
+ * @return              Returns "delta_energy" [J], the change in energy due to
+ *                      the configuration change if ionization occured. This should
+ *                      be equal to the Ip of the ionized ion.
+ */
+{
+    // TODO:
+    //      Undoing collision
+    //      Account for the depthening of the well when ionisation occurs
+
+
+    // Return value. Before the electron is created, there is
+    // a "hidden" energy component in its bounding with its
+    // parent ion: the Ip. This value keeps track of the
+    // change in the total energy measured.
+    double delta_energy = 0.0;
+
+    // Scale the iteration and time step with the period. Sometimes we need
+    // the "real" iteration and time step values, sometimes we need the
+    // scaled one, and sometimes we don't care. Just store them here.
+//     const int     t_scaled = int(floor((double(t) / double(period)) + 0.5));
+// //     const int     t_scaled = t / period;
+//     const double dt_scaled = dt * double(period);
+
+    void *e = NULL;     // Current electron to look at
+    void *ion = NULL;   // Ion close to the electron "e"
+    void *nce = NULL;   // Newly created electron (if any)
+    void *impe = NULL;  // Impacting electron (if any)
+
+//     const double actual_time_fs = t*dt*s_to_fs;
+// //     if (14.704 <= actual_time_fs && actual_time_fs <= 14.724)
+//     if (13.0 <= actual_time_fs && actual_time_fs <= 14.724)
+//     {
+//         e   = get_voidp(al, 90);
+//         ion = get_voidp(al, 0);
+//         const double ve2 = Vector_Length_Squared(Get_Velocity(e));
+//         const double vi2 = Vector_Length_Squared(Get_Velocity(ion));
+//         std_cout << "I0 El90:";
+//         std_cout << "  Get_Imp_mark(e)=" << Get_Imp_mark(e);
+//         std_cout << "  Get_NextIon(ion)=" << Get_NextIon(ion);
+//         std_cout << "  U(e)=" <<   J_to_eV * (-e0)*Get_Potential(e) << " eV";
+//         std_cout << "  K(e)=" <<   J_to_eV * 0.5 * me * ve2 << " eV";
+//         std_cout << "  U(ion)=" << J_to_eV * Get_Charge(ion)*Get_Potential(ion) << " eV";
+//         std_cout << "  K(ion)=" << J_to_eV * 0.5 * Get_Mass(ion) * vi2 << " eV";
+//         std_cout << "\n";
+//     }
+
+    const int oe_size = Get_orbiting_electrons_Size();
+    int **ions_w_classical_electrons = Find_Classical_Electrons(al, el, t, Nb_atoms, Nb_atoms_max, Nb_electrons, Nb_electrons_max);
+
+//     for (int ai = 0 ; ai < Nb_atoms ; ai++)
+//     {
+//         ion = get_voidp(al, ai);
+//         const int ion_id = Get_Id(ion);
+//         std_cout << "Electrons orbiting Ion Id" << ion_id << ":\n";
+//         for (int ei = 1 ; ei <= ions_w_classical_electrons[ion_id][0] ; ei++)
+//         {
+//             std_cout << "    Id=" << ions_w_classical_electrons[ion_id][ei] << "\n";
+//         }
+//     }
+// //     exit(0);
+
+
+    // Keep track of the initial number of ionizations since if
+    // an ionization is undone we need to know if any ionization
+    // was done before
+    const int initial_num_ionizations   = ionizedlist[0];
+    const int orig_did_ionization_occur = did_ionization_occur;
+    bool remove_energy_from_orbital_e   = false;
+    // Make sure the loop's maximum value does not get screwed
+    const int Nb_electrons_loop = Nb_electrons;
+    for (int ei = 0 ; ei < Nb_electrons_loop ; ei++)
+    {
+        // Get void pointer to current electron of index "ei"
+        e = get_voidp(el, ei);
+
+        // Skip particle if impact marker is not set
+        if (Get_Imp_mark(e) != 1) {
+            //std_cout << "JJ: Skip 0: " << ei << "\n";
+            continue;
+        }
+
+        // Get void pointer to the electron's neighbor
+        ion = get_voidp(al, Get_Nghb_indx(e));
+
+        // Ionization is not allowed yet
+        if (t < Get_NextIon(ion)) {
+            //std_cout << "JJ: Skip 1: " << ei << "\n";
+            continue;
+        }
+
+        // Store some info about the ion
+        const int ion_cs = Get_Charge_State(ion);
+        const int ion_id = Get_Id(ion);
+        const int ion_es = Get_Excited_State_index(ion);
+
+        //reset the flag (can only be turned on if the orbital electrons
+        // have enough energy to pay for the IP_correction)
+        remove_energy_from_orbital_e = false;
+
+        // ******************************************************
+        // If we are here, the flags were favorable, meaning an
+        // electron is impacting on the ion. But because the flags
+        // were favorable for this impacting electron, it has been
+        // counted in the classically orbiting electrons. We need to
+        // removed it from <N> contribution of this time step
+        // if it was counted (imp_indx can differ from rcb_indx)
+        if ((oe_size > 0) && (Get_Rcb_indx(e) == ion_id))
+        {
+            //std_cout << "Removing impacting electron from <N>...\n";
+            Get_orbiting_electrons_Pointer(ion)[t % oe_size]--;
+        }
+
+        // ******************************************************
+        // Check if it has enough KE to lose to "pay" for the ionization
+
+        // Calcuate impacting electron's current kinetic energy
+        const double impe_vel2 = Vector_Length_Squared(Get_Velocity(e));
+        const double impe_vel  = sqrt(impe_vel2);
+        const double impe_K    = 0.5 * me * impe_vel2;
+        assert(impe_vel2 > 0.0);
+        const double one_over_impe_vel2 = 1.0 / impe_vel2;
+
+        //is the ion excited? -1 ==no
+
+          //std_cout << "ion id: "<<ion_id<<"   Get_Nghb_indx(e)=" << Get_Nghb_indx(e) << "\n";
+          double Ip_au_correction = 0.0;
+          double Ip_correction    = 0.0;
+          //const double Ip_au_correction = 0.0;
+          double Ip_au = 0.0;
+          double Ip = 0.0;
+        if (ion_es  == -1){
+          Ip_au_correction = -Muffin_Tin_Correction_To_Ip_au(ion);// [Hartree]
+          Ip_correction    = Ip_au_correction * Eh_to_J;             // [J]
+          Ip_au = (element.IpsLowest[ion_cs] * eV_to_Eh) + Ip_au_correction;
+          Ip = Ip_au * au_to_si_energy;
+        } //else it is in an excited state
+        else
+        {
+          Ip_au = -excited_state[ion_cs][ion_es]; //note: excited_state[][] <0
+          Ip = Ip_au * au_to_si_energy;
+        }
+
+          //ensure the Ip must never be negative
+          if (Ip < 0.0) {
+            Ip = 0.0;
+            Ip_correction = -element.IpsLowest[ion_cs] * eV_to_J;
+          }
+          //std_cout << "eId="<<Get_Id(e)<<"   Ip_correction = " << Ip_correction*J_to_eV << " eV\n";
+
+          // The impacting electron needs at least Ip as kinetic
+          // energy to impact ionize the ion. If not, skip.
+          if (impe_K < Ip )
+          {
+              //std_cout << "Skipping electron #"<<ei<<" (Id"<<Get_Id(e)<<") because of impe_K < Ip ("<<impe_K*J_to_eV<<" < "<<Ip*J_to_eV<<" eV)\n";
+              continue;
+          }
+
+          // ****************************************************************
+          // Count classically orbiting electrons
+          int num_clasical_orbiting_el = 0;
+          if (ions_w_classical_electrons[ion_id] != NULL)
+            num_clasical_orbiting_el = ions_w_classical_electrons[ion_id][0];
+
+          // The impacting electron will be close and will thus be counted. We want to remove it
+////        num_clasical_orbiting_el--;
+////        if (num_clasical_orbiting_el == -1) num_clasical_orbiting_el = 0;
+
+          // Don't impact ionize an ion with a number of orbiting electrons equal to its
+          // charge state. In this case, a normal electron-electron collision should happens.
+          if (
+              ( num_clasical_orbiting_el > Get_Charge_State(ion) ) &&
+              ( Get_Charge_State(ion) > 0)
+              )
+          {
+              //if (ion_cs > 2) std_cout << "Skipping electron #"<<ei<<" (Id"<<Get_Id(e)<<") because of too many electrons around the ion\n";
+              continue;
+          }
+          // ****************************************************************
+
+          // If the classically orbiting electrons can reduce the Ip, then they
+          // should have enough kinetic energy to pay for this reduction.
+          //if the target is NOT excited
+          double K_OrbitingE = 0.0;
+          if ((oe_size > 0) && (ion_es ==-1))
+          {
+              remove_energy_from_orbital_e = true;
+              //calculate the KE of the orbiting electron to see if they will be able to pay for Ip_correction
+              //Get_Total_Kinetic_Energy_of_Orbiting_Electrons will check if ions_w_classical_electrons[ion_id] is NULL
+              K_OrbitingE = Get_Total_Kinetic_Energy_of_Orbiting_Electrons(al, ions_w_classical_electrons[ion_id], Get_Id(e));
+
+              //std_cout << "eId="<<Get_Id(e)<<"  num_clasical_orbiting_el = " << num_clasical_orbiting_el << "\n";
+              //std_cout << "(K_OrbitingE, Ip_correction) ("<<K_OrbitingE*J_to_eV<<", "<<Ip_correction*J_to_eV<<")\n";
+
+              //Test if there is enough energy to subract from orbital electrons or
+              //all of it from the impact electron
+              if ((K_OrbitingE < fabs(Ip_correction)) && (impe_K*J_to_eV < element.IpsLowest[ion_cs]))
+              {
+                  //if (ion_cs > 2) std_cout << "Skipping eId"<<Get_Id(e)<<" K_OrbitingE < fabs(Ip_correction) ("<<J_to_eV*K_OrbitingE<<" < fabs("<<J_to_eV*Ip_correction<<") eV)\n";
+                  continue;
+              }
+             //If the impact electron alone can pay for the ionization
+             //reset the Ip
+              else if (K_OrbitingE < fabs(Ip_correction))
+              {
+                remove_energy_from_orbital_e = false;
+                Ip_correction = 0.0;
+                Ip_au = (element.IpsLowest[ion_cs] * eV_to_Eh);
+                Ip    = Ip_au*Eh_to_J;
+              }
+              /* else both tests in the if are false so use the muffin tin*/
+
+          }
+
+          // Reset impact marker
+          Set_Imp_mark(e, 0);
+
+
+          // ****************************************************************
+          // Calculate the potential due to the impact electron
+          // and remove it from the potential at the ion
+          // Potentials variables name convention:
+          //      Pot_W[Where]_D[Due to]
+          potential_paramaters potparams;
+          Potentials_Set_Parameters(ion, e, element, potparams);
+          const double Pot_WIon_DImpE = Calculate_Potential(ion, e, element, potparams);
+          // Store the ion potential excluding the impact electron
+          const double Pot_WIon_DAll = Get_Potential(ion);
+          const double Pot_WIon_DAllWithoutImpE = Get_Potential(ion) - Pot_WIon_DImpE;
+
+          // Get the potential at the impact electron.
+          // Needed to calculate the relative KE from the threshold of the ion/atom
+          const double Pot_WImpE = Get_Potential(e);
+
+          // Remove the orbiting electrons from the potential at the ion
+          const double Pot_WIon_DOrbitingE = Get_Potential_From_Orbiting_Electrons(ion, al, ions_w_classical_electrons[ion_id], element, Get_Id(e));
+
+          // This is Vb minus the contribution of the electrons close-by
+          const double Pot_WIon_DAllWithoutCellE = Pot_WIon_DAllWithoutImpE - Pot_WIon_DOrbitingE;
+          // ****************************************************************
+
+
+          // ****************************************************************
+          // Calculate the KE w.r.t. the potential at the ion/atom (V_b)
+          // impe_K_thresh is the impact electrons KE w.r.t. V_b
+          // Thus impe_K_thresh = -e0(E_total_impact_el - pot_at_ion_for_an_electron)
+          // where  pot_at_ion_for_an_electron = -e0*(pot_at_ion)
+          //const double impe_K_thresh = eV_to_J * ((K_e*J_to_eV-pot_at_imp_e) + pot_at_ion);
+          const double impe_K_thresh = impe_K + e0 * (Pot_WIon_DAllWithoutCellE - Pot_WImpE); // [J]
+
+          const double Vb = Pot_WIon_DAll;
+
+////         std_cout << "d=" << potparams.r * m_to_bohr << "bohr  ";
+////         std_cout << "impe_K="<<impe_K*J_to_eV<<" eV ("<<impe_K*J_to_Eh<<" H)  ";
+////         std_cout << "impe_U="<<-e0*Pot_WImpE*J_to_eV<<" eV ("<<-e0*Pot_WImpE*J_to_Eh<<" H)  ";
+////         std_cout << "impe_E="<<(impe_K-e0*Pot_WImpE)*J_to_eV<<" eV ("<<(impe_K-e0*Pot_WImpE)*J_to_Eh<<" H)  ";
+////         std_cout << "impe_K_thresh="<<impe_K_thresh*J_to_eV<<" eV ("<<impe_K_thresh*J_to_Eh<<" H)  ";
+////         std_cout << "\n";
+////         std_cout << "-e0*Pot_WIon_DAllWithoutCellE="<<-e0*Pot_WIon_DAllWithoutCellE*J_to_eV<<" eV  ";
+////         std_cout << "Pot_WIon_DAllWithoutImpE = "<<Pot_WIon_DAllWithoutImpE<<" ";
+////         std_cout << "Pot_WIon_DOrbitingE = "<<Pot_WIon_DOrbitingE<<" ";
+//// //         std_cout << "\n";
+////         std_cout << "Vb = "<<Vb<<" V  ";
+////         std_cout << "Ip = "<<Ip * J_to_eV<<" eV  ";
+////         std_cout << "\n";
+
+          // Test if the electron has enough energy to give up
+          if (impe_K_thresh < Ip)
+          {
+              //  std_cout << "Skipping electron #"<<Get_Id(e)<<" (Id"<<Get_Id(ion)<<") because K_e_thresh < Ip ("<<K_e_thresh*J_to_Eh<<" < "<<Ip*J_toEh<<")\n";
+////             std_cout << "JJ: Skip 4: "<<ei<<"\n";
+              continue;
+          }
+
+          // ****************************************************************
+          // Get impact ionization cross section
+          const double aq_factor = Get_aq_Factor(ion);                // [-]
+          double xsec;
+          if (ion_es ==-1)
+            xsec = Ionization_Impact_Cross_Section_si(ion_cs, impe_K_thresh, element, Ip_correction, aq_factor);
+          else
+             /**  ONLY FOR TESTING. TRUE xsections need to be implimented  **/
+            xsec = Ionization_Impact_Cross_Section_si(
+                    ion_cs, impe_K_thresh, element, Ip_correction, aq_factor/(6.0-ion_cs));
+
+          // Vector between impacting electron and ion
+          double r_impe_i[3];
+          Get_r21(Get_Position(ion), Get_Position(e), r_impe_i);
+
+          // Calulate the impact parameter given by
+          // b=| (v_e x dr)/|v_e| |
+          double b[3];
+          Vector_Cross_Product(b, Get_Velocity(ion), r_impe_i);
+          Vector_Times_Scalar(b, b, one_over_impe_vel2);
+          const double b2 = Vector_Length_Squared(b);
+
+          // Impacting electron is not really impacting
+          if (b2 > xsec / Pi) {
+////             std_cout << "JJ: Skip 5: "<<ei<<"\n";
+//              if (ion_cs > 2) std_cout << "JJ: Skip 5: b2="<<b2<<"  xsec/Pi="<<xsec / Pi<<"\n";
+              continue;
+          }
+
+
+          // ******************************************************
+          // Impact ionization is occuring!
+
+          impe = e;
+          std_cout << "Impact ionization occurred! it="<<t<<" Id(elec)="<<Get_Id(impe)<<" Id(ion)="<<ion_id<<"\n";
+
+          // Get pointer to next empty space in the electrons' list
+          nce = get_voidp(el, index_next_empty_space);
+
+          // Initialize the new electron's basic properties. This function needs
+          // to be provided by the calling code. index_next_empty_space is
+          // incremented in that function
+          Create_Electron(
+              el, ion,
+              time,
+              Nb_atoms, Nb_atoms_max,
+              Nb_electrons, Nb_electrons_max,
+              index_next_empty_space,
+              element,
+              "Create_Electron() called from Ionization_Impact() in library"
+          );
+
+          // The ion cannot be re-ionized collisionaly for hbar/(delta E) = hbar/Ip_{si units}
+          int next_ion = t+ (int)ceil((next_ion_wait)/dt);
+          if (next_ion > Get_NextIon(ion)) Set_NextIon(ion, next_ion);
+//// std_cout << "II: t_scaled = "<<t_scaled<<"  dt_scaled = "<<dt_scaled*s_to_as<<" as  period = "<<period<<"\n";
+//// Set_NextIon(ion, 0);
+//// Set_NextIon(nce, 0);
+
+          // The function Create_Electron() sets the electron's position
+          // to be right on top of the ion (with 10^-20 bohr away...)
+          // Adapt the new position to be in the direction of the
+          // impacting electron.
+          double impe_vunit[3];   // Velocity unit vector
+          for (int d = 0 ; d < 3 ; d++)
+          {
+              impe_vunit[d] = Get_Velocity(impe)[d] / impe_vel;
+              Get_Position(nce)[d] += impe_vunit[d] * electron_creation_distance;
+              Get_Position(nce)[d]  = Get_Position(ion)[d] + (impe_vunit[d] * electron_creation_distance);
+          }
+
+          // Adapt flags not set by Create_Electron()
+////         Set_ClosestIon_Distance(nce, electron_creation_distance);
+
+          // The ion-electron system has an intrisinct energy: the Ip.
+          // This energy "disappear" in the code. We return it so the
+          // code can keep track of it.
+          delta_energy += -(Ip - Ip_correction);
+
+         // ******************************************************
+         // New electron should have a kinetic energy of W where W is the work
+         // needed to place the electron right on top of the ion. This value
+         // depends on the depth of the potential energy well. W is also
+         // the potential energy of the electron in the well.
+         Potentials_Set_Parameters(nce, ion, element, potparams);
+         const double nce_W  = (-e0) * Calculate_Potential(nce, ion, element, potparams);
+         const double nce_vel= sqrt(2.0 * fabs(nce_W) / me);
+         for (int d = 0 ; d < 3 ; d++)
+             Get_Velocity(nce)[d] = nce_vel * impe_vunit[d];
+         const double nce_K  = 0.5 * me * nce_vel*nce_vel;
+
+
+          // ******************************************************
+          // Impacting electron should loose Ip from its kinetic energy
+          const double impe_new_vel2 = Vector_Length_Squared(Get_Velocity(impe)) - (2.0 * Ip / me);
+          assert(impe_new_vel2 >= 0.0);
+          const double impe_new_vel = sqrt(impe_new_vel2);
+          for (int d = 0 ; d < 3 ; d++)
+              Get_Velocity(impe)[d] = impe_new_vel * impe_vunit[d];
+          const double impe_new_K = 0.5 * me * impe_new_vel*impe_new_vel;
+
+          // ******************************************************
+          // Since each classically orbiting electrons have shielded
+          // the ion and lowered the Ip via Ip_correction, they need
+          // to pay to balance the energy.
+          if ((oe_size > 0) && (ions_w_classical_electrons[ion_id] != NULL)
+              && remove_energy_from_orbital_e
+             )
+          {
+              Remove_IpCorrection_From_Orbiting_Electrons(al, ions_w_classical_electrons[ion_id],
+                                                           Ip_correction, K_OrbitingE, Get_Id(e));
+          }
+
+          ionizedlist[ionizedlist[0]++ +1] = ion_id;
+
+          // Set the ionization flag
+          if (initial_num_ionizations < ionizedlist[0]) did_ionization_occur = true;
+          else                                          did_ionization_occur = false;
+          // If another type of ionization happened make sure the "did_ionization_occur" flag
+          // is set properly by ORing with the initial value of the flag
+          did_ionization_occur = (did_ionization_occur || orig_did_ionization_occur);
+
+          // Save to passed file handle
+          if(Lib_Get_Rank() == 0)
+          {
+              if (fh_out != NULL)
+              {
+                  fflush(fh_out);
+                fprintf(fh_out, "%.15g, %2d, %2d, %7d, %7d, %7d, %10.8g, %10.8g, %4d, %4d\n",
+                                 time*s_to_fs,
+                                         IONIZATION_PROCESS_IMPACT,
+                                              Get_Charge_State(ion),
+                                                   ion_id,
+                                                       Get_Id(nce),
+                                                           Get_Id(impe),
+                                                               impe_new_K*J_to_Eh,
+                                                                      Ip_correction*J_to_Eh,
+                                                                             Get_Excited_State_index(ion),
+                                                                                 -1);
+              }
+          }
+
+          Print_Impact_Ionization_Information(ion, impe, nce, ion_id, ion_cs, Vb,
+                                               Pot_WIon_DAllWithoutCellE, Ip, element,
+                                               impe_K, impe_new_K, nce_W, nce_K);
+    }
+
+    return delta_energy;
+}
+
+// **************************************************************
+double Ionization_Impact_Cross_Section_si(const int chargeState,
+                                           const double E,
+                                           const elem_props &element,
+                                           const double Delta_Ip,
+                                           const double aq_factor)
+/**
+ * Front-end to LotzFormula() in good units
+ * @param chargeState   Charge state to consider
+ * @param E             Kinetic energy of the impacting electron [J]
+ * @param element       Structure containing all information for
+ *                      the element
+ * @param Delta_Ip      Correction to the Ip (optional) [J]
+ * @param aq_factor     Factor for "aq" in Lotz formula. Since in the Muffin Tin
+ *                      usage we can have "non-integer" charge states, we need
+ *                      a factor for "aq". [-]
+ * @return              Total collision ionization cross section [m^2]
+ */
+{
+//  std_cout << "Delta_Ip    = "<<Delta_Ip*J_to_eV<<" eV\n";
+    return (
+        cm_to_m * cm_to_m *
+        LotzFormula(chargeState, E * J_to_eV, element, Delta_Ip * J_to_eV, aq_factor)
+    );
+}
+
+// **************************************************************
+double LotzFormula(const int chargeState, const double E,
+                    const elem_props &element,
+                    const double Delta_Ip,
+                    const double aq_factor)
+/**
+ * Calculate the collisional ionisation cross-section.
+ * Based on Lotz formula, but _not exactly_ it. Lotz equation (1)
+ * does a summation over all shells. But parameters can't be
+ * obtained for each subshells. So, similarly to Heidenreich 2005 (see
+ * the paragraph between equations (6) and (7)), we drop the summation
+ * by only taking the first term. Now experimental data, measuring the
+ * total cross section, can be used to obtain the parameters aq, b and c
+ * of Heidenreich2005's equation (7).
+ *
+ * To graph the cross-sections as a function of energy for different
+ * charge states, see Test_Ionization.cpp's test_full_lotz_formula()
+ *
+ * Lotz, W. An empirical formula for the electron-impact ionization
+ * cross-section
+ * Zeitschrift fur Physik, 1967, 206, 205-211
+ * http://www.springerlink.com/index/Q7W770277565VM55.pdf
+ * Equation (4)
+ *
+ * See also:
+ * Heidenreich 2005
+ * Heidenreich, Last, & Jortner
+ * Electron impact ionization of atomic clusters in ultraintense laser fields
+ * The European Physical Journal D, 2005, 35, 567-577
+ *
+ * @param chargeState   Charge state to consider
+ * @param E             Kinetic energy of the impacting electron (eV)
+ * @param element       Structure containing all information for
+ *                      the element
+ * @param Delta_Ip      Correction to the Ip (optional, default to 0.0) (eV)
+ * @param aq_factor     Factor for "aq" in Lotz formula. Since in the Muffin Tin
+ *                      usage we can have "non-integer" charge states, we need
+ *                      a factor for "aq" (optional, default to 1.0)[-]
+ * @return              Total collision ionization cross section (cm^2)
+ */
+{
+    // Cross-section value to return
+    double sigma = 0.0;
+
+    // Store often access values
+    const int max_n = element.max_n;
+    const int max_l = element.max_l;
+
+    double Ip;  // Ionization potential     [eV]
+    double aq;  // Lotz's aq parameter      [cm^2 . eV^2]
+    int occ;    // Number of electrons in current state
+    int index;  // Index (chargeState,n,l) translated to 1D
+
+    // Loop backward: the electron with the higest n & l will have the
+    // lowest IP. So looping backward allow us to find it without searching
+    // too much.
+    for (int ni = element.max_n ; ni >= 0 ; ni--)
+    {
+        for (int li = element.max_l ; li >= 0 ; li--)
+        {
+            // Get the 1D index associated with the 3D (Z,n,l) one
+            index = get_element_index(li, ni, chargeState, max_l, max_n);
+
+            // Store the Ip and the occupation number
+            Ip  = element.Ips[index] + Delta_Ip;
+            occ = element.occ[index];
+            //if (Ip >= 1.0e-50)
+//             if (index == 0)
+//             {
+// std_cout << "\n---------------------\n";
+// std_cout << "(n,l) = ("<<ni<<","<<li<<")  index = "<<index<<"\n";
+// std_cout << "Ip          = " <<           Ip*eV_to_J  << " J  " <<              Ip  << " eV  " <<           Ip*eV_to_Eh << " Eh\n";
+// std_cout << "Delta_Ip    = " <<     Delta_Ip*eV_to_J  << " J  " <<        Delta_Ip  << " eV  " <<     Delta_Ip*eV_to_Eh << " Eh\n";
+// std_cout << "Ip+Delta_Ip = " << (Ip+Delta_Ip)*eV_to_J << " J  " <<    (Ip+Delta_Ip) << " eV  " << (Ip+Delta_Ip)*eV_to_Eh << " Eh\n";
+// std_cout << "E           = " <<            E*eV_to_J  << " J  " <<              E   << " eV  " <<            E*eV_to_Eh << " Eh\n";
+//             }
+
+            // If their is at least one electron in the state (n,l)...
+            if (occ > 0)
+            {
+                // ...and the kinetic energy of the impacting electron
+                //    is bigger then the Ip...
+                if (E >= Ip)
+                {
+                    // Store Lotz's "aq" parameter. If it is 0 (or too close
+                    // to zero), take the "a" parameter and multiply it by
+                    // the occupation number.
+                    aq = element.Lotz_aq[chargeState];
+                    if (aq < 1e-25)
+                        aq = element.Lotz_a[chargeState] * element.occ[index];
+
+                    // If we are playing with muffin-tin, we might consider a
+                    // non-integer charge state, requiring a factor for aq
+                    aq *= aq_factor;
+
+                    // Heidenreich 2005, equation (7)
+                    sigma = aq * log(E / Ip) / (E * Ip);
+
+                    // Low energy correction
+                    // Calculate this correction only if:
+                    //     -Lotz's parameter "b" was provided
+                    //      (bigger then 0.0, or close to it)
+                    //     -the impacting electron's kinetic energy is NOT
+                    //      much bigger then the Ip (3 orders here)
+                    // Note that "b" can be negative, so take its absolute value for
+                    // the comparison.
+                    if (
+                        fabs(element.Lotz_b[chargeState]) > 1.0e-10 &&
+                        !( E > 100.0 * Ip )
+                    )
+                    {
+                        // Multiply by the low energy correction
+                        sigma *= (
+                                1.0 - element.Lotz_b[chargeState] *
+                                    exp( -element.Lotz_c[chargeState] * ( E/Ip - 1.0) )
+                            );
+                    }
+
+                    // We return right away the calculated value since we only
+                    // calculate for one state (see Heidenreich 2005, eq. (7))
+                    //std_cout << "E " << E  << " chargeState " << chargeState << " sigma=" << sigma << "  aq=" << aq << " Ip" << Ip << std::endl;
+                    return sigma;
+                }
+            }
+        }
+    }
+
+    // Just make sure we return something
+    return sigma;
+}
+
+// **************************************************************
+double Ionization_Impact_Excitation(void *al, void *el,
+                                    const int t, const double time,
+                                    const int &Nb_atoms, const int &Nb_atoms_max,
+                                    int &Nb_electrons, const int &Nb_electrons_max,
+                                    unsigned long int &index_next_empty_space,
+                                    const elem_props &element, bool &did_ionization_occur,
+                                    int *ionizedlist, Lib_PRNG &prng,
+                                    FILE *fh_out, bool use_excited_states,
+                                    const bool do_instantaneous_electron_screening)
+/**
+ * Test all electrons to see if they impact ionize or excite an atom/ion.
+ * The function runs through all electrons
+ * @param al            Pointer to begining of atoms/ions list
+ * @param el            Pointer to begining of electrons list
+ * @param t             Time iteration
+ * @param time          Current time [s]
+ * @param Nb_atoms      Current number of atoms/ions in the list
+ * @param Nb_atoms_max  Maximum number of atoms/ions in the list
+ * @param Nb_electrons  Current number of electrons in the list
+ * @param Nb_electrons_max          Maximum number of electrons in the list
+ * @param index_next_empty_space    Next empty space in electrons' list index
+ * @param element       Atoms/ions element properties
+ * @param did_ionization_occur      Did ionization occured in this function?
+ * @param ionizedlist   List of ions Ids which ionized here
+ * @param fh_out        File handle where output should be made. Note that the file
+ *                      should already be opened by the calling conde. Default to NULL.
+ * @return              Returns "delta_energy" [J], the change in energy due to
+ *                      the configuration change if ionization occured. This should
+ *                      be equal to the Ip of the ionized ion.
+ */
+{
+//    std_cout << "use excited states " << use_excited_states << "  true= " << true << std::endl;
+    //local diagnostic function to print the xsections for testing
+//      output_xsec(element);
+
+    // Return value. Before the electron is created, there is
+    // a "hidden" energy component in its bounding with its
+    // parent ion: the Ip. This value keeps track of the
+    // change in the total energy measured.
+    double delta_energy = 0.0;
+
+    void *e = NULL;     // Current electron to look at
+    void *ion = NULL;   // Ion close to the electron "e"
+    void *nce = NULL;   // Newly created electron (if any)
+    void *impe = NULL;  // Impacting electron (if any)
+
+    int occured_process; // Ionization or excitation?
+    short int Nb_accesible_states = 0;
+    short int excited_from =0;
+
+    // The flag to include ionization
+    bool do_ionization = true;
+    // The flag to do consider excited states
+
+
+    bool do_excitation = use_excited_states;
+
+    //the flagh to do instantaneous electron screening (muffin-tin)
+//     const bool do_instantaneous_electron_screening = false;
+
+    const int oe_size = Get_orbiting_electrons_Size();
+    if ((do_instantaneous_electron_screening==true) && (oe_size != 0) ) {
+      std_cout << "ERROR: Impact ionization. Request to do instantaneous electron screening\n but did not have muffin_tin_size/oe_size set to 0\nAborting... Sorry.\n";
+      abort();
+    }
+    int **ions_w_classical_electrons = Find_Classical_Electrons(al, el, t, Nb_atoms, Nb_atoms_max, Nb_electrons, Nb_electrons_max);
+
+    // Reset states and cross sections
+    for (int i = 0 ; i < Nb_excited_states_total ; i++)
+    {
+        Accessible_es[i]      = -1;
+        Accessible_es_xsec[i] = 0.0;
+    }
+
+    // Keep track of the initial number of ionizations since if
+    // an ionization is undone we need to know if any ionization
+    // was done before
+    const int initial_num_ionizations   = ionizedlist[0];
+    const int orig_did_ionization_occur = did_ionization_occur;
+    short int remove_energy_from_orbital_e = false;
+
+    // Make sure the loop's maximum value does not get screwed
+    const int Nb_electrons_loop = Nb_electrons;
+
+    for (int ei = 0 ; ei < Nb_electrons_loop ; ei++)
+    {
+        // Reset the flag
+        do_ionization = true;
+        do_excitation = use_excited_states;
+
+        //reset the counter
+        Nb_accesible_states = 0;
+        excited_from = -1;
+
+        // Get void pointer to current electron of index "ei"
+        e = get_voidp(el, ei);
+
+        // Skip particle if impact marker is not set
+        if  (Get_Imp_mark(e) != 1) {
+#ifdef PRINT_COL_SKIPS
+ //           std_cout << "Get_Imp_mark(e) != 1\n";
+#endif
+            continue;
+        }
+
+        // Get void pointer to the electron's neighbor
+        ion = get_voidp(al, Get_Nghb_indx(e));
+
+        // Ionization is not allowed yet
+         if (time < Get_NextIon(ion)) {
+#ifdef PRINT_COL_SKIPS
+             std_cout << "time < Get_NextIon(ion)=" << Get_NextIon(ion) << " s\n";
+#endif
+             continue;
+        }
+
+        // Store some info about the ion
+        const int ion_cs = Get_Charge_State(ion);
+        const int ion_id = Get_Id(ion);
+
+        // The excitation is NOT implimented for Xe^8+ and up
+        //and Ar^5+ and up
+        if ((element.atomicNumber == 54)&&(ion_cs > number_of_excited_charge_states-1))
+            do_excitation = false;
+        else if ((element.atomicNumber == 18)&&(ion_cs > 5)) do_excitation = false;
+
+        //DEBUG!!!!!!!!!!!!!!! UNitl Xe17+ xsec are implimented
+       if ((element.atomicNumber == 54)&&(ion_cs > number_of_excited_charge_states-1)
+           && (Get_Excited_State_index(ion) != -1))
+          Set_Excited_State_index(ion,-1);
+
+        //reset the flag (can only be turned on if the orbital electrons
+        // have enough energy to pay for the IP_correction)
+       remove_energy_from_orbital_e = false;
+
+        if (do_excitation)
+        {
+            // If the target is already excited then only do ionization
+            //don't do excitation for charges greater than 7+ (not implimented)
+            if ( Get_Excited_State_index(ion) != -1) {
+//                 std_cout << "Get_Excited_State_index(ion) != -1  " << Get_Excited_State_index(ion) << "\n";
+//                 continue;
+              do_excitation = false;
+            }
+        }
+
+        // ****************************************************************
+        // Count classically orbiting electrons
+        int num_clasical_orbiting_el = 0;
+        assert(ions_w_classical_electrons != NULL);
+        if (ions_w_classical_electrons[ion_id] != NULL)
+          num_clasical_orbiting_el = ions_w_classical_electrons[ion_id][0];
+
+        // Don't excite/ionize an ion with a number of orbiting electrons equal to its
+        // charge state. In this case, a normal electron-electron collision should happens.
+///         if (
+///             ( num_clasical_orbiting_el > ion_cs ) &&
+///             ( ion_cs > 0)
+///             )
+///         {
+            //if (ion_cs > 1) std_cout << "Skipping electron Id "<<Get_Id(e)<<" (ion "<<Get_Id(ion)<<") because of too many ("<<num_clasical_orbiting_el<<") electrons around the ion, cs "<<Get_Charge_State(ion)<<"\n";
+///             continue;
+///         }
+        // ****************************************************************
+
+
+        // ******************************************************
+        // If we are here, the flags were favorable, meaning an
+        // electron is impacting on the ion. But because the flags
+        // were favorable for this impacting electron, it has been
+        // counted in the classically orbiting electrons. We need to
+        // removed it from <N> contribution of this time step
+        // if it was counted (imp_indx can differ from rcb_indx)
+        if ((oe_size > 0) && (Get_Rcb_indx(e) == ion_id))
+        {
+            //std_cout << "Removing impacting electron from <N>...\n";
+            Get_orbiting_electrons_Pointer(ion)[t % oe_size]--;
+        }
+
+        // ******************************************************
+        // Check if it has enough KE to lose to "pay" for the excitation
+
+        // Calcuate impacting electron's current kinetic energy
+        const double impe_vel2 = Vector_Length_Squared(Get_Velocity(e));
+        const double impe_vel  = sqrt(impe_vel2);
+        const double impe_K    = 0.5 * me * impe_vel2;
+        assert(impe_vel2 > 0.0);
+        const double one_over_impe_vel2 = 1.0 / impe_vel2;
+
+        // ****************************************************************
+        //set the Ip without corrections
+        double Ip=0.0;
+        //if the ion is not excited the IP is the atomic ip
+        if (Get_Excited_State_index(ion) == -1)
+           Ip = element.IpsLowest[ion_cs] * eV_to_J;
+        //otherwise it is the excited state's Ip (which are negative in Hartree)
+        else
+           Ip = -excited_state[ion_cs][Get_Excited_State_index(ion)]*Eh_to_J;
+
+        // ****************************************************************
+        // Calulate the potential due to the impact electron
+        // and remove it from the potential at the ion
+        // Potentials variables name convention:
+        //      Pot_W[Where]_D[Due to]
+        potential_paramaters potparams;
+        Potentials_Set_Parameters(ion, e, element, potparams);
+        const double Pot_WIon_DImpE = Calculate_Potential(ion, e, element, potparams);
+        // Store the ion potential excluding the impact electron
+        const double Pot_WIon_DAll = Get_Potential(ion);
+        const double Pot_WIon_DAllWithoutImpE = Get_Potential(ion) - Pot_WIon_DImpE;
+
+        // Get the potential at the impact electron.
+        // Needed to calculate the relative KE from the threshold of the ion/atom
+        const double Pot_WImpE = Get_Potential(e);
+
+        // Remove the orbiting electrons from the potential at the ion
+        const double Pot_WIon_DOrbitingE = Get_Potential_From_Orbiting_Electrons(
+                                                ion, al, ions_w_classical_electrons[ion_id],
+                                                element, Get_Id(e));
+
+        // This is Vb minus the contribution of the electrons close-by
+        const double Pot_WIon_DAllWithoutCellE = Pot_WIon_DAllWithoutImpE - Pot_WIon_DOrbitingE;
+        // ****************************************************************
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //----------------Setting the Ip correction for electron screening -------------------------------------
+        //if using the electron screening (muffin-tin)
+        double Ip_correction    = 0.0;
+
+        //if using the instantaneous electron screening set the Ip_correction
+        //Does not modify the Ip variable as Ip_correction may be reset
+        //to 0 if the orbital electrons don't have enough energy
+        if (do_instantaneous_electron_screening){
+          //Set the V_b level to where it is with the classically orbiting electrons
+          Ip_correction    = -Pot_WIon_DOrbitingE *eV_to_J;             // [J]
+           //std_cout << "Ip_correction_au=" << Ip_correction*J_to_Eh << "\n";
+        }
+
+        // If the classically orbiting electrons can reduce the Ip, then they
+        // should have enough kinetic energy to pay for this reduction.
+        double K_OrbitingE = 0.0;
+        if (((oe_size > 0 )|| (do_instantaneous_electron_screening )) && (num_clasical_orbiting_el >0) )
+        {
+            remove_energy_from_orbital_e = true;
+            //calculate the KE of the orbiting electron to see if they will be able to pay for Ip_correction
+            //Get_Total_Kinetic_Energy_of_Orbiting_Electrons will check if ions_w_classical_electrons[ion_id] is NULL
+            K_OrbitingE = Get_Total_Kinetic_Energy_of_Orbiting_Electrons(al, ions_w_classical_electrons[ion_id], Get_Id(e));
+
+            //std_cout << "eId="<<Get_Id(e)<<"  num_clasical_orbiting_el = "<<num_clasical_orbiting_el<<"\n";
+            //std_cout << "(K_OrbitingE, Ip_correction) ("<<K_OrbitingE*J_to_eV<<", "<<Ip_correction*J_to_eV<<")\n";
+            // std_cout << "1.Ke="<<K_OrbitingE*J_to_Eh<<"  Ip_correction="<<Ip_correction*J_to_Eh<<" num_clasical_orbiting_el="<<num_clasical_orbiting_el<<"\n";
+            if (K_OrbitingE < fabs(Ip_correction)){
+              //the orbital electrons don't have enough energy
+              //to pay for the screening so don't use screening
+              Ip_correction= 0.0;
+              remove_energy_from_orbital_e =false;
+
+            }
+        }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        if (do_excitation)
+        {
+            // Make a list of the excited states that are accessible (in the sense
+            // that the impact electron has enough KE to lose to pay)
+            // and save their index
+            // Reset states and cross sections
+            for (int i = 0 ; i < Nb_excited_states_total ; i++)
+            {
+                Accessible_es[i] = -1;
+                Accessible_es_xsec[i] = 0.0;
+            }
+            Nb_accesible_states = 0;
+            for (short int i = 0 ; i < Nb_excited_states_total ; i++)
+            {
+                if (impe_K*si_to_au_energy >= ((Ip- Ip_correction)*J_to_Eh+excited_state[ion_cs][i]))
+                    Accessible_es[Nb_accesible_states++] = i;
+            }
+        }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   //test if collision is energetically possible
+        if (impe_K < (Ip-Ip_correction) ) do_ionization = false;
+
+        // If no states are accessible reset the impact flag and continue
+        if ((Nb_accesible_states == 0) && (do_ionization == false))
+        {
+            // Reset impact marker
+#ifdef PRINT_COL_SKIPS
+            std_cout << "Nb_accesible_states == 0) && (do_ionization == false) imp_k="<<impe_K*J_to_Eh<<" au  Ip="<<Ip*J_to_Eh<<" au\n";
+#endif
+            Set_Imp_mark(e, 0);
+            continue;
+        }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        // Reset impact marker
+        Set_Imp_mark(e, 0);
+
+
+        // ****************************************************************
+        // Calculate the KE w.r.t. the potential at the ion/atom (V_b)
+        // impe_K_thresh is the impact electrons KE w.r.t. V_b
+        // Thus impe_K_thresh = -e0(E_total_impact_el - pot_at_ion_for_an_electron)
+        // where  pot_at_ion_for_an_electron = -e0*(pot_at_ion)
+        const double impe_K_thresh = impe_K + e0 * (Pot_WIon_DAllWithoutCellE - Pot_WImpE);
+        const double impe_K_thresh_au = impe_K_thresh*J_to_Eh;
+
+        const double Vb = Pot_WIon_DAll;
+
+        // Vector between impacting electron and ion
+        double r_impe_i[3];
+        Get_r21(Get_Position(ion), Get_Position(e), r_impe_i);
+
+        // Calulate the impact parameter given by
+        // b=| (v_e x dr)/|v_e| |
+        double b[3];
+        Vector_Cross_Product(b, Get_Velocity(e), r_impe_i);
+        Vector_Times_Scalar(b, b, one_over_impe_vel2);
+        const double b2 = Vector_Length_Squared(b);
+
+        double xsec_es_total = 0.0; // [m^2]
+        //recheck the energy of the e- w.r.t. the target
+        if (do_excitation)
+        {
+            // Refine the list of the excited states that are accessible
+            // w.r.t. Vb and save their index
+            Nb_accesible_states = 0;
+            for (short int i = 0 ; i < Nb_excited_states_total ; i++)
+            {   //ensure that the impact e- can still pay for the excitation
+                if ((impe_K_thresh_au >= ((Ip-Ip_correction)*J_to_Eh+excited_state[ion_cs][i]))
+                     && (impe_K*J_to_Eh >= ((Ip-Ip_correction)*J_to_Eh+excited_state[ion_cs][i])) )
+                    Accessible_es[Nb_accesible_states++] = i;
+            }
+
+            // If no states are accessible reset the impact flag and continue
+            if ((Nb_accesible_states == 0) && (do_ionization == false))
+            {
+                // Reset impact marker
+#ifdef PRINT_COL_SKIPS
+            std_cout << "w.r.t. new threshold:Nb_accesible_states == 0) && (do_ionization == false) imp_k="<<impe_K_thresh_au<<" au  Ip="<<Ip*J_to_Eh<<" au\n";
+#endif
+                Set_Imp_mark(e, 0);
+                continue;
+            }
+
+            // ****************************************************************
+            // Collect the impact excitation cross sections
+            // This will set the entries in Accessible_es_xsec to their xsection
+            // for a particle with energy impe_K_thresh_au impinging on
+            // a target of charge state ion_cs
+            xsec_es_total = Get_es_Xsecs_for(Accessible_es, Nb_accesible_states,
+                                          ion_cs, impe_K_thresh_au);
+        }
+
+       //const double aq_factor = Get_aq_Factor(ion); // [-]
+        // Add the ionization cross-section if it is accessible
+        double xsec_ionization = 0.0;
+        if (do_ionization == true)
+        {
+
+            // Test if the electron has enough energy to give up
+            if ((impe_K_thresh < Ip-Ip_correction) && (do_excitation == false))
+            {
+
+#ifdef PRINT_COL_SKIPS
+                 std_cout << "Skipping electron #"<<Get_Id(e)<<" (Id"<<Get_Id(ion)<<") because K_e_thresh < Ip ("<<impe_K_thresh_au*J_to_eV<<" < "<<Ip*J_to_eV<<" eV)\n";
+#endif
+                continue;
+            }
+            //if the ion is not excited use Lotz
+            const double aq_factor = Get_aq_Factor(ion);                // [-]
+
+            if (Get_Excited_State_index(ion) == -1)
+               xsec_ionization = Ionization_Impact_Cross_Section_si(ion_cs, impe_K_thresh_au*Eh_to_J, element,-Ip_correction, aq_factor);
+            //otherwise it is the excited state's xsection that is needed
+            else
+               xsec_ionization = Ionization_xsection_for_state(Get_Excited_State_index(ion),ion_cs,impe_K_thresh_au);
+//                xsec_ionization = Ionization_Impact_Cross_Section_si(ion_cs,
+//                    impe_K_thresh_au*Eh_to_eV,
+//                    element,excited_state[ion_cs][Get_Excited_State_index(ion)]*
+//                    au_to_si_energy);
+// std_cout << "xsec_ionization="<<xsec_ionization<<"  xsec_es_total="<<xsec_es_total<<"\n";
+        }
+
+        // Is "b" within the TOTAL cross-section (excitation + ionization which is 0 if unaccessible)
+        if (b2 > ((xsec_es_total + xsec_ionization) / Pi))
+        {
+#ifdef PRINT_COL_SKIPS
+             std_cout << "b2 ="<<b2/a0/a0<<" >  xsec_es="<<xsec_es_total/a0/a0<<"  xsec_ionization="<<xsec_ionization/a0/a0<<"\n";
+#endif
+            continue;
+        }
+
+        // ******************************************************
+        // Impact excitation/ionization will occur
+
+        impe = e;
+        char string_impact_ionization[20];
+
+/*        if ((xsec_es_total+ xsec_ionization < 1e-5) ){
+          std_cout << "Nb_accesible_states=" << Nb_accesible_states
+               << " b2="  << b2 << " do_ionization="  << do_ionization << " do_excitation="
+               << do_excitation  << "\nimpe_K_thresh_au=" << impe_K_thresh_au
+               << std::endl << "ion_cs=" << ion_cs << " impe_K=" << impe_K*J_to_Eh <<") r_impe_i=("
+               << r_impe_i[0]<<','<< r_impe_i[1]<< ','<<r_impe_i[2] <<")\nAccessible_es=" << Accessible_es[0]
+               << ',' <<  Accessible_es[1] << ',' <<  Accessible_es[2]<< ',' <<  Accessible_es[3] << ',' <<  Accessible_es[4]
+              << ',' <<  Accessible_es[5] << ',' <<  Accessible_es[6] << ',' <<  Accessible_es[7]
+              <<std::endl ;
+//              abort();
+        }*/
+        const short int index_of_final_state = Get_Index_of_Final_State(xsec_es_total,
+                                                                        xsec_ionization,
+                                                                        Nb_accesible_states,
+                                                                        do_excitation,
+                                                                        Accessible_es,
+                                                                        prng);
+        std_cout << "5.element.IpsLowest["<<ion_cs<<"]="<<element.IpsLowest[ion_cs]<<"  excited_state[ion_cs]["<<Get_Excited_State_index(ion)<<"]="<<excited_state[ion_cs][Get_Excited_State_index(ion)]<<"  Ip="<<Ip*J_to_Eh<<"\n";
+
+        // Set the final state energy depending on if its ionization or excitation
+        double finalE  = 0.0;
+        double nce_W   = 0.0;
+        double nce_vel = 0.0;
+        double nce_K   = 0.0;
+        if (index_of_final_state > -1)
+        {
+            strcpy(string_impact_ionization, "excitation");
+            occured_process = IONIZATION_PROCESS_IMPACT_EXCITATION;
+
+            assert(do_excitation);
+
+            finalE = Ip+excited_state[ion_cs][index_of_final_state]* au_to_si_energy - Ip_correction;
+
+            // Save the new state of the target
+            Set_Excited_State_index(ion, index_of_final_state);
+                    // The ion cannot be re-ionized collisionaly for hbar/(delta E) = hbar/Ip_{si units}
+            double next_ion = time;//+ (hbar/Ip);
+            if (next_ion > Get_NextIon(ion)) Set_NextIon(ion, next_ion);
+            next_ion = time + (hbar/Ip);
+            if (next_ion > Get_NextIon(impe)) Set_NextIon(impe, next_ion);
+        }
+        else
+        {
+            strcpy(string_impact_ionization, "ionization");
+            occured_process = IONIZATION_PROCESS_IMPACT;
+
+            finalE = Ip-Ip_correction;
+
+            // Get pointer to next empty space in the electrons' list
+            nce = get_voidp(el, index_next_empty_space);
+
+            // Initialize the new electron's basic properties. This function needs
+            // to be provided by the calling code. index_next_empty_space is
+            // incremented in that function
+
+            Create_Electron(
+                el, ion,
+                time,
+                Nb_atoms, Nb_atoms_max,
+                Nb_electrons, Nb_electrons_max,
+                index_next_empty_space,
+                element,
+                "Create_Electron() called from Ionization_Impact() in library"
+            );
+            // Undo the excitation if it was excited
+            if (Get_Excited_State_index(ion) !=-1){
+              std_cout << "ionization from excited state " << Get_Excited_State_index(ion) << "\n";
+              excited_from = Get_Excited_State_index(ion);
+              Set_Excited_State_index(ion, -1);
+            }
+            // The function Create_Electron() sets the electron's position
+            // to be right on top of the ion (with 10^-20 bohr away...)
+            // Adapt the new position to be in the direction of the
+            // impacting electron.
+            double impe_vunit[3];   // Velocity unit vector
+            for (int d = 0 ; d < 3 ; d++)
+            {
+                impe_vunit[d] = Get_Velocity(impe)[d] / impe_vel;
+                Get_Position(nce)[d] += impe_vunit[d] * electron_creation_distance;
+                Get_Position(nce)[d]  = Get_Position(ion)[d] + (impe_vunit[d] * electron_creation_distance);
+            }
+
+            // ******************************************************
+            // New electron should have a kinetic energy of W where W is the work
+            // needed to place the electron right on top of the ion. This value
+            // depends on the depth of the potential energy well. W is also
+            // the potential energy of the electron in the well.
+            Potentials_Set_Parameters(nce, ion, element, potparams);
+            nce_W  = (-e0) * Calculate_Potential(nce, ion, element, potparams);
+            nce_vel= sqrt(2.0 * fabs(nce_W) / me);
+            for (int d = 0 ; d < 3 ; d++)
+                Get_Velocity(nce)[d] = nce_vel * impe_vunit[d];
+            nce_K  = 0.5 * me * nce_vel*nce_vel;
+                    // The ion cannot be re-ionized collisionaly for hbar/(delta E) = hbar/Ip_{si units}
+           double next_ion = time + (hbar/finalE);
+           if (next_ion > Get_NextIon(ion)) Set_NextIon(ion, next_ion);
+           next_ion = time + (hbar/finalE);
+           if (next_ion > Get_NextIon(nce)) Set_NextIon(nce, next_ion);
+           if (next_ion > Get_NextIon(impe)) Set_NextIon(impe, next_ion);
+
+        }
+
+        // The ion-electron system has an intrisinct energy: the Ip.
+        // This energy "disappear" in the code. We return it so the
+        // code can keep track of it.
+        delta_energy += -(finalE+Ip_correction);
+
+        std_cout << "Impact "<<string_impact_ionization<<" occurred! it="<<t<<" Id(elec)="<<Get_Id(impe)<<" Id(ion)="<<ion_id<<" final state energy="<<finalE * J_to_eV<<" eV\nEigenvalue="<<excited_state[ion_cs][index_of_final_state]<<", Ip="<<element.IpsLowest[ion_cs]<<"  Ip_cor="<<Ip_correction<<"\n";
+// std_cout << "II: t_scaled = "<<t_scaled<<"  dt_scaled = "<<dt_scaled*s_to_as<<" as  period = "<<period<<"\n";
+
+        // ******************************************************
+        // Impacting electron should loose the deposited energy from its kinetic energy
+        double impe_vunit[3];   // Velocity unit vector
+        for (int d = 0 ; d < 3 ; d++)
+            impe_vunit[d] = Get_Velocity(impe)[d] / impe_vel;
+
+        const double impe_new_vel2 = Vector_Length_Squared(Get_Velocity(impe)) - (2.0 * finalE / me);
+//         assert(impe_new_vel2 >= 0.0);
+        if (impe_new_vel2 < 0.0){
+          std_cout << "impe_new_vel2="<<impe_new_vel2<<"  Vector_Length_Squared(Get_Velocity(impe))="<<Vector_Length_Squared(Get_Velocity(impe))<<"\nfinalE="<<finalE*J_to_Eh<<"  Ip="<<Ip*J_to_Eh<<" Ip_cor="<<Ip_correction*J_to_Eh<<"\n";
+           abort();
+        }
+
+        const double impe_new_vel = sqrt(impe_new_vel2);
+        for (int d = 0 ; d < 3 ; d++)
+            Get_Velocity(impe)[d] = impe_new_vel * impe_vunit[d];
+        const double impe_new_K = 0.5 * me * impe_new_vel*impe_new_vel;
+
+          // ******************************************************
+          // Since each classically orbiting electrons have shielded
+          // the ion and lowered the Ip via Ip_correction, they need
+          // to pay to balance the energy.
+        if (remove_energy_from_orbital_e)
+        {
+            Remove_IpCorrection_From_Orbiting_Electrons(al, ions_w_classical_electrons[ion_id],
+                                                           Ip_correction, K_OrbitingE, Get_Id(e));
+        }
+
+        ionizedlist[ionizedlist[0]++ +1] = ion_id;
+
+        // Set the ionization flag
+        if (initial_num_ionizations < ionizedlist[0]) did_ionization_occur = true;
+        else                                          did_ionization_occur = false;
+        // If another type of ionization happened make sure the "did_ionization_occur" flag
+        // is set properly by ORing with the initial value of the flag
+        did_ionization_occur = (did_ionization_occur || orig_did_ionization_occur);
+
+
+        std_cout << "0. Excitation: " << Get_Excited_State_index(ion) << std::endl;
+
+        // Save to passed file handle
+        if(Lib_Get_Rank() == 0)
+        {
+            if (fh_out != NULL)
+            {
+                int nce_id = -1;
+                // No new electron if process was excitation
+                if (index_of_final_state == -1)
+                {
+                    assert(nce  != NULL);
+                    nce_id = Get_Id(nce);
+                }
+
+                assert(impe != NULL);
+                assert(ion  != NULL);
+                fprintf(fh_out, "%.15g, %2d, %2d, %7d, %7d, %7d, %10.8g, %10.8g, %4d, %4d\n",
+                                 time*s_to_fs,
+                                         occured_process,
+                                              Get_Charge_State(ion),
+                                                   ion_id,
+                                                       nce_id,
+                                                           Get_Id(impe),
+                                                               finalE*J_to_Eh,
+                                                                      Ip_correction*J_to_Eh,
+                                                                             excited_from,
+                                                                                 -1);
+                fflush(fh_out);
+            }
+        }
+
+        Print_Impact_Ionization_Information(ion, impe, nce, ion_id, ion_cs, Vb,
+                                            Pot_WIon_DAllWithoutCellE, finalE, element,
+                                            impe_K, impe_new_K, nce_W, nce_K);
+    }
+
+    return delta_energy;
+}
+
+
+// **************************************************************
+// ********** Local functions implementations *******************
+// **************************************************************
+
+
+// **************************************************************
+short int Get_Index_of_Final_State(const double xsec_es_tot,
+                                   const double xsec_ionization,
+                                   const short int Nb_accesible_states,
+                                   const bool do_excitation,
+                                   const short int *Accessible_es,
+                                   Lib_PRNG &prng)
+{
+    // Chose the state to exicite to
+    const double rand_num = prng.Get_Random();
+//     laser.nb_call_to_rand++;
+//     // Force ionization (disable excitation)
+//     const double rand_num = 0.0;
+//     // Force excitation (disable ionization)
+//     const double rand_num = 1.0;
+
+    // The following variable describe the final electron's state:
+    //      -1:         Ionization
+    //       0 or more: Excitation
+    short int index_of_final_state = -1;
+
+    if (do_excitation)
+    {
+        // The total cross section contains ionization and excitation
+        const double xsec_tot = xsec_es_tot + xsec_ionization;
+
+        // Get the relative probability for ionization
+        const double prob_ionization = xsec_ionization / xsec_tot;
+/*        if ((0.0 > prob_ionization || prob_ionization > 1.0)){
+          std_cout << "prob_ionization="<<prob_ionization<<" xsec_ionization="<<xsec_ionization<<"  xsec_tot="<<xsec_tot<<" \n";
+          usleep(10000); abort();
+        }*/
+        assert(0.0 <= prob_ionization && prob_ionization <= 1.0);
+
+//         std_cout << "prob_ionization = " << prob_ionization << " xsec_ionization=" << xsec_ionization << " xsec_es_tot=" << xsec_es_tot << std::endl;
+//         std_cout << "rand_num = " << rand_num << std::endl;
+
+        // Monte-Carlo test to choose ionization or excitation, based on the
+        // relative weigth of each cross sections.
+        // If the random number is smaller then the ionization probability,
+        // we just skip the following and return "-1" as the index.
+        // If not, then we enter to following block and find the appropriate
+        // excited state.
+        if (prob_ionization < rand_num)
+        {
+            // Start with the ionization amount since it is zero if there is no ionization.
+            double prob_excitation = prob_ionization;
+
+            // Loop over all states until you get to the "region" of the rand_num
+            // This will keep incrementing the total probability until rand_num is
+            // less than the total. each increment will be the amount of probability
+            // of being excited into that state. Keeping the running total tell you what
+            // "region" of [0:1] the current state occupies. If rand_num is lower than the total
+            // then it has "chosen" the current state.
+            for (short int i = 0 ; i < Nb_accesible_states ; i++)
+            {
+                prob_excitation += Accessible_es_xsec[i] / xsec_tot;
+//                  std_cout << "    i = " << i << std::endl;
+//                  std_cout << "    prob_excitation = " << prob_excitation << std::endl;
+//                  std_cout << "    prob_ionization = " << prob_ionization << "  Accessible_es_xsec[i] = " << Accessible_es_xsec[i] << std::endl;
+//                  std_cout << "    xsec_tot = " << xsec_tot << " xsec_es_tot = " << xsec_es_tot << " xsec_ionization = " << xsec_ionization <<  std::endl;
+                assert(0.0 <= prob_excitation && prob_excitation <= 1.00000000000001);
+
+                if (prob_excitation > rand_num)
+                {
+                    index_of_final_state = Accessible_es[i];
+                    break;
+                }
+            }
+
+            // Make sure we found one excited state
+            assert(index_of_final_state != -1);
+        }
+    }
+
+//     std_cout << "index_of_final_state = " << index_of_final_state << std::endl;
+    return index_of_final_state;
+}
+
+// **************************************************************
+/**
+ *  Retrieves the cross-section from a lookup table. The table
+ *  was generated by the run_excitations.pl using the cowan code.
+ *  The 1st element of the table is deltaE and the table is in
+ *  logarithmic. It does not start at the initial value
+ *  (which is the threshold value == eigenvalue) but
+ *  1.01 times the eigenvalue since the cowan code can't do
+ *  E=0 conintuum states (since the plane wave would be E=0).
+ *  The values between the table values are calculated using
+ *  linear interpolation.
+ * @param final_state_index The index of the excited state in the
+                            excited_state array
+ * @param ion_cs The ion's charge state
+ * @param ke_au The kinetic energy of the impact electron
+ * @return Cross-section [m^2]
+ */
+double Excitation_xsection_for_state(short int final_state_index,
+                                     int ion_cs, double ke_au)
+{
+    // Calculate the index below and above
+    // the first entry of  is dE (Hartree)
+    // note the value in excited_state are eigenvalues (hartree)
+    // and are thus negative (0= threshold)
+    const double dE = impact_xsec_GSES[ion_cs][final_state_index][0];
+
+    // The 1.01 is because the Cowan Code cannot do continuum
+    // states of 0 energy so it starts at 1.01*excitation energy.
+    // This is the index above the value so it is at least 1.
+    const double CowanConst = 1.01;
+
+    // Excited_state is the eigenvalue so '-' which explains the - in (-CowanConst * excited_state)
+    const short int index_above = (int) ceil(
+            log(ke_au / (-CowanConst * excited_state[ion_cs][final_state_index])) / dE
+        ) + 1; //[0] is dE so + 1
+    const short int index_below = index_above - 1;
+
+    if ((index_below < 1) || (ke_au < -excited_state[ion_cs][final_state_index]) || (index_above >= es_num_elements-1) )
+        return 0.0; // too close to threshold
+
+    // Linearly interpolate between the above and below points (minus for negative eigenvalue in excited_state)
+    const float dy      =  impact_xsec_GSES[ion_cs][final_state_index][index_above]
+                         - impact_xsec_GSES[ion_cs][final_state_index][index_below];
+    const float dx      = -CowanConst
+                            * excited_state[ion_cs][final_state_index]
+                            * (exp(index_above*dE) - exp(index_below*dE));
+    const float E_above = -CowanConst
+                            * excited_state[ion_cs][final_state_index]
+                            *  exp(index_above*dE);
+    const double slope  = (double) dy / dx;
+    // y = m*x + b  =>  b = y - m*x
+    const double intercept = (double) impact_xsec_GSES[ion_cs][final_state_index][index_above]
+                            - (slope * E_above);
+
+    const double result = atomic_area_to_m2 * double(slope * ke_au + intercept);
+    if (result >0.0) return result;
+    return 0.0;
+}
+
+// **************************************************************
+double Get_es_Xsecs_for(const short int * index_accessible_es,
+                     int Nb_accesible_states,
+                     int ion_cs, double ke_au)
+/**
+ * A function to get the cross-sections for each off the accessible
+ * eigenstates for an impact impact electron of energy ke_au imping
+ * on an ion of charge state ion_cs. The function returns these in
+ * the xsec_accessible_es array. The simple total alone is not
+ * enough as a monte carlo will decide what final state out of all
+ * accessible it will go to using the relative cross-sections as weights.
+ * @param index_accessible_es The index of each of the accessible excited states
+ * @param xsec_accessible_es  The xsection of each of the accessible excited states
+ * @param Nb_accesible_states The number of accessible eigenstates
+ * @param ion_cs              The charge of the target ion
+ * @param ke_au               The kinetic energy of the imping electron w.r.t. V_b
+ * @return                    The total xsection of all accessible excited states [m^2]
+ */
+{
+    double sum = 0.0;
+    for (short int i = 0 ; i < Nb_accesible_states ; i++)
+    {
+        Accessible_es_xsec[i] = Excitation_xsection_for_state(
+                                    index_accessible_es[i], ion_cs, ke_au);
+
+/*        if (Accessible_es_xsec[i] < 0.0){
+          std_cout << "i="<<i<< " index_accessible_es[i]=" << index_accessible_es[i] << std::endl;
+          std_cout << "Accessible_es_xsec[i]=" << Accessible_es_xsec[i] << " ion_cs=" << ion_cs << " ke_au=" << ke_au << std::endl;
+          abort();
+        }*/
+        assert(Accessible_es_xsec[i] >= 0.0);
+        sum += Accessible_es_xsec[i];
+    }
+    return sum;
+}
+
+
+
+/**
+ *  Retrieves the cross-section from a lookup table for
+ *  the ionization of an excited state. The table
+ *  was generated by the run_ionizations.pl using the cowan code.
+ *  The 1st element of the table is deltaE and the table is in
+ *  logarithmic. It does not start at the initial value
+ *  (which is the threshold value == eigenvalue) but
+ *  1.01 times the eigenvalue since the cowan code can't do
+ *  E=0 conintuum states (since the plane wave would be E=0).
+ *  The values between the table values are calculated using
+ *  linear interpolation.
+ * @param initial_excited_state_index The index of the excited state in the
+                            excited_state array
+ * @param ion_cs The ion's charge state
+ * @param ke_au The kinetic energy of the impact electron
+ * @return Cross-section [m^2]
+ */
+double Ionization_xsection_for_state(short int initial_excited_state_index,
+                                     int ion_cs, double ke_au)
+{
+    // Calculate the index below and above
+    // the first entry of  is dE (Hartree)
+    // note the value in excited_state are eigenvalues (hartree)
+    // and are thus negative (0= threshold)
+     const double dE = impact_xsec_ESIS[ion_cs][initial_excited_state_index][0];
+
+    // The 1.01 is because the Cowan Code cannot do continuum
+    // states of 0 energy so it starts at 1.01*excitation energy.
+    // This is the index above the value so it is at least 1.
+    const double CowanConst = 1.01;
+
+    // Excited_state is the eigenvalue so '-' which explains the - in (-CowanConst * excited_state)
+    const short int index_above = (int) ceil(
+            log(ke_au / (-CowanConst * excited_state[ion_cs][initial_excited_state_index])) / dE
+        ) + 1; //[0] is dE so + 1
+    const short int index_below = index_above - 1;
+
+    if ((index_below < 1) || (ke_au < -excited_state[ion_cs][initial_excited_state_index]) || (index_above >= es_num_elements-1) )
+        return 0.0; // too close to threshold
+
+    // Linearly interpolate between the above and below points (minus for negative eigenvalue in excited_state)
+    const float dy      =  impact_xsec_ESIS[ion_cs][initial_excited_state_index][index_above]
+                         - impact_xsec_ESIS[ion_cs][initial_excited_state_index][index_below];
+    const float dx      = -CowanConst
+                            * excited_state[ion_cs][initial_excited_state_index]
+                            * (exp(index_above*dE) - exp(index_below*dE));
+    const float E_above = -CowanConst
+                            * excited_state[ion_cs][initial_excited_state_index]
+                            *  exp(index_above*dE);
+    const double slope  = (double) dy / dx;
+    // y = m*x + b  =>  b = y - m*x
+    const double intercept = (double) impact_xsec_ESIS[ion_cs][initial_excited_state_index][index_above]
+                            - (slope * E_above);
+    const double result = atomic_area_to_m2 * double(slope * ke_au + intercept);
+    if (result >= 0.0) return result;
+    return 0.0;
+}
+
+/**
+ * A function that prints the xsection to a file. It can print
+ * the excited state ionization or excitation xsection by calling the functions.
+ * In the file the energy (x) and xsections (y) are in atomic units.
+ */
+void output_xsec(const elem_props &element){
+  static bool firsttime = true;
+  if (firsttime){
+    double dk = 0.1;
+    double k,E;
+    FILE *out; char name[100]; char cs_char = '0';
+    for(int cs=0;cs<3;cs++){
+      strcpy(name,"output/xsec");
+      strcat(name,&cs_char);
+      cs_char = cs_char+1;
+      out = fopen(name,"w");
+      //use this for excitation
+//       for(int count=1;count < 300;count++){
+      //use this for ionization
+      for(int count=1;count < 300;count++){
+        k=count*dk; E= k*k/2.0;
+        fprintf(out,"%10.8g",E);
+//         for(int fstate=0; fstate<8 ; fstate++){
+   //      fprintf(out," %15.12g",Excitation_xsection_for_state(fstate,cs,E)*m2_to_atomic_area );
+//           fprintf(out," %15.12g",Ionization_xsection_for_state(fstate,cs,E)*m2_to_atomic_area );
+//         }
+
+        fprintf(out," %15.12g",Ionization_Impact_Cross_Section_si
+               (cs, E*Eh_to_J, element)*1e22
+                 //  *m2_to_atomic_area
+                 );
+        fprintf(out,"\n");
+      }
+      fclose(out);
+    }
+    firsttime = false;
+  }
+}
+
+
+// ********** End of file ***************************************

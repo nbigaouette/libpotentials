@@ -1,0 +1,281 @@
+#ifndef INC_GENERAL_hpp
+#define INC_GENERAL_hpp
+
+#include <iostream>
+#include <cstring>
+
+#ifdef __SUNPRO_CC
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h> // calloc()
+#include <stdio.h>
+#else // #ifdef __SUNPRO_CC
+#include <cassert>
+#include <cmath>
+#include <cstdlib> // calloc()
+#include <cstdio>
+#endif // #ifdef __SUNPRO_CC
+
+#include "Constants.hpp"
+#include "Structure_Element.hpp"
+#include "Std_Cout.hpp"
+
+// Macro for debuging. Print the filename and line number:
+// src/treeio.c:215: MESSAGE
+#define DEBUGP(x)           std_cout << __FILE__ << ":" << __LINE__ << ":\n    " << (x)
+
+// Quote something, usefull to quote a macro's value
+#define _QUOTEME(x) #x
+#define QUOTEME(x) _QUOTEME(x)
+
+
+// **************************************************************
+void Set_id_of_next_electron(const int &id);
+int Get_id_of_next_electron();
+
+// FIXME
+// const int CODE_PIC3D    = 1;
+// const int CODE_TREECODE = 2;
+const int Potential_Shapes_Simple               = 1;
+const int Potential_Shapes_Harmonic             = 2;
+const int Potential_Shapes_SuperGaussian        = 3;
+const int Potential_Shapes_GaussianDistribution = 4;
+const int Potential_Shapes_HS_SuperGaussian     = 5;
+const int Potential_Shapes_ChargeDistribution_Symmetric = 6;
+const int Potential_Shapes_ScreenedCoulomb      = 7;
+
+
+void Check_if_initialized(void);
+void Ionization_Initialize_IO(const std::string io_basename);
+void Ionization_Initialize(const int arg_called_from, const int m,
+                           const double input_s_rmin,
+                           const int Nb_particules,
+                           const bool using_ghost,
+                           const int arg_rank, const int arg_size,
+                           const char potential_shape[],const elem_props &element,
+                           const double base_potential_depth);
+void Ionization_Finalize(elem_props &element);
+
+int Lib_Get_Code_Called_From();
+int Lib_Get_SVN_Revision();
+int Lib_Get_Pontential_Shape();
+int Lib_Get_Rank();
+int Lib_Get_Size();
+bool Lib_Get_UseGhost();
+char* Lib_Get_IOBasename();
+
+void assert_diff(double a, double b);
+
+void   Error(const char msg[]);
+int    factorial(int x);
+double factoriald(int x);
+double my_erf(double x);
+
+void Lib_Print_Double_in_Binary(double d);
+void Lib_Print_Integer_in_Binary(int n);
+
+void heap_load_of_excitation_xsections(const elem_props &element);
+// void   xe_1st_es(int num);
+// void   xe_2nd_es(int num);
+// void   xe_3rd_es(int num);
+// void   xe_4th_es(int num);
+// void   xe_5th_es(int num);
+// void   xe_6th_es(int num);
+//
+// void  xe1_1st_es(int num);
+// void  xe1_2nd_es(int num);
+// void  xe1_3rd_es(int num);
+// void  xe1_4th_es(int num);
+// void  xe1_5th_es(int num);
+// void  xe1_6th_es(int num);
+//
+// void  xe2_1st_es(int num);
+// void  xe2_2nd_es(int num);
+// void  xe2_3rd_es(int num);
+// void  xe2_4th_es(int num);
+// void  xe2_5th_es(int num);
+// void  xe2_6th_es(int num);
+//
+// void  xe3_1st_es(int num);
+// void  xe3_2nd_es(int num);
+// void  xe3_3rd_es(int num);
+// void  xe3_4th_es(int num);
+// void  xe3_5th_es(int num);
+// void  xe3_6th_es(int num);
+//
+
+// **************************************************************
+static inline int get_element_index(const int l, const int n, const int Z,
+                              const int max_l, const int max_n)
+/**
+ * Associate a 3 dimensional index (Z,n,l) to a 1 dimensional index.
+ * Note that ALL arrays will start at 0 (even for "n"), thus max_?+1
+ * For each Z, there is one "slice":
+ *        | l=0 |  1  |  2  |
+ *  n=0   | --- | --- | --- |
+ *   1    |     | --- | --- |
+ *   2    |     |     | --- |
+ *   3    |     |     |     |
+ *   4    |     |     |     |
+ *   5    |     |     |     |
+ *          (s)   (p)   (d)
+ * "---" are un-allowed states
+ * array[l][n][Z] = array[l + n*max_l + Z*max_l*max_n]
+ * n between 1 and max_n       (total: max_n)
+ * l between 0 and max_n-1     (total: max_l)
+ * Because C/C++ arrays start at 0, a column for n=0 will be
+ * allocated too, but not used. This will keep code consistent
+ */
+{
+    assert(Z >= 0);
+    return (l + n*(max_l+1) + Z*(max_l+1)*(max_n+1));
+}
+
+
+// **************************************************************
+static inline int get_index_lowest_Ip(const int Z, const int max_l,
+                                const int max_n, const int *occ)
+{
+    int index = -1;
+    for (int n = max_n ; n >= 0 ; n--)
+    {
+        for (int l = max_l ; l >= 0 ; l--)
+        {
+            index = get_element_index(l, n, Z, max_l, max_n);
+            if (occ[index] > 0)
+                return index;
+        }
+    }
+    return index;
+}
+
+// **************************************************************
+template <class T> const T& max(const T &a, const T &b)
+/**
+ * See http://www.cplusplus.com/reference/algorithm/max/
+ */
+{
+    return (b < a) ? a : b;
+}
+
+// **************************************************************
+template <class Integer>
+static inline void * calloc_and_check(Integer nb, size_t s,
+                               const char msg[] = "")
+{
+    void *p = NULL;
+    p = calloc(nb, s);
+    if (p == NULL)
+    {
+        double nb_s = double(nb) * double(s);
+        std_cout << "Allocation of " << nb << " x " << s << " bytes = " << nb_s << " bytes failed" << std::endl;
+        std_cout << "(" << double(nb_s) / (1024.0) << " KiB, "
+                         << double(nb_s) / (1024.0*1024.0) << " MiB, "
+                         << double(nb_s) / (1024.0*1024.0*1024.0) << " GiB)" << std::endl;
+        std_cout << "p = " << p << "\n";
+        if (strcmp(msg, "") != strcmp_success)
+        {
+            std_cout << "Comment: " << msg << std::endl;
+        }
+        std_cout << "Aborting\n" << std::flush;
+        abort();
+    }
+    return p;
+}
+
+// **************************************************************
+template <class Integer>
+static inline void * malloc_and_check(Integer nb, size_t s,
+                               const char msg[] = "")
+{
+    void *p = NULL;
+    p = malloc(nb * s);
+    if (p == NULL)
+    {
+        const long unsigned int slu  = (long unsigned int) s;
+        const long unsigned int slun = (long unsigned int) s * nb;
+        std_cout << "Allocation of " << nb << " x " << slu << " bytes = " << slun << " bytes failed" << std::endl;
+        std_cout << "(" << double(slun) / (1024.0) << " KiB, "
+                         << double(slun) / (1024.0*1024.0) << " MiB, "
+                         << double(slun) / (1024.0*1024.0*1024.0) << " GiB)" << std::endl;
+        std_cout << "p = " << p << "\n";
+        if (strcmp(msg, "") != strcmp_success)
+        {
+            std_cout << "Comment: " << msg << std::endl;
+        }
+        std_cout << "Aborting\n" << std::flush;
+        abort();
+    }
+    return p;
+}
+
+// **************************************************************
+template <class Pointer>
+void free_me(Pointer &p)
+{
+    if (p != NULL)
+    {
+        free(p);
+    }
+    p = NULL;
+}
+
+
+// **************************************************************
+//                      Vector operations
+// **************************************************************
+static inline void Vector_Cross_Product(double a[3], const double b[3], const double c[3])
+{
+    a[0] = b[1]*c[2] - b[2]*c[1];
+    a[1] = b[2]*c[0] - b[0]*c[2];
+    a[2] = b[0]*c[1] - b[1]*c[0];
+}
+
+static inline double Vector_Dot_Product(const double a[3], const double b[3])
+{
+    return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
+}
+
+static inline double Vector_Length_Squared(const double a[3])
+{
+    return Vector_Dot_Product(a, a);
+}
+
+static inline double Vector_Length(const double a[3])
+{
+    return sqrt(Vector_Length_Squared(a));
+}
+
+static inline void Vector_Times_Scalar(double a[3], const double b[3], const double c)
+{
+    a[0] = b[0] * c;
+    a[1] = b[1] * c;
+    a[2] = b[2] * c;
+}
+
+static inline void Vector_Add(double a[3], const double b[3], const double c[3])
+{
+    a[0] = b[0] + c[0];
+    a[1] = b[1] + c[1];
+    a[2] = b[2] + c[2];
+}
+
+static inline void Vector_Substract(double a[3], const double b[3], const double c[3])
+{
+    a[0] = b[0] - c[0];
+    a[1] = b[1] - c[1];
+    a[2] = b[2] - c[2];
+}
+
+static inline double Vector_Substract_and_Length_Squared(double a[3], const double b[3])
+{
+    return (
+              (a[0] - b[0])*(a[0] - b[0])
+            + (a[1] - b[1])*(a[1] - b[1])
+            + (a[2] - b[2])*(a[2] - b[2])
+        );
+}
+
+#endif // INC_GENERAL_hpp
+
+// ********** End of file ***************************************

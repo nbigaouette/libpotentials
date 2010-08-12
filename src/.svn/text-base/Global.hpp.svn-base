@@ -1,0 +1,94 @@
+#ifndef INC_GLOBAL_hpp
+#define INC_GLOBAL_hpp
+
+#include "Constants.hpp"
+
+// a place for global variables
+
+//The base potential well 
+//giving the bottom of the potential well.
+extern double base_pot_well_depth; //[eV]
+
+//Excited state constants
+const short int Nb_excited_states_total = 8;
+extern double ***impact_xsec_ESIS;  // impact_es_xsec
+extern double ***impact_xsec_GSES;  // excitation_xsec
+
+extern double excited_state[number_of_excited_charge_states][Nb_excited_states_total];
+
+const int es_num_elements = 400;
+
+
+//These constants give the excited state for the atom or ion
+//The numbers are single auger 100, double auger (Xe->Xe3+) is 200
+//separated by the J=5/2 or 3/2
+const short int Single_Auger_Excited_d52 = 101; //signifying a special excited state (a hole in the 4d_5/2 shell of Xe)
+const short int Double_Auger_Excited_d52 = 201;
+const short int Single_Auger_Excited_d32 = 102;
+const short int Double_Auger_Excited_d32 = 202;
+
+//a constantant amount 10/20 is added to these numbers if it is doubly excited 4d-2 (see below)
+const short int Single_Auger_Excited_d52_d52 = 111; //signifying a special excited state (two holes in the 4d_5/2 shell of Xe)
+const short int Single_Auger_Excited_d52_d32 = 121; //signifying a special excited state (a hole in the 4d_5/2 and 4d_3/2shell of Xe)
+const short int Double_Auger_Excited_d52_d52 = 211;
+const short int Double_Auger_Excited_d52_d32 = 221;
+const short int Single_Auger_Excited_d32_d52 = 112;
+const short int Single_Auger_Excited_d32_d32 = 122;
+const short int Double_Auger_Excited_d32_d52 = 212;
+const short int Double_Auger_Excited_d32_d32 = 222;
+//the amounts to be added to the fisrt set of excited state numbers
+//to get the doubly excited state values
+//ie Single_Auger_Excited_d52_d32 = Single_Auger_Excited_d52 + excited_4d8_from_d32 = 101+20=121
+const short int excited_4d8_from_d32 = 20;
+const short int excited_4d8_from_d52 = 10;
+
+
+
+//Probabilites taken from PRA57 282 table I
+const float single_Auger_d52_branching_ratio = 0.835;
+const float double_Auger_d52_branching_ratio = 0.165;
+const float single_Auger_d32_branching_ratio = 0.781;
+const float double_Auger_d32_branching_ratio = 0.219;
+const float single_Auger_branching_ratio = 0.812;
+const float double_Auger_branching_ratio = 0.188;
+
+
+//Probabilities for the Xe^1+ 4d-2 state
+//these are estimated. The ratio is taken as the same
+//for the Neutral (PRA 31 1529) 1.3:1 or ~2/3 for 5/2
+const float Xe_4d8_5p6_4d52_branching_ratio = (float) two_over_three;
+const float Xe_4d8_5p6_4d32_branching_ratio = (float) one_over_three;
+
+//Extracted branching ratios for Xe^1+ fron table 1 of JPB 34 2009
+const float Xep_Auger_d52_branching_ratio = 0.65385;
+const float Xep_Auger_d32_branching_ratio = 0.34615;
+
+
+
+//Branching ratio for the Auger process in 4d-2 Xe^2+
+//JPB 36 4403 gives some ratios but only the dominant ones and it leaves the single Auger decay out,
+// implying that double is dominant. They leave out intensities, in their arbitrary units,
+// >0.005 (table 2). So if we assume that single was 0.005 and double is, given, 0.382, table I, 
+//then the probability of single is 1.3%. So I'm using that. BUt there could be more than 1 at 
+//less than 0.005. If there were many states it could be a lot more. So we'll say there were 10 and so use 13%.
+const float single_Auger_Xe2p_4d8 = 0.13;
+const float double_Auger_Xe2p_4d8 = 0.87;
+
+//the transition energy from Cowan (rcnlanl)
+//242 1    2   10  0.2    5.e-08    1.e-11-2   190    1.0 0.65  0.0  0.0   -6
+//   54    2Xe              4d9 5s2 5p6
+const float Ip_4d9_5p6_to_4d10_5p5 = 66.687766; //[eV]
+
+//the Ip of the 4d9 5s2 5p6 d52 -> 4d8 5s2 5p6 transition (Cowan code fine-structure mode)
+const float Ip_4d9_5p6_to_4d8_5p6 = 84.106; //[eV]
+
+//This is to be ADDED to the xe_pros.xml file
+//value for the 4d (which is the 4d_5/2) to get the
+//Ip. Thus Ip_4d3/2= element.Ips[0][2] + Ip_difference_to_d32_from_d52;
+const float Ip_difference_to_d32_from_d52 = 1.989;
+//same but added to Ip_4d9_5p6_to_4d8_5p6. Negative since it is closer to threshold
+const float Ip_difference_4d9_5p6_to_4d8_5p6_d32_d52 = -1.8972; //[eV]
+
+#endif // INC_GLOBAL_hpp
+
+// ********** End of File ***************************************

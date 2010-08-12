@@ -1,0 +1,358 @@
+/****************************************************************
+
+    Routines for tunneling ionization
+
+    Important references:
+
+        Yudin2001
+        Yudin, G. L. & Ivanov, M. Y. Nonadiabatic tunnel ionization:
+        Looking inside a laser cycle. Phys. Rev. A,
+        American Physical Society, 2001, 64, 013409
+        10.1103/PhysRevA.64.013409
+
+        Last2000
+        Last, I. & Jortner, J. Dynamics of the Coulomb explosion of
+        large
+        clusters in a strong laser field Phys. Rev. A, American Physical
+        Society, 2000, 62, 013201
+        10.1103/PhysRevA.62.013201
+
+        Dietrich1992
+        Dietrich, P. & Corkum, P. B. Ionization and dissociation
+        of diatomic molecules in intense infrared laser fields
+        J. Chem. Phys., 1992, 97, 3187
+        10.1063/1.463006
+
+        MDCluster code
+
+****************************************************************/
+
+#include <cfloat>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
+#include <iostream>
+
+#include "Constants.hpp"
+#include "Tunnelling.hpp"
+#include "General.hpp"
+#include "Particles_Operations.hpp"
+#include "Code_Functions_Declarations.hpp"
+#include "NR.hpp" // Provides Gamma_NaturalLogarithm()
+
+// **************************************************************
+// ********** Local functions prototypes ************************
+// **************************************************************
+// Empty
+
+// **************************************************************
+// ********** Accessible functions implementations **************
+// **************************************************************
+
+int Ionization_Tunnelling(
+        void *al, void *el,
+        const double time, const double dt,
+        const int &Nb_atoms, const int &Nb_atoms_max,
+        int &Nb_electrons, const int &Nb_electrons_max,
+        unsigned long int &index_next_empty_space,
+        const elem_props &element,
+        const int E_offset, const double omega, bool &did_ionization_occur,
+        int *ionizedlist, Lib_PRNG &prng,
+        FILE *fh_out)
+/**
+ * Check each atoms/ions of a list for tunnel ionization
+ * @param al    Pointer to a (generic) structure array containing
+ *              atoms/ions information
+ * @param el    Pointer to a (generic) structure array containing
+ *              electrons information
+ * @param t     Iteration of the main loop
+ * @param dt    Time step of the main loop
+ * @param new_e_distance    New distance from ion (only used
+ *                          in treecode)
+ * @param Nb_atoms          Number of atoms/ions in system
+ * @param Nb_atoms_max      Maximum number of atoms (allocated space)
+ * @param Nb_electrons      Number of electrons in system
+ * @param Nb_electrons_max  Maximum number of electrons (allocated space)
+ * @param index_next_empty_space Index of electron array where next empty space is
+ * @param element           Element structure defining the atoms
+ * @param E_offset          Offset on the structure "al" of the
+ *                          electric field to use.
+ * @param omega             The laser angular frequency (SI units, s^-1)
+ * @param did_ionization_occur A flag used to determine if any ionization occured
+ * @param ionizedlist       A list of the Id's of the ionized atoms
+ *                          (used to communicate who ionized in mpi), first
+ *                          element is a counter, the number of ionizations.
+ *
+ */
+{
+    int     charge_state, dl, dm;
+    double  Ip_au;
+    //This is omega^2 (in atomic units)
+    //const double omega_L2_au = laser.ww_au*laser.ww_au;
+    const double omega_L2_au = (omega*au_time)*(omega*au_time);
+    double Keldysh2; //the SQUARE (Y^2) of the Keldysh parameter
+    int orig_did_ionization_occur= did_ionization_occur;
+
+    void *ion;
+    for (int i = 0 ; i < Nb_atoms ; i++)
+    {
+        ion = get_voidp(al, i);
+
+        // "continue" statements stop work on current ion
+        // and continue on next one.
+
+        // Ionization is not allowed yet
+        if (time < Get_NextIon(ion)) continue;
+
+        charge_state = Get_Charge_State(ion);
+
+        //Ip_au       = element.Ip[charge_state];
+        Ip_au       = element.IpsLowest[charge_state] * eV_to_Eh;
+
+        // Ionization potential is null
+        if (Ip_au <= DBL_MIN) continue;
+
+        // FIXME: What should be the "m" value here?? "l" is read from XML file
+//         const double ls[]
+        dl = element.l[charge_state];
+        dm = dl; // element.m[charge_state]; // FIXME: find right value for m
+
+        double Efld[3];
+        // |E|   [V . m^-1]
+        // Get the right field with E() macro
+        for (int d = 0 ; d < 3 ; d++)
+            Efld[d] = Get_E(ion)[d];
+//             Efld[d] = E(ion,E_offset)[d];
+        double Eabs = sqrt(Efld[0]*Efld[0] + Efld[1]*Efld[1] + Efld[2]*Efld[2]);
+        double Eabs_au = Eabs / au_electric_field;
+        if (Eabs <= DBL_MIN) continue;      /* Field is too small               */
+//        if (Eabs <= 1e-10) continue;      /* Field is too small               */
+
+        Keldysh2 = 2.0*Ip_au*omega_L2_au/Eabs_au/Eabs_au;
+        //Test if the approximation is valid.
+        //We choose Y < 4 motivated by S.F.J. Larochelle, A. Talebpour,
+        //and S.L. Chin, J. Phys. B 31, 1215 1998, which is Ref 12 of
+        //Yudin, G. L. & Ivanov, M. Y. Nonadiabatic tunnel ionization: Looking
+        //inside a laser cycle Phys. Rev. A, 2001, 64, 013409 (10.1103/PhysRevA.64.013409)
+
+//         std_cout << "Ip_au = " << Ip_au << "\n";
+//         std_cout << "omega_L2_au = " << omega_L2_au << "\n";
+//         std_cout << "Eabs_au = " << Eabs_au << "  Keldysh2 = " << Keldysh2 << "\n";
+        if (Keldysh2 > 16.0) continue;
+
+//         std_cout << "charge_state = " << charge_state << std::endl;
+//         std_cout << "element.m[charge_state] = " << element.m[charge_state] << std::endl;
+//         std_cout << "dl, dm = " << dl << "," << dm << std::endl;
+//         exit(0);
+        double wadk_au = Ionization_Rate_Tunnelling_au(Ip_au, Eabs_au,
+                                                        charge_state+1, dl, dm);
+//         std_cout << "wadk_au = " << wadk_au << std::endl;
+
+        double wadk  = wadk_au * w_au;
+
+        double delta_qq = 1.0 - exp(-wadk*dt);
+
+        double rand_nmb = prng.Get_Random();
+
+        // Monte-Carlo test for ionization
+        if (rand_nmb > delta_qq) continue;
+
+
+        double new_e_distance = a0;
+        // Normalize the distance of creation by the field
+        // strength and the ionization potential. The stronger
+        // the field, the smaller the potential barrier of the
+        // electron will be, so the new position must be closer
+        // to the atom/ion.
+        new_e_distance *= (Ip_au/Eabs_au);
+        // Check if particle is too close or to far away from ion
+        double dmin = 0.1 * a0;
+        double dmax = element.next_nghb_05;
+        if( new_e_distance > dmax ) new_e_distance = dmax;
+        if( new_e_distance < dmin ) new_e_distance = dmin;
+
+        // Tunnel ionization occurred !!!
+        did_ionization_occur = true;
+
+        // Increment the counter for the number of ionizations that took
+        // place (ionizationlist[0]) and store the Id of the ionized
+        // atom.
+        ionizedlist[ionizedlist[0]++ +1] = Get_Id(ion);
+
+        void *nce = get_voidp(el, index_next_empty_space);
+
+        // Save to passed file handle
+        if(Lib_Get_Rank() == 0)
+        {
+            if (fh_out != NULL)
+            {
+                // FIXME
+                fprintf(fh_out, "%g %d %d %d %d %d\n", time, IONIZATION_PROCESS_TUNNEL, Get_Charge_State(ion), Get_Id(ion), Get_Id(nce), -1);
+                fflush(fh_out);
+            }
+        }
+
+        // Initialize the new electron's basic properties. This function needs
+        // to be provided by the calling code. index_next_empty_space is
+        // incremented in that function
+        Create_Electron(
+            el, ion,
+            time,
+            Nb_atoms, Nb_atoms_max,
+            Nb_electrons, Nb_electrons_max,
+            index_next_empty_space,
+            element,
+            "Create_Electron() called from Ionization_Tunnelling() in library"
+        );
+
+        // Set electron's new position
+        // Absolute value of the electric field
+        const double one_over_Eabs = 1.0 / Eabs;
+        double field_direction[3];
+        double new_e_position[3];
+        Vector_Times_Scalar(field_direction, Efld, one_over_Eabs);
+
+        // Calculate new position
+        Vector_Times_Scalar(new_e_position, field_direction, new_e_distance);
+        for (int d = 0 ; d < 3 ; d++) Get_Position(nce)[d] = Get_Position(ion)[d] - new_e_position[d];
+
+        // The ion cannot be re-tunnel-ionized for 200 as
+        double new_ni = time + 200E-18;
+        if( new_ni > Get_NextIon(ion) ) Set_NextIon(ion, new_ni);
+    }
+
+    //If another type of ionizationed happened make sure the
+    //did_ionization_occur flag is set properly
+    //by ORing with the initial value of the flag
+    //The Not is because yes=0
+    did_ionization_occur = (did_ionization_occur && orig_did_ionization_occur);
+
+    return EXIT_SUCCESS;
+}
+
+// **************************************************************
+double Ionization_Rate_Tunnelling_SI(double Ip, double E, int Z,
+                                     int l, int m)
+/**
+ * Quasistatic approximation to the rate of tunnel ionization. \n
+ * Calculation is done in atomic units (au), so conversions are necessary. \n
+ * See: \n
+ *      Yudin, G. L. & Ivanov, M. Y. Nonadiabatic tunnel ionization: Looking \n
+ *          inside a laser cycle Phys. Rev. A, American Physical Society, \n
+ *          2001, 64, 013409 (10.1103/PhysRevA.64.013409)
+ *      Dietrich, P. & Corkum, P. B. Ionization and dissociation of diatomic \n
+ *          molecules in intense infrared laser fields J. Chem. Phys., \n
+ *          1992, 97, 3187 \n
+ * Notes: \n
+ *      -Atomic units \n
+ *      -Rigorously valid only in the limit gamma << 1 \n
+ * @param Ip    Ionization potential [eV]
+ * @param E     Field strength [V . m^-1]
+ * @param Z     Charge state after ionization event
+ * @param l     Angular quantum number
+ * @param m     Magnetic quantum number
+ * @return      Tunnel ionization rate [s^-1]
+ */
+{
+    double Ip_au, E_au, w_au, w;
+
+    // ********** Conversion to atomic units ********************
+    Ip_au = Ip * eV_to_Eh;          // eV to au (Hartree)
+    E_au  = E  / au_electric_field; // V . m^-1 to au
+
+    // Call the atomic units function
+    w_au = Ionization_Rate_Tunnelling_au(Ip_au, E_au, Z, l, m);
+
+    // ********** Scale back to SI units (s^-1) and return value
+    w = w_au / au_time;             // au^-1 to s^-1
+
+    return w;
+}
+
+// **************************************************************
+double Ionization_Rate_Tunnelling_au(double Ip_au, double E_au,
+                                     int Z, int l, int m)
+/**
+ * Quasistatic approximation to the rate of tunnel ionization. \n
+ * See: \n
+ *      Yudin, G. L. & Ivanov, M. Y. Nonadiabatic tunnel ionization: Looking \n
+ *          inside a laser cycle Phys. Rev. A, American Physical Society, \n
+ *          2001, 64, 013409 (10.1103/PhysRevA.64.013409)
+ *      Dietrich, P. & Corkum, P. B. Ionization and dissociation of diatomic \n
+ *          molecules in intense infrared laser fields J. Chem. Phys., \n
+ *          1992, 97, 3187 \n
+ * Notes: \n
+ *      -Z if the _effective_ charge state
+ *      -Atomic units \n
+ *      -Rigorously valid only in the limit gamma << 1 \n
+ * @param Ip    Ionization potential [Hartree]
+ * @param E     Field strength [au]
+ * @param Z     Charge state after ionization event (effective charge state)
+ * @param l     Angular quantum number
+ * @param m     Magnetic quantum number
+ * @return      Tunnel ionization rate [s^-1]
+ */
+{
+    double w_au = 0.0;
+
+    // Only calculate the rate if field is non-zero
+    if (E_au > DBL_MIN)
+    {
+        // Yudin2001 equation (2)
+        double  A_nl;           // Equivalent to "C_nl_sqr" in MDCluster
+        double  B_lm;           // Equivalent to "A_lm" in MDCluster
+
+        int     abs_m;
+        double  n_eff, l_eff, kappa, k3_E;
+
+        abs_m = abs(m);
+
+        kappa = sqrt(2.0 * Ip_au);      // Usefull value which return often
+        n_eff = double(Z) / kappa;      // Effective principal quantum number
+
+        // If l << n then l_eff = 0, else l_eff = n_eff - 1
+        // See Dietrich1992, page 3197
+//         l_eff = 0;                      // MDCluster uses that
+        l_eff = n_eff - 1.0;            // Original treecode uses that
+
+        k3_E = pow(kappa,3) / E_au;
+
+        // See Yudin2001, eq. (2)
+//         // More effective version following.
+//         A_nl = pow(2.0, 2.0*n_eff) / (
+//             n_eff
+//             * Gamma(n_eff + l_eff + 1.0)
+//             * Gamma(n_eff - l_eff)
+//         );
+        // More effective version:
+        A_nl = pow(2.0, 2.0*n_eff) / (
+            n_eff
+            * exp(
+                nr::Gamma_NaturalLogarithm(n_eff + l_eff + 1.0)
+                + nr::Gamma_NaturalLogarithm(n_eff - l_eff)
+            )
+        );
+
+        assert(abs_m >= 0);
+        assert((l - abs_m) >= 0);
+
+        B_lm = ( (2.0*double(l) + 1.0) * factoriald(l + abs_m) )
+            / double( pow(2.0, abs_m) * factorial(abs_m) * factorial(l - abs_m) );
+
+        // See Yudin2001, eq. (1)
+        w_au = A_nl * B_lm * Ip_au * pow(
+            2.0 * k3_E,
+            2.0*n_eff - abs_m - 1.0
+        ) * exp( -two_over_three * k3_E );
+
+    }
+
+    return w_au;
+}
+
+// **************************************************************
+// ********** Local functions implementations *******************
+// **************************************************************
+// Empty
+
+// ********** End of file ***************************************
