@@ -3,14 +3,6 @@
 ****************************************************************/
 
 #include <iostream> // cout
-#ifdef __SUNPRO_CC
-#include <math.h>
-#include <float.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>  // memset
-#include <assert.h>
-#else // #ifdef __SUNPRO_CC
 #include <cmath>
 #include <cfloat>
 #include <cstdio>
@@ -18,7 +10,6 @@
 #include <iostream> // cout
 #include <cstring>  // memset
 #include <cassert>
-#endif // #ifdef __SUNPRO_CC
 
 #include "Constants.hpp"
 #include "Potentials.hpp"
