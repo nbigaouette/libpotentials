@@ -10,6 +10,10 @@
 
 // Public interface of potentials library
 
+#ifndef DEBUGP
+#define DEBUGP(x)           std_cout << __FILE__ << ":" << __LINE__ << ":\n    " << (x)
+#endif // #ifndef DEBUGP
+
 void Potentials_Initialize(const std::string potential_shape,
                            const double base_potential_depth,
                            const double input_s_rmin,

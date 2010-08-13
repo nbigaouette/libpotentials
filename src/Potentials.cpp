@@ -13,7 +13,6 @@
 
 #include "Constants.hpp"
 #include "Potentials.hpp"
-#include "General.hpp"
 #include "Code_Functions_Declarations.hpp"
 #include "Global.hpp"
 #include "LibPotentials.hpp"
