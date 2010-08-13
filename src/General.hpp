@@ -13,15 +13,6 @@
 
 #define DEBUGP(x)           std_cout << __FILE__ << ":" << __LINE__ << ":\n    " << (x)
 
-const int Potential_Shapes_Simple               = 1;
-const int Potential_Shapes_Harmonic             = 2;
-const int Potential_Shapes_SuperGaussian        = 3;
-const int Potential_Shapes_GaussianDistribution = 4;
-const int Potential_Shapes_HS_SuperGaussian     = 5;
-const int Potential_Shapes_ChargeDistribution_Symmetric = 6;
-const int Potential_Shapes_ScreenedCoulomb      = 7;
-
-
 void Check_if_LibPotentials_is_initialized(void);
 void Potentials_Initialize(const std::string potential_shape,
                            const double base_potential_depth,
