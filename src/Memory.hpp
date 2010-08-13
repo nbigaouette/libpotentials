@@ -2,6 +2,7 @@
 #define INC_MEMORY_hpp
 
 #include <climits> // CHAR_BIT
+#include <stdint.h> // (u)int64_t
 
 #include "Std_Cout.hpp"
 
@@ -30,19 +31,16 @@ static inline void * calloc_and_check(Integer nb, size_t s, const std::string ms
 }
 
 // **************************************************************
-template <class Integer>
-static inline void * malloc_and_check(Integer nb, size_t s, const std::string msg = "")
+static inline void * malloc_and_check(size_t nb_s, const std::string msg = "")
 {
     void *p = NULL;
-    p = malloc(nb * s);
+    p = malloc(nb_s);
     if (p == NULL)
     {
-        const long unsigned int slu  = (long unsigned int) s;
-        const long unsigned int slun = (long unsigned int) s * nb;
-        std_cout << "Allocation of " << nb << " x " << slu << " bytes = " << slun << " bytes failed" << std::endl;
-        std_cout << "(" << double(slun) / (1024.0) << " KiB, "
-                         << double(slun) / (1024.0*1024.0) << " MiB, "
-                         << double(slun) / (1024.0*1024.0*1024.0) << " GiB)" << std::endl;
+        std_cout << "Allocation of " << nb_s << " bytes failed" << std::endl;
+        std_cout << "(" << double(nb_s) / (1024.0) << " KiB, "
+                         << double(nb_s) / (1024.0*1024.0) << " MiB, "
+                         << double(nb_s) / (1024.0*1024.0*1024.0) << " GiB)" << std::endl;
         std_cout << "p = " << p << "\n";
         if (msg != "")
         {
@@ -55,6 +53,13 @@ static inline void * malloc_and_check(Integer nb, size_t s, const std::string ms
 }
 
 // **************************************************************
+template <class Integer>
+static inline void * malloc_and_check(Integer nb, size_t s, const std::string msg = "")
+{
+    return malloc_and_check(nb * s, msg);
+}
+
+// **************************************************************
 template <class Pointer>
 void free_me(Pointer &p)
 {
@@ -64,8 +69,6 @@ void free_me(Pointer &p)
     }
     p = NULL;
 }
-
-void Print_Double_in_Binary(double d);
 
 // **************************************************************
 template <class Integer>
@@ -113,6 +116,36 @@ void Print_Integer_in_Binary(Integer n)
         if ((mask & n) == zero) std_cout << "0";
         else                    std_cout << "1";
     }
+}
+
+// **************************************************************
+static inline void Print_Double_in_Binary(double d)
+/**
+ * Prints binary representation of a double
+ * http://www.exploringbinary.com/displaying-the-raw-fields-of-a-floating-point-number/
+ */
+{
+    uint64_t *double_as_int = (uint64_t *) &d;
+    const int bit_size = CHAR_BIT*sizeof(uint64_t);
+
+    // Print bits by bits
+    for (int b = 0 ; b <= bit_size-1 ; b++)
+    {
+        if (b == 1)
+            std_cout << " ";    // Space after sign field
+        if (b == 12)
+            std_cout << " ";    // Space after exponent field
+
+        // Get bit, but in reverse order. On Little Endian machines
+        // (most of Intel and such), the byte with lower address
+        // is the less significant. Since we want to print from
+        // the most significant, we iterate from the end.
+        if ((*double_as_int >> ((bit_size-1)-b)) & 1)
+            std_cout << "1";
+        else
+            std_cout << "0";
+    }
+    //std_cout << "\n";
 }
 
 
