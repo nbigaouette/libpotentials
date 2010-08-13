@@ -32,14 +32,15 @@ void Potentials_Initialize(const std::string potential_shape,
     Calculate_Potential       = NULL;
     Set_Field                 = NULL;
 
-    std_cout << "###############################################\n";
-    std_cout << "### Potentials library initialization...    ###\n";
-    std_cout << "###############################################\n";
+    std_cout
+        << "######################################################################\n"
+        << "###             Potentials library initialization                  ###\n"
+        << "###----------------------------------------------------------------###\n";
 
     if (potential_shape == "PureCoulomb")
     {
         double r_temp = 0.0;
-        std_cout << "### Using a pure Coulomb interaction        ###\n";
+        std_cout << "### Using a pure Coulomb interaction                               ###\n";
         Initialize_Simple(r_temp);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Simple;
@@ -48,8 +49,8 @@ void Potentials_Initialize(const std::string potential_shape,
     }
     else if (potential_shape == "Simple")
     {
-        std_cout << "### Using a simple cutoff                   ###\n";
-        std_cout << "### for close range interaction             ###\n";
+        std_cout << "### Using a simple cutoff                                          ###\n";
+        std_cout << "### for close range interaction                                    ###\n";
         Initialize_Simple(input_s_rmin);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Simple;
@@ -58,8 +59,8 @@ void Potentials_Initialize(const std::string potential_shape,
     }
     else if (potential_shape == "Harmonic")
     {
-        std_cout << "### Using an harmonic potential             ###\n";
-        std_cout << "### for close range interaction             ###\n";
+        std_cout << "### Using an harmonic potential                                    ###\n";
+        std_cout << "### for close range interaction                                    ###\n";
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Harmonic;
         Calculate_Potential       = &Calculate_Potential_Cutoff_Harmonic;
@@ -67,8 +68,8 @@ void Potentials_Initialize(const std::string potential_shape,
     }
     else if (potential_shape == "SuperGaussian")
     {
-        std_cout << "### Using a super-gaussian potential        ###\n";
-        std_cout << "### for close range interaction             ###\n";
+        std_cout << "### Using a super-gaussian potential                               ###\n";
+        std_cout << "### for close range interaction                                    ###\n";
         std_cout << "### with m = " << input_sg_m << "\n";
         Initialize_SuperGaussian(input_sg_m);
 
@@ -78,8 +79,8 @@ void Potentials_Initialize(const std::string potential_shape,
     }
     else if (potential_shape == "GaussianDistribution")
     {
-        std_cout << "### Using a gaussian charge distribution    ###\n";
-        std_cout << "### potential for close range interaction   ###\n";
+        std_cout << "### Using a gaussian charge distribution                           ###\n";
+        std_cout << "### potential for close range interaction                          ###\n";
         libpotentials_private::initialize_erf_lookup_table();
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_GaussianDistribution;
@@ -88,10 +89,10 @@ void Potentials_Initialize(const std::string potential_shape,
     }
     else if (potential_shape == "HermanSkillman")
     {
-        std_cout << "### Using the Herman-Skillman (HS) potential ##\n";
-        std_cout << "### for close range interaction             ###\n";
-        std_cout << "### and Super-Gaussian for electrons and 8+ ###\n";
-        std_cout << "### and up ions (m = " << input_sg_m << ")                    ###\n";
+        std_cout << "### Using the Herman-Skillman (HS) potential                        ##\n";
+        std_cout << "### for close range interaction                                    ###\n";
+        std_cout << "### and Super-Gaussian for electrons and 8+                        ###\n";
+        std_cout << "### and up ions (m = " << input_sg_m << ")                                           ###\n";
         Initialize_HS(input_sg_m, input_s_rmin);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_HS_SuperGaussian;
@@ -100,8 +101,8 @@ void Potentials_Initialize(const std::string potential_shape,
     }
     else if (potential_shape == "Symmetric")
     {
-        std_cout << "### Using the symmetric two charge          ###\n";
-        std_cout << "### distribution interaction                ###\n";
+        std_cout << "### Using the symmetric two charge                                 ###\n";
+        std_cout << "### distribution interaction                                       ###\n";
         libpotentials_private::initialize_erf_lookup_table();
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_ChargeDistribution_Symmetric;
@@ -110,8 +111,8 @@ void Potentials_Initialize(const std::string potential_shape,
     }
     else if (potential_shape == "ScreenedCoulomb")
     {
-        std_cout << "### Using the Coulomb potential screened with##\n";
-        std_cout << "### parameter alpha = " << sc_alpha * libpotentials::m_to_angstrom << "                 ###\n";
+        std_cout << "### Using the Coulomb potential screened with                       ##\n";
+        std_cout << "### parameter alpha = " << sc_alpha * libpotentials::m_to_angstrom << "                                        ###\n";
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_ScreenedCoulomb;
         Calculate_Potential       = &Calculate_Potential_Cutoff_ScreenedCoulomb;
@@ -126,12 +127,13 @@ void Potentials_Initialize(const std::string potential_shape,
         abort();
     }
 
-    std_cout << "### Git versioning:"   << std::endl
-    std_cout << "### Ionization library initialization done. ###\n";
-    std_cout << "###############################################\n";
+    std_cout << "### Git versioning:                                                ###\n"
              << "###     build_time:   "<< libpotentials::build_time << std::endl
              << "###     build_sha:    "<< libpotentials::build_sha << std::endl
              << "###     build_branch: "<< libpotentials::build_branch << std::endl
+             << "###----------------------------------------------------------------###\n"
+             << "###            Potentials library initialization done.             ###\n"
+             << "######################################################################\n";
 }
 
 // **************************************************************
