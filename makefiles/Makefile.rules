@@ -125,10 +125,20 @@ DEBUGGER         = gdb
 VALGRIND         = valgrind
 MEMCHECK         = $(VALGRIND) --tool=memcheck --leak-check=full --show-reachable=yes
 CACHEGRIND       = $(VALGRIND) --tool=callgrind
+GIT              = git
+GREP             = grep
+SED              = sed
 ifeq ($(NP),)
 ifneq ($(np),)
 NP=$(np)
 endif
+endif
+NP ?= 2
+ifneq ($(NAME),)
+NAME_ARGUMENT   = --name $(NAME)
+endif
+ifneq ($(INPUT),)
+INPUT_ARGUMENT  = --input $(INPUT)
 endif
 #################################################################
 
@@ -147,12 +157,14 @@ all: $(BIN)
 .PHONY: o
 o: $(OBJ)
 
+GIT_BRANCH := $(shell $(GIT) branch --no-color| $(GREP) "*" | $(SED) "s|* ||g")
+
 # Linking
 $(BIN): $(OBJ)
 	$(LD) $(OBJ) -o $(BIN) $(LDFLAGS)
 
 # Compilation of source files, depends on ALL headers
-$(build_dir)/%.o : %.$(SRCEXT) $(foreach DIR,$(SRCDIRS) .,$(wildcard $(DIR)/*.$(HEADEXT)))
+$(build_dir)/%.o : %.$(SRCEXT) $(foreach DIR,$(SRCDIRS) .,$(filter-out $(DIR)/Version.hpp, $(wildcard $(DIR)/*.$(HEADEXT))))
 	$(COMPILER) $(strip $(CFLAGS) $(INCLUDES)) -c $< -o $@
 
 

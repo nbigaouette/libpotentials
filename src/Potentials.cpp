@@ -11,11 +11,10 @@
 #include <cstring>  // memset
 #include <cassert>
 
+#include "LibPotentials.hpp"
 #include "Constants.hpp"
-#include "Potentials.hpp"
 #include "Code_Functions_Declarations.hpp"
 #include "Global.hpp"
-#include "LibPotentials.hpp"
 
 using namespace libpotentials;
 

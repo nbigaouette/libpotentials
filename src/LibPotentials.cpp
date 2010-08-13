@@ -4,7 +4,6 @@
 #include "Potentials.hpp"
 #include "Global.hpp"
 #include "Std_Cout.hpp"
-#include "Version.hpp"
 #include "Code_Functions_Declarations.hpp"
 
 extern void Initialize_Simple(const double &minr);
@@ -128,9 +127,9 @@ void Potentials_Initialize(const std::string potential_shape,
     }
 
     std_cout << "### Git versioning:"   << std::endl
-             << "###     build_time:   "<< build_time << std::endl
-             << "###     build_sha:    "<< build_sha << std::endl
-             << "###     build_branch: "<< build_branch << std::endl;
+             << "###     build_time:   "<< libpotential::build_time << std::endl
+             << "###     build_sha:    "<< libpotential::build_sha << std::endl
+             << "###     build_branch: "<< libpotential::build_branch << std::endl;
     std_cout << "### Ionization library initialization done. ###\n";
     std_cout << "###############################################\n";
 }

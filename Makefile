@@ -24,6 +24,7 @@ include makefiles/Makefile.rules
 
 LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $(OBJ) ) )
 
+
 ### Just build "full" and install
 .PHONY: f
 f:
@@ -44,7 +45,7 @@ test:
 .PHONY: shared lib_shared
 shared: lib_shared
 lib_shared: $(build_dir)/lib$(LIB).so
-$(build_dir)/lib$(LIB).so: $(LIB_OBJ)
+$(build_dir)/lib$(LIB).so: version $(LIB_OBJ)
 	############################################################
 	######## Building shared library... ########################
 	#
@@ -54,7 +55,7 @@ $(build_dir)/lib$(LIB).so: $(LIB_OBJ)
 .PHONY: static lib_static
 static: lib_static
 lib_static: $(build_dir)/lib$(LIB).a
-$(build_dir)/lib$(LIB).a: $(LIB_OBJ)
+$(build_dir)/lib$(LIB).a: version $(LIB_OBJ)
 	############################################################
 	######## Building static library... ########################
 	#
@@ -100,7 +101,21 @@ endif
 HEADERS_NOTESTING=$(filter-out $(wildcard testing/*.$(HEADEXT)), $(HEADERS) )
 HEADERS_NOTESTING_NOSRC=$(subst src/,,$(HEADERS_NOTESTING) )
 #INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_NOTESTING_NOSRC) )
-INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, LibPotentials.hpp Potentials.hpp Potentials.hpp Structure_Potentials.hpp Vectors.hpp Memory.hpp )
+INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, LibPotentials.hpp Potentials.hpp Potentials.hpp Structure_Potentials.hpp Vectors.hpp Memory.hpp Version.hpp )
+
+
+
+.PHONY: version
+version: src/Version.hpp
+src/Version.hpp: force
+	echo "#ifndef INC_LIBPOTENTIALS_VERSION_hpp" > src/Version.hpp
+	echo "#define INC_LIBPOTENTIALS_VERSION_hpp" >> src/Version.hpp
+	echo "namespace libpotential {" >> src/Version.hpp
+	echo "    const char *const build_time = \"`date`\";" >> src/Version.hpp
+	echo "    const char *const build_sha = \"$(GIT_BRANCH)\";" >> src/Version.hpp
+	echo "    const char *const build_branch = \"`$(GIT) rev-parse HEAD`\";" >> src/Version.hpp
+	echo "}" >> src/Version.hpp
+	echo "#endif // #ifndef INC_LIBPOTENTIALS_VERSION_hpp" >> src/Version.hpp
 
 ### Install only the build (static,shared) stated as target
 TO_INSTALL       = install_headers
