@@ -991,8 +991,8 @@ void Potentials_Set_Parameters_GaussianDistribution(
 #ifdef YDEBUG
     if (potparams.r <= 1.0e-200 || isnan(potparams.r))
     {
-        Print_Partiles(p1, NULL, 1, 1, 0, 0);
-        Print_Partiles(p2, NULL, 1, 1, 0, 0);
+        Print_Particles(p1, NULL, 1, 1, 0, 0);
+        Print_Particles(p2, NULL, 1, 1, 0, 0);
         assert(potparams.r > 1.0e-200);
         abort();
     }
@@ -1183,8 +1183,8 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
         std_cout << "Error in Potentials_Set_Parameters_ChargeDistribution_Symmetric()\n";
         std_cout << "Particles p1 ("<<p1<<") and p2 ("<<p2<<") are too close.\n";
         std_cout << "Distance = " << potparams.r * si_to_au_length << "\n";
-        Print_Partiles(p1, NULL, 1, 1, 0, 0);
-        Print_Partiles(p2, NULL, 1, 1, 0, 0);
+        Print_Particles(p1, NULL, 1, 1, 0, 0);
+        Print_Particles(p2, NULL, 1, 1, 0, 0);
         assert(potparams.r > 1.0e-200);
         abort();
     }

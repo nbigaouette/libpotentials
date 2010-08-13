@@ -224,7 +224,7 @@ double my_erf(double x)
 }
 
 // **************************************************************
-void Print_Partiles(void *al, void *el,
+void Print_Particles(void *al, void *el,
                     const int &Nb_atoms, const int &Nb_atoms_max,
                     const int &Nb_electrons, const int &Nb_electrons_max)
 {

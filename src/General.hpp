@@ -20,7 +20,7 @@ void Potentials_Initialize(const std::string potential_shape,
                            const double input_sg_m);
 void Potentials_Finalize();
 
-void Print_Partiles(void *al, void *el,
+void Print_Particles(void *al, void *el,
                     const int &Nb_atoms, const int &Nb_atoms_max,
                     const int &Nb_electrons, const int &Nb_electrons_max);
 
