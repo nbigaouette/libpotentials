@@ -98,10 +98,11 @@ else
     DESTDIR_LIB := $(DESTDIR)/lib/$(DESTDIRCOMPILER)
 endif
 
-HEADERS_NOTESTING=$(filter-out $(wildcard testing/*.$(HEADEXT)), $(HEADERS) )
-HEADERS_NOTESTING_NOSRC=$(subst src/,,$(HEADERS_NOTESTING) )
-#INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_NOTESTING_NOSRC) )
-INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, LibPotentials.hpp Potentials.hpp Potentials.hpp Structure_Potentials.hpp Vectors.hpp Memory.hpp Version.hpp )
+HEADERS_NOTESTING        =$(filter-out $(wildcard testing/*.$(HEADEXT)), $(HEADERS) )
+HEADERS_NOTESTING_NOSRC  =$(subst src/,,$(HEADERS_NOTESTING) )
+HEADERS_TO_INSTALL       = $(HEADERS_NOTESTING_NOSRC)
+HEADERS_TO_INSTALL       = $(addsuffix .hpp, LibPotentials Potentials Potentials Structure_Potentials Std_Cout Vectors Memory Version)
+INSTALLED_HEADERS        =$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_TO_INSTALL) )
 
 
 
