@@ -1,5 +1,5 @@
-#ifndef INC_GENERAL_hpp
-#define INC_GENERAL_hpp
+#ifndef INC_POTENTIAL_GENERAL_hpp
+#define INC_POTENTIAL_GENERAL_hpp
 
 #include <iostream>
 #include <cstring>
@@ -23,9 +23,10 @@ const int Potential_Shapes_ScreenedCoulomb      = 7;
 
 
 void Check_if_LibPotentials_is_initialized(void);
-void Potentials_Initialize(const int arg_called_from,
-                           const std::string potential_shape,
-                           const double base_potential_depth);
+void Potentials_Initialize(const std::string potential_shape,
+                           const double base_potential_depth,
+                           const double input_s_rmin,
+                           const double input_sg_m);
 void Potentials_Finalize();
 
 void Print_Partiles(void *al, void *el,
@@ -34,7 +35,6 @@ void Print_Partiles(void *al, void *el,
 
 double my_erf(double x);
 
-
-#endif // INC_GENERAL_hpp
+#endif // INC_POTENTIAL_GENERAL_hpp
 
 // ********** End of file ***************************************

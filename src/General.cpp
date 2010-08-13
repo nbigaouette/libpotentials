@@ -22,6 +22,7 @@
 #include "Code_Functions_Declarations.hpp"
 #include "Std_Cout.hpp"
 #include "Version.hpp"
+#include "Memory.hpp"
 
 
 using namespace libpotentials;
