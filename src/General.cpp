@@ -4,12 +4,7 @@
 
 ****************************************************************/
 
-#ifdef __SUNPRO_CC
-#include <string.h>
-#else
 #include <cstring>
-#endif
-
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -62,21 +57,11 @@ void Check_if_LibPotentials_is_initialized(void)
 #endif
 }
 
-// Compare two numbers. If their relative difference is
-// bigger than a certain precision (1e-14) then assert
-// (exit with error)
-void assert_diff(double a, double b)
-{
-    if ((a+b) > DBL_MIN)
-        assert((fabs( (a-b) / (a+b) )) <= 1.0e-14);
-}
-
 // **************************************************************
 void Potentials_Initialize(const std::string potential_shape,
                            const double base_potential_depth,
                            const double input_s_rmin,
-                           const double input_sg_m
-                          )
+                           const double input_sg_m)
 {
     is_libpotentials_initialized = true;
 
@@ -214,30 +199,6 @@ void initialize_erf_lookup_table()
     {
         tl_erf[i] = nr::int_erf(i*tl_dR);
     }
-}
-
-// **************************************************************
-int factorial(int x)
-/**
- * Calculate the factorial of a number.
- */
-{
-    if ( x == 1 || x == 0 ) return 1;
-    else if (x < 0)
-    {
-        std_cout << "ERROR:\nCall of function \"int factorial(int x)\" with negative value.\n";
-    }
-
-    int res = 1;
-    for (int i = 2 ; i <= x ; i++) res *= i;
-
-    return res;
-}
-
-// **************************************************************
-double factoriald(int x)
-{
-    return double(factorial(x));
 }
 
 // **************************************************************
