@@ -32,7 +32,7 @@
 using namespace libpotentials;
 
 // Is the library initialized?
-int is_initialized = -1;
+int is_libpotentials_initialized = -1;
 
 // Error function lookup table
 // erf(R)
@@ -48,13 +48,13 @@ void initialize_erf_lookup_table();
 // ********** Accessible functions implementations **************
 // **************************************************************
 
-void Check_if_initialized(void)
+void Check_if_LibPotentials_is_initialized(void)
 {
 #ifdef YDEBUG
-    if (!is_initialized)
+    if (!is_libpotentials_initialized)
     {
         std_cout << "ERROR!!!\n";
-        std_cout << "is_initialized = " << (is_initialized ? "yes" : "no") << "\n";
+        std_cout << "is_libpotentials_initialized = " << (is_libpotentials_initialized ? "yes" : "no") << "\n";
         std_cout << "Potentials library is not initialized, please call Potentials_Initialize()\n";
         std_cout << "Exiting\n";
         abort();
@@ -78,7 +78,7 @@ void Potentials_Initialize(const std::string potential_shape,
                            const double input_sg_m
                           )
 {
-    is_initialized = true;
+    is_libpotentials_initialized = true;
 
     base_pot_well_depth = base_potential_depth; //in eV
 

@@ -296,7 +296,7 @@ void Potentials_Set_Parameters_Simple(
  *
  */
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
@@ -325,7 +325,7 @@ double Calculate_Potential_Cutoff_Simple(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     double potential;
 
@@ -343,7 +343,7 @@ void Set_Field_Cutoff_Simple(
     potential_paramaters &potparams,
     double &phi, double E[3])
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     if (potparams.r > potparams.cutoff_radius)
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
@@ -363,7 +363,7 @@ void Potentials_Set_Parameters_Harmonic(
  *
  */
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
@@ -420,7 +420,7 @@ double Calculate_Potential_Cutoff_Harmonic(
  * due to another particle/cell "p2" at distance sqrt(dr2)
  */
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     double phi12;   // Electrostatic potential
 
@@ -449,7 +449,7 @@ void Set_Field_Cutoff_Harmonic(
     potential_paramaters &potparams,
     double &phi, double E[3])
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     if (potparams.r > potparams.cutoff_radius)
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
@@ -484,7 +484,7 @@ void Potentials_Set_Parameters_SuperGaussian(
  *
  */
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
@@ -550,7 +550,7 @@ double Calculate_Potential_Cutoff_SuperGaussian(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     double phi12;   // Electrostatic potential
 
@@ -576,7 +576,7 @@ void Set_Field_Cutoff_SuperGaussian(
     potential_paramaters &potparams,
     double &phi, double E[3])
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     if (potparams.r > potparams.cutoff_radius)
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
@@ -613,7 +613,7 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
  *
  */
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
@@ -674,7 +674,7 @@ double Calculate_Potential_Cutoff_HS_SuperGaussian(
  * hs_min_rad SHOULDN'T be < 0.073 since the functions aren't fitted there
  */
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     double phi12 = 0.0;   // Electrostatic potential
 
@@ -787,7 +787,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
     potential_paramaters &potparams,
     double &phi, double E[3])
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     // Fits are in atomic units
     const double distance_au = potparams.r * si_to_au_length;
@@ -970,7 +970,7 @@ void Potentials_Set_Parameters_GaussianDistribution(
  * acting on p1.
  */
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
 //   if (Get_Id(p1) == Get_Id(p2)){
 /*  std::cout << "Id1=" << Get_Id(p1) << " Id2=" << Get_Id(p2)
@@ -1091,7 +1091,7 @@ double Calculate_Potential_Cutoff_GaussianDistribution(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     double phi12=0.0;   // Electrostatic potential
 
@@ -1121,7 +1121,7 @@ void Set_Field_Cutoff_GaussianDistribution(
     potential_paramaters &potparams,
     double &phi, double E[3])
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     if (potparams.r > potparams.cutoff_radius)
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
@@ -1164,7 +1164,7 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     potparams.sym_cs1 = Get_Charge_State(p1);
     potparams.sym_cs2 = Get_Charge_State(p2);
@@ -1238,7 +1238,7 @@ double Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(
  * here.
  */
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     double potential = 0.0;
     // It does not make sense to calculate effect of particle 2 if
@@ -1269,7 +1269,7 @@ void Set_Field_Cutoff_ChargeDistribution_Symmetric(
     potential_paramaters &potparams,
     double &phi, double E[3])
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     // It does not make sense to calculate effect of particle 2 if
     // its charge is 0
@@ -1312,7 +1312,7 @@ void Potentials_Set_Parameters_ScreenedCoulomb(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
@@ -1325,7 +1325,7 @@ double Calculate_Potential_Cutoff_ScreenedCoulomb(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     const double one_over_r_plus_alpha = 1.0 / (potparams.r + sc_alpha);
     const double phi = potparams.kQ2 * (2.0 * potparams.r + sc_alpha) * one_over_r_plus_alpha * one_over_r_plus_alpha * 0.5;
@@ -1338,7 +1338,7 @@ void Set_Field_Cutoff_ScreenedCoulomb(
     potential_paramaters &potparams,
     double &phi, double E[3])
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     const double Eabs = potparams.kQ2 / pow(potparams.r + sc_alpha,3);
     for (int d = 0 ; d < 3 ; d++)
@@ -1350,7 +1350,7 @@ void Potentials_Set_Parameters_PseudoParticles(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
@@ -1363,7 +1363,7 @@ double Calculate_Potential_PseudoParticles(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     double phi = - potparams.kQ2 * (
           ( ps_A2 / ( 2.0 * ps_A_minus_B * pow(ps_A + potparams.r, 2) ) )
@@ -1380,7 +1380,7 @@ void Set_Field_PseudoParticles(
     potential_paramaters &potparams,
     double &phi, double E[3])
 {
-    Check_if_initialized();
+    Check_if_LibPotentials_is_initialized();
 
     const double Eabs = potparams.kQ2 * (
           ( potparams.r / ( pow(potparams.r + ps_A, 3) * (potparams.r + ps_B) ) )

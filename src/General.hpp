@@ -22,7 +22,7 @@ const int Potential_Shapes_ChargeDistribution_Symmetric = 6;
 const int Potential_Shapes_ScreenedCoulomb      = 7;
 
 
-void Check_if_initialized(void);
+void Check_if_LibPotentials_is_initialized(void);
 void Potentials_Initialize(const int arg_called_from,
                            const std::string potential_shape,
                            const double base_potential_depth);
