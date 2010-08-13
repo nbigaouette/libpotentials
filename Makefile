@@ -110,7 +110,7 @@ version: src/Version.hpp
 src/Version.hpp: force
 	echo "#ifndef INC_LIBPOTENTIALS_VERSION_hpp" > src/Version.hpp
 	echo "#define INC_LIBPOTENTIALS_VERSION_hpp" >> src/Version.hpp
-	echo "namespace libpotential {" >> src/Version.hpp
+	echo "namespace libpotentials {" >> src/Version.hpp
 	echo "    const char *const build_time = \"`date`\";" >> src/Version.hpp
 	echo "    const char *const build_sha = \"$(GIT_BRANCH)\";" >> src/Version.hpp
 	echo "    const char *const build_branch = \"`$(GIT) rev-parse HEAD`\";" >> src/Version.hpp
