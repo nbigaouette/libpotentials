@@ -99,7 +99,8 @@ endif
 
 HEADERS_NOTESTING=$(filter-out $(wildcard testing/*.$(HEADEXT)), $(HEADERS) )
 HEADERS_NOTESTING_NOSRC=$(subst src/,,$(HEADERS_NOTESTING) )
-INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_NOTESTING_NOSRC) )
+#INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_NOTESTING_NOSRC) )
+INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, LibPotentials.hpp Potentials.hpp Potentials.hpp Structure_Potentials.hpp Vectors.hpp Memory.hpp )
 
 ### Install only the build (static,shared) stated as target
 TO_INSTALL       = install_headers
@@ -145,6 +146,8 @@ endif
 install_headers: install_headers_print $(INSTALLED_HEADERS) install_headers_print_done
 $(DESTDIR)/include/$(LIB)/%.$(HEADEXT): src/%.$(HEADEXT)
 	$(SUDO) $(INSTALL) $< $@
+# $(DESTDIR)/include/$(LIB)/LibPotentials.hpp: LibPotentials.hpp
+# 	$(SUDO) $(INSTALL) $< $@
 
 install_create_folders:
 ifneq (,$(filter $(host), $(HPCVL_MACHINES) ))

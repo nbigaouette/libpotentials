@@ -2,8 +2,6 @@
 #include <iomanip>
 
 #include "Std_Cout.hpp"
-// #include "Assert.hpp"
-
 
 File_And_Screen_Stream std_cout;
 

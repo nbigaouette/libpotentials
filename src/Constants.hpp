@@ -10,6 +10,10 @@
 
 namespace libpotentials
 {
+
+    // The base potential well giving the bottom of the potential well.
+    //const double base_pot_well_depth = 26.0; //[eV]
+
     // **************************************************************
 
     const double Pi             = acos(-1.0);
