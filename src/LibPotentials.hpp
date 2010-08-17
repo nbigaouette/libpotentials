@@ -1,5 +1,5 @@
-#ifndef INC_LIBPOTENTIAL_hpp
-#define INC_LIBPOTENTIAL_hpp
+#ifndef INC_LIBPOTENTIALS_hpp
+#define INC_LIBPOTENTIALS_hpp
 
 #include <string>
 
@@ -26,6 +26,6 @@ void Set_LibPotentials_as_initialized(void);
 
 void Print_Particles(void *list, const int &N);
 
-#endif // INC_LIBPOTENTIAL_hpp
+#endif // INC_LIBPOTENTIALS_hpp
 
 // ********** End of file ***************************************
