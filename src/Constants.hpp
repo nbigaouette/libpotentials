@@ -1,5 +1,5 @@
-#ifndef INC_Constants_hpp
-#define INC_Constants_hpp
+#ifndef INC_LIBPOTENTIALS_CONSTANTS_hpp
+#define INC_LIBPOTENTIALS_CONSTANTS_hpp
 
 #ifdef __SUNPRO_CC
 #include <math.h>
@@ -181,6 +181,6 @@ namespace libpotentials
     void Print_Constants();
 }
 
-#endif // INC_Constants_hpp
+#endif // INC_LIBPOTENTIALS_CONSTANTS_hpp
 
 // ********** End of File ***************************************
