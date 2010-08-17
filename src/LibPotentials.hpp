@@ -19,7 +19,7 @@
 void Potentials_Initialize(const std::string potential_shape,
                            const double base_potential_depth,
                            const double input_s_rmin,
-                           const double input_sg_m);
+                           const int input_sg_m);
 void Potentials_Finalize();
 
 void Set_LibPotentials_as_initialized(void);

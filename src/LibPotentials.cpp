@@ -14,7 +14,7 @@ extern void Initialize_HS(const int &input_sg_m, const double &min_rad);
 void Potentials_Initialize(const std::string potential_shape,
                            const double base_potential_depth,
                            const double input_s_rmin,
-                           const double input_sg_m)
+                           const int input_sg_m)
 /**
  * Initialize potentials library.
  * @param   potential_shape         String containing the type of close
