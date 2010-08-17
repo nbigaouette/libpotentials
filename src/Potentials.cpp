@@ -729,7 +729,6 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
                                   potparams.r, potparams.one_over_r);
 
     potparams.kQ2           = one_over_4Pieps0 * Get_Charge(p2);
-    potparams.hs_type2      = Get_Type(p2);
     potparams.hs_cs2        = Get_Charge_State(p2);
 
     // Default values

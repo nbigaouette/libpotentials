@@ -165,7 +165,6 @@ void Print_Particles(void *list, const int &N)
         std_cout << " ("<<Get_Position(pv)[0] * libpotentials::m_to_bohr<<","<<Get_Position(pv)[1] * libpotentials::m_to_bohr<<","<<Get_Position(pv)[2] * libpotentials::m_to_bohr<<")";
         std_cout << " ("<<Get_Velocity(pv)[0] * libpotentials::si_to_au_vel<<","<<Get_Velocity(pv)[1] * libpotentials::si_to_au_vel<<","<<Get_Velocity(pv)[2] * libpotentials::si_to_au_vel<<")";
         std_cout << " "<<Get_Charge_State(pv)<<" ";
-        std_cout << " "<<Get_Type(pv)<<" ";
         std_cout << " " << 0.5 * Get_Mass(pv) * (
             Get_Velocity(pv)[0]*Get_Velocity(pv)[0] + Get_Velocity(pv)[1]*Get_Velocity(pv)[1] + Get_Velocity(pv)[2]*Get_Velocity(pv)[2]
         ) * libpotentials::J_to_eV;

@@ -52,9 +52,6 @@ extern void    Set_Potential(void *b, double m);
 extern double* Get_E(void *b);
 extern void    Set_E(void *b, double E[3]);
 
-extern int     Get_Type(void *b);
-extern void    Set_Type(void *b, int t);
-
 extern int     Get_NextIon(void *b);
 extern void    Set_NextIon(void *b, double n);
 

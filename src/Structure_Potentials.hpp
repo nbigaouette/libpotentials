@@ -37,8 +37,6 @@ struct potential_paramaters {
     double  sg_exp_half_r_over_sigma_two_m; // exp(-0.5(r/sigma)^(2m))  [-]
 
     // ********** Herman-Skillman (HS) parameters *******************
-    // FIXME: Get rid of "Type()" in library
-    int     hs_type2;       // Type of particle 2                       [-]
     int     hs_cs2;         // Charge state of particle 2               [-]
 
     // ********** Gaussian Distribution parameters ******************
