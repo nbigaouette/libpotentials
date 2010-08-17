@@ -1081,18 +1081,9 @@ void Potentials_Set_Parameters_GaussianDistribution(
 {
     Check_if_LibPotentials_is_initialized();
 
-//   if (Get_Id(p1) == Get_Id(p2)){
-/*  std::cout << "Id1=" << Get_Id(p1) << " Id2=" << Get_Id(p2)
-    << "  potparams.r=" << potparams.r << std::endl;
-   std::cout << " Type1=" << Get_Type(p1) << " Type1=" << Get_Type(p2) <<  std::endl;
-   std::cout << " Get_Position(p1)=" << Get_Position(p1)[0] << "," << Get_Position(p1)[1] << "," << Get_Position(p1)[2]
-<< "\nGet_Position(p1)=" << Get_Position(p2)[0] << "," << Get_Position(p2)[1] << "," << Get_Position(p2)[2]
-<<  std::endl;*/
-//    }
-//    assert(Get_Id(p1) != Get_Id(p2));
+// std::cout << "chg1 = " << Get_Charge(p1) <<" chg2 = " << Get_Charge(p2) << std::endl;
+// std::cout << "chgs1 = " << Get_Charge_State(p1) <<" chgs2 = " << Get_Charge_State(p2) << std::endl;
 
-    // Well depth
-    //const int depth = 0;
 
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
