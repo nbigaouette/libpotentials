@@ -8,13 +8,6 @@ extern bool is_libpotentials_initialized;
 
 void Check_if_LibPotentials_is_initialized(void);
 
-void Get_r21(double r1[3], double r2[3], double r21[3]);
-double Get_Distance_Squared(double r1[3], double r2[3]);
-double Get_Distance(double r1[3], double r2[3]);
-void set_vector_between_particles(
-        double r1[3], double r2[3],
-        double r21[3], double &r212, double &r, double &one_over_r);
-
 double Coulomb_Potential(const double kQ, const double r);
 void   Coulomb_Field(const double phi12, double E[3], const double dr[3], const double dr2);
 

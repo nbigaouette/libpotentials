@@ -15,6 +15,7 @@
 #include "Constants.hpp"
 #include "Code_Functions_Declarations.hpp"
 #include "Global.hpp"
+#include "Vectors.hpp"
 
 using namespace libpotentials;
 
@@ -153,102 +154,6 @@ void Check_if_LibPotentials_is_initialized(void)
         abort();
     }
 #endif
-}
-
-// **************************************************************
-void Get_r21(double r1[3], double r2[3], double r21[3])
-/**
- * r21 is the vector groing from position r2 to position r1
- * r21 = r1 - r2
- * r2 + r21 = r1
- *
- *     2
- *    / \
- *   /   \ dr
- *  /    _\/
- * /------>1
- *
- * @param  r1   Input:  Position r1 [any units]
- * @param  r2   Input:  Position r2 [any units]
- * @param  r21  Output: Vector from to 2 to 1 [same units]
- */
-{
-    for (int d = 0 ; d < 3 ; d++) r21[d] = r1[d] - r2[d];
-}
-
-// **************************************************************
-double Get_Distance_Squared(double r1[3], double r2[3])
-/**
- * r21 is the vector groing from position r2 to position r1
- * r21 = r1 - r2
- * r2 + r21 = r1
- *
- *     2
- *    / \
- *   /   \ dr
- *  /    _\/
- * /------>1
- *
- * @param  r1    Position r1 [any units]
- * @param  r2    Position r2 [any units]
- * @return r212  Length of vector from to 2 to 1 squared [same units^2]
- */
-{
-    double r212 = 0.0;
-    double r21[3];
-    Get_r21(r1, r2, r21);
-    for (int d = 0 ; d < 3 ; d++) r212 += r21[d]*r21[d];
-    return r212;
-}
-
-// **************************************************************
-double Get_Distance(double r1[3], double r2[3])
-/**
- * r21 is the vector groing from position r2 to position r1
- * r21 = r1 - r2
- * r2 + r21 = r1
- *
- *     2
- *    / \
- *   /   \ dr
- *  /    _\/
- * /------>1
- *
- * @param  r1    Position r1 [any units]
- * @param  r2    Position r2 [any units]
- * @return r212  Length of vector from to 2 to 1 [same units]
- */
-{
-    return sqrt(Get_Distance_Squared(r1, r2));
-}
-
-// **************************************************************
-void set_vector_between_particles(
-        double r1[3], double r2[3],
-        double r21[3], double &r212, double &r, double &one_over_r)
-/**
- * r21 is the vector groing from position r2 to position r1
- * r21 = r1 - r2
- * r2 + r21 = r1
- *
- *     2
- *    / \
- *   /   \ dr
- *  /    _\/
- * /------>1
- *
- * @param  r1   Input:  Position 1 [any units]
- * @param  r2   Input:  Position 2 [any units]
- * @param  r21  Output: Vector from to 2 to 1 [same units]
- * @param  r212 Output: Length squared of vector r12 [same units^2]
- * @param  r    Output: Length of vector r12 [same units]
- * @param  one_over_r Output: Inverse of the length of vector r12 [same units^-1]
- */
-{
-    Get_r21(r1, r2, r21);
-    r212       = Get_Distance_Squared(r1, r2);
-    r          = sqrt(r212);
-    one_over_r = 1.0 / r;
 }
 
 // **************************************************************
