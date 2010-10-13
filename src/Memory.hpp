@@ -121,14 +121,14 @@ void Print_Integer_in_Binary(Integer n)
 }
 
 // **************************************************************
-static inline void Print_Double_in_Binary(fdouble d)
+static inline void Print_Double_in_Binary(double d)
 /**
  * Prints binary representation of a fdouble
  * http://www.exploringbinary.com/displaying-the-raw-fields-of-a-floating-point-number/
  */
 {
-    uint64_t *fdouble_as_int = (uint64_t *) &d;
-    const int bit_size = CHAR_BIT*sizeof(uint64_t);
+    uint64_t *double_as_int = (uint64_t *) &d;
+    const int bit_size = CHAR_BIT*sizeof(d);
 
     // Print bits by bits
     for (int b = 0 ; b <= bit_size-1 ; b++)
@@ -142,12 +142,48 @@ static inline void Print_Double_in_Binary(fdouble d)
         // (most of Intel and such), the byte with lower address
         // is the less significant. Since we want to print from
         // the most significant, we iterate from the end.
-        if ((*fdouble_as_int >> ((bit_size-1)-b)) & 1)
+        if ((*double_as_int >> ((bit_size-1)-b)) & 1)
             std_cout << "1";
         else
             std_cout << "0";
     }
     //std_cout << "\n";
+}
+
+// **************************************************************
+static inline void Print_Float_in_Binary(float d)
+/**
+ * Prints binary representation of a fdouble
+ * http://www.exploringbinary.com/displaying-the-raw-fields-of-a-floating-point-number/
+ */
+{
+    uint32_t *float_as_int = (uint32_t *) &d;
+    const int bit_size = CHAR_BIT*sizeof(d);
+
+    // Print bits by bits
+    for (int b = 0 ; b <= bit_size-1 ; b++)
+    {
+        if (b == 1)
+            std_cout << " ";    // Space after sign field
+        if (b == 9)
+            std_cout << " ";    // Space after exponent field
+
+        // Get bit, but in reverse order. On Little Endian machines
+        // (most of Intel and such), the byte with lower address
+        // is the less significant. Since we want to print from
+        // the most significant, we iterate from the end.
+        if ((*float_as_int >> ((bit_size-1)-b)) & 1)
+            std_cout << "1";
+        else
+            std_cout << "0";
+    }
+    //std_cout << "\n";
+}
+
+// **************************************************************
+static inline void Print_Double_in_Binary(float d)
+{
+    Print_Float_in_Binary(d);
 }
 
 
