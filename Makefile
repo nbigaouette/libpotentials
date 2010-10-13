@@ -13,20 +13,53 @@ SRCDIRS          = src
 SRCEXT           = cpp
 HEADEXT          = hpp
 HEADERS          = $(wildcard $(addsuffix *.$(HEADEXT),$(addsuffix /, $(SRCDIRS)) ) )
-
 LANGUAGE         = CPP
 
 # Include the generic rules
 include makefiles/Makefile.rules
 
-#################################################################
-# Project specific options
-
 ### Floats type: Use single precision or double precision?
 ### By default, it's double precision.
 CFLAGS          += -DFLOATTYPE_SINGLE
 
+#################################################################
+# Project specific options
+
 LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $(OBJ) ) )
+
+################################################################
+### StdCout library default location (home directory)
+LibName         := stdcout
+LibIncludes     := $(HOME)/usr/include
+ifeq ($(DESTDIRCOMPILER),gcc)
+LibLocation     := $(HOME)/usr/lib
+else
+LibLocation     := $(HOME)/usr/lib/$(DESTDIRCOMPILER)
+endif
+
+### Check if the location exist. If not, try the /usr directoy
+ifeq ($(wildcard $(LibLocation)/lib$(LibName).*),)
+LibIncludes     := /usr/include/$(LibName)
+ifeq ($(DESTDIRCOMPILER),gcc)
+LibLocation     := /usr/lib
+else
+LibLocation     := /usr/lib/$(DESTDIRCOMPILER)
+endif
+endif
+
+### If library is not found, bail out!
+ifeq ($(wildcard $(LibLocation)/lib$(LibName).*),)
+$(error ERROR: $(LibName) could not be found in "$(LibLocation)"! Please install it from ssh://optimusprime.selfip.net/git/nicolas/$(LibName).git)
+endif
+
+### Add library flags
+CFLAGS          += -I$(LibIncludes)
+ifeq ($(LINK_PREFERED),shared)
+LDFLAGS         += -L$(LibLocation) -l$(LibName) $(RPATH)$(LibLocation)
+else # static
+LDFLAGS         += $(LibLocation)/lib$(LibName).a
+endif
+################################################################
 
 
 ### Just build "full" and install
@@ -105,7 +138,7 @@ endif
 HEADERS_NOTESTING        =$(filter-out $(wildcard testing/*.$(HEADEXT)), $(HEADERS) )
 HEADERS_NOTESTING_NOSRC  =$(subst src/,,$(HEADERS_NOTESTING) )
 HEADERS_TO_INSTALL       = $(HEADERS_NOTESTING_NOSRC)
-HEADERS_TO_INSTALL       = $(addsuffix .hpp, LibPotentials Potentials Potentials Structure_Potentials Std_Cout Vectors Memory Version FloatType Constants)
+HEADERS_TO_INSTALL       = $(addsuffix .hpp, LibPotentials Potentials Potentials Structure_Potentials Structure_Laser Structure_Element Vectors Memory Version FloatType Constants)
 INSTALLED_HEADERS        =$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_TO_INSTALL) )
 
 

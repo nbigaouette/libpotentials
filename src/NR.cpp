@@ -16,9 +16,9 @@
 #endif // #ifdef __SUNPRO_CC
 
 
+#include <StdCout.hpp>
 #include "Constants.hpp"
 #include "NR.hpp"
-#include "Std_Cout.hpp"
 
 namespace nr
 {

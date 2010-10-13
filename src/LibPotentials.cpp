@@ -1,9 +1,10 @@
 
+#include <StdCout.hpp>
+
 #include "LibPotentials.hpp"
 #include "Constants.hpp"
 #include "Potentials.hpp"
 #include "Global.hpp"
-#include "Std_Cout.hpp"
 #include "Code_Functions_Declarations.hpp"
 
 extern void Initialize_Simple(const fdouble &minr);

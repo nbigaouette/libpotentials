@@ -6,7 +6,7 @@
 
 #include "FloatType.hpp"
 
-#include "Std_Cout.hpp"
+#include <StdCout.hpp>
 
 // **************************************************************
 template <class Integer>

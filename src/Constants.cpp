@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "Constants.hpp"
-#include "Std_Cout.hpp"
+#include <StdCout.hpp>
 
 #define F std_cout.Format(20,14,'e')
 
