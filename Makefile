@@ -105,7 +105,7 @@ endif
 HEADERS_NOTESTING        =$(filter-out $(wildcard testing/*.$(HEADEXT)), $(HEADERS) )
 HEADERS_NOTESTING_NOSRC  =$(subst src/,,$(HEADERS_NOTESTING) )
 HEADERS_TO_INSTALL       = $(HEADERS_NOTESTING_NOSRC)
-HEADERS_TO_INSTALL       = $(addsuffix .hpp, LibPotentials Potentials Potentials Structure_Potentials Std_Cout Vectors Memory Version Constants)
+HEADERS_TO_INSTALL       = $(addsuffix .hpp, LibPotentials Potentials Potentials Structure_Potentials Std_Cout Vectors Memory Version FloatType Constants)
 INSTALLED_HEADERS        =$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_TO_INSTALL) )
 
 
