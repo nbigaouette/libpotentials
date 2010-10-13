@@ -22,6 +22,10 @@ include makefiles/Makefile.rules
 #################################################################
 # Project specific options
 
+### Floats type: Use single precision or double precision?
+### By default, it's double precision.
+CFLAGS          += -DFLOATTYPE_SINGLE
+
 LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $(OBJ) ) )
 
 
