@@ -6,14 +6,14 @@
 #include "Std_Cout.hpp"
 #include "Code_Functions_Declarations.hpp"
 
-extern void Initialize_Simple(const double &minr);
+extern void Initialize_Simple(const fdouble &minr);
 extern void Initialize_SuperGaussian(const int &m);
-extern void Initialize_HS(const int &input_sg_m, const double &min_rad);
+extern void Initialize_HS(const int &input_sg_m, const fdouble &min_rad);
 
 // **************************************************************
 void Potentials_Initialize(const std::string potential_shape,
-                           const double base_potential_depth,
-                           const double input_s_rmin,
+                           const fdouble base_potential_depth,
+                           const fdouble input_s_rmin,
                            const int input_sg_m)
 /**
  * Initialize potentials library.
@@ -39,7 +39,7 @@ void Potentials_Initialize(const std::string potential_shape,
 
     if (potential_shape == "PureCoulomb")
     {
-        double r_temp = 0.0;
+        fdouble r_temp = 0.0;
         std_cout << "### Using a pure Coulomb interaction                               ###\n";
         Initialize_Simple(r_temp);
 

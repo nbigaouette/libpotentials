@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "FloatType.hpp"
+
 #include "Potentials.hpp"
 #include "Memory.hpp"
 #include "Vectors.hpp"
@@ -17,8 +19,8 @@
 #endif // #ifndef DEBUGP
 
 void Potentials_Initialize(const std::string potential_shape,
-                           const double base_potential_depth,
-                           const double input_s_rmin,
+                           const fdouble base_potential_depth,
+                           const fdouble input_s_rmin,
                            const int input_sg_m);
 void Potentials_Finalize();
 

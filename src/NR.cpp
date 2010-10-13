@@ -24,7 +24,7 @@ namespace nr
 {
 
 // **************************************************************
-double Gamma_NaturalLogarithm(double xx)
+fdouble Gamma_NaturalLogarithm(fdouble xx)
 /**
  * Natural logarithm of the (approximate) gamma function. See:
  * See "Numerical Recipes in C", 2nd edition, page 214
@@ -32,8 +32,8 @@ double Gamma_NaturalLogarithm(double xx)
  */
 {
     int i;
-    double cof[6],stp;
-    double x,y,tmp,ser;
+    fdouble cof[6],stp;
+    fdouble x,y,tmp,ser;
 
     cof[0] = 76.18009172947146;
     cof[1] = -86.50532032941677;
@@ -61,7 +61,7 @@ double Gamma_NaturalLogarithm(double xx)
 }
 
 // **************************************************************
-double Gamma(double xx)
+fdouble Gamma(fdouble xx)
 /**
  * Approximate gamma function.
  * See "Numerical Recipes in C", 2nd edition, page 214
@@ -71,16 +71,16 @@ double Gamma(double xx)
 }
 
 // **************************************************************
-double gammln(double xx)
+fdouble gammln(fdouble xx)
 /**
  * Returns the value ln[Γ(xx)] for xx > 0.
  * See "Numerical Recipes in C", 2nd edition, page 214
  */
 {
-    // Internal arithmetic will be done in double precision,
+    // Internal arithmetic will be done in fdouble precision,
     // a nicety that you can omit if ﬁve-ﬁgure accuracy is good enough.
-    double x, y, tmp, ser;
-    static double cof[6] = {
+    fdouble x, y, tmp, ser;
+    static fdouble cof[6] = {
         76.18009172947146,
         -86.50532032941677,
         24.01409824083091,
@@ -100,13 +100,13 @@ double gammln(double xx)
 }
 
 // **************************************************************
-double gammp(double a, double x)
+fdouble gammp(fdouble a, fdouble x)
 /**
  * Returns the incomplete gamma function P (a, x).
  * See "Numerical Recipes in C", 2nd edition, page 218
  */
 {
-    double gamser, gammcf, gln;
+    fdouble gamser, gammcf, gln;
 
     if (x < 0.0 || a <= 0.0)
     {
@@ -127,7 +127,7 @@ double gammp(double a, double x)
 }
 
 // **************************************************************
-void gser(double *gamser, double a, double x, double *gln)
+void gser(fdouble *gamser, fdouble a, fdouble x, fdouble *gln)
 /**
  * Returns the incomplete gamma function P (a, x) evaluated by
  * its series representation as gamser.
@@ -136,10 +136,10 @@ void gser(double *gamser, double a, double x, double *gln)
  */
 {
     const int    ITMAX = 100;
-    const double EPS   = 3.0e-7;
+    const fdouble EPS   = 3.0e-7;
 
     int n;
-    double sum, del, ap;
+    fdouble sum, del, ap;
     *gln = gammln(a);
 
     if (x <= 0.0)
@@ -172,7 +172,7 @@ void gser(double *gamser, double a, double x, double *gln)
 }
 
 // **************************************************************
-void gcf(double *gammcf, double a, double x, double *gln)
+void gcf(fdouble *gammcf, fdouble a, fdouble x, fdouble *gln)
 /**
  * Returns the incomplete gamma function Q(a, x) evaluated by
  * its continued fraction representation as gammcf. Also
@@ -181,11 +181,11 @@ void gcf(double *gammcf, double a, double x, double *gln)
  */
 {
     int i;
-    double an, b, c, d, del, h;
+    fdouble an, b, c, d, del, h;
 
     const int    ITMAX = 100;       // Maximum allowed number of iterations.
-    const double EPS   = 3.0e-7;    // Relative accuracy.
-    const double FPMIN = 1.0e-30;   // Number near the smallest representable ﬂoating-point number.
+    const fdouble EPS   = 3.0e-7;    // Relative accuracy.
+    const fdouble FPMIN = 1.0e-30;   // Number near the smallest representable ﬂoating-point number.
 
     *gln = gammln(a);
 
@@ -221,7 +221,7 @@ void gcf(double *gammcf, double a, double x, double *gln)
 }
 
 // **************************************************************
-double erff(double x)
+fdouble erff(fdouble x)
 /**
  * Returns the error function erf(x).
  * See "Numerical Recipes in C", 2nd edition, page 220
@@ -231,49 +231,49 @@ double erff(double x)
 }
 
 // **************************************************************
-double int_erf(double x)
+fdouble int_erf(fdouble x)
 /**
  * "Pretty accurate simpson integration for the error function"
  * Taken from MDCluster's mdcluster_dyn.c line 27
  */
 {
     int loop,n=1000; /* number of points */
-    double I,h;
-    h=(double)x/(n-1);
+    fdouble I,h;
+    h=(fdouble)x/(n-1);
     I=0;
     I+=3.0/8.0  *h;
     I+=7.0/6.0  *h*exp(-h*h);
     I+=23.0/24.0*h*exp(-4.0*h*h);
-    for (loop=3;loop<n-3;loop++) I+=h*exp(-(double)loop*loop*h*h);
-    I+=23.0/24.0*h*exp(-(double)loop*loop*h*h);   loop++;
-    I+=7.0/6.0*h*exp(-(double)loop*loop*h*h);   loop++;
-    I+=3.0/8.0*h*exp(-(double)loop*loop*h*h);
+    for (loop=3;loop<n-3;loop++) I+=h*exp(-(fdouble)loop*loop*h*h);
+    I+=23.0/24.0*h*exp(-(fdouble)loop*loop*h*h);   loop++;
+    I+=7.0/6.0*h*exp(-(fdouble)loop*loop*h*h);   loop++;
+    I+=3.0/8.0*h*exp(-(fdouble)loop*loop*h*h);
     I*=2.0/sqrt(libpotentials::Pi);
     return(I);
 }
 
 // **************************************************************
-double python_erf(double x)
+fdouble python_erf(fdouble x)
 /**
  * Taken from http://www.johndcook.com/blog/2009/01/19/stand-alone-error-function-erf/
  */
 {
     // constants
-    const double a1 =  0.254829592;
-    const double a2 = -0.284496736;
-    const double a3 =  1.421413741;
-    const double a4 = -1.453152027;
-    const double a5 =  1.061405429;
-    const double p  =  0.3275911;
+    const fdouble a1 =  0.254829592;
+    const fdouble a2 = -0.284496736;
+    const fdouble a3 =  1.421413741;
+    const fdouble a4 = -1.453152027;
+    const fdouble a5 =  1.061405429;
+    const fdouble p  =  0.3275911;
 
     // Save the sign of x
-    double sign = 1.0;
+    fdouble sign = 1.0;
     if (x < 0.0) sign = -1.0;
-    const double absx = fabs(x);
+    const fdouble absx = fabs(x);
 
     // A & S 7.1.26
-    const double t = 1.0 / (1.0 + p * absx);
-    const double y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t * exp(-absx*absx);
+    const fdouble t = 1.0 / (1.0 + p * absx);
+    const fdouble y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t * exp(-absx*absx);
 
     return sign*y;
 }

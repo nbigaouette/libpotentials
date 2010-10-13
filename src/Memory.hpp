@@ -4,6 +4,8 @@
 #include <climits> // CHAR_BIT
 #include <stdint.h> // (u)int64_t
 
+#include "FloatType.hpp"
+
 #include "Std_Cout.hpp"
 
 // **************************************************************
@@ -14,11 +16,11 @@ static inline void * calloc_and_check(Integer nb, size_t s, const std::string ms
     p = calloc(nb, s);
     if (p == NULL)
     {
-        double nb_s = double(nb) * double(s);
+        fdouble nb_s = fdouble(nb) * fdouble(s);
         std_cout << "Allocation of " << nb << " x " << s << " bytes = " << nb_s << " bytes failed" << std::endl;
-        std_cout << "(" << double(nb_s) / (1024.0) << " KiB, "
-                         << double(nb_s) / (1024.0*1024.0) << " MiB, "
-                         << double(nb_s) / (1024.0*1024.0*1024.0) << " GiB)" << std::endl;
+        std_cout << "(" << fdouble(nb_s) / (1024.0) << " KiB, "
+                         << fdouble(nb_s) / (1024.0*1024.0) << " MiB, "
+                         << fdouble(nb_s) / (1024.0*1024.0*1024.0) << " GiB)" << std::endl;
         std_cout << "p = " << p << "\n";
         if (msg != "")
         {
@@ -38,9 +40,9 @@ static inline void * malloc_and_check(size_t nb_s, const std::string msg = "")
     if (p == NULL)
     {
         std_cout << "Allocation of " << nb_s << " bytes failed" << std::endl;
-        std_cout << "(" << double(nb_s) / (1024.0) << " KiB, "
-                         << double(nb_s) / (1024.0*1024.0) << " MiB, "
-                         << double(nb_s) / (1024.0*1024.0*1024.0) << " GiB)" << std::endl;
+        std_cout << "(" << fdouble(nb_s) / (1024.0) << " KiB, "
+                         << fdouble(nb_s) / (1024.0*1024.0) << " MiB, "
+                         << fdouble(nb_s) / (1024.0*1024.0*1024.0) << " GiB)" << std::endl;
         std_cout << "p = " << p << "\n";
         if (msg != "")
         {
@@ -119,13 +121,13 @@ void Print_Integer_in_Binary(Integer n)
 }
 
 // **************************************************************
-static inline void Print_Double_in_Binary(double d)
+static inline void Print_Double_in_Binary(fdouble d)
 /**
- * Prints binary representation of a double
+ * Prints binary representation of a fdouble
  * http://www.exploringbinary.com/displaying-the-raw-fields-of-a-floating-point-number/
  */
 {
-    uint64_t *double_as_int = (uint64_t *) &d;
+    uint64_t *fdouble_as_int = (uint64_t *) &d;
     const int bit_size = CHAR_BIT*sizeof(uint64_t);
 
     // Print bits by bits
@@ -140,7 +142,7 @@ static inline void Print_Double_in_Binary(double d)
         // (most of Intel and such), the byte with lower address
         // is the less significant. Since we want to print from
         // the most significant, we iterate from the end.
-        if ((*double_as_int >> ((bit_size-1)-b)) & 1)
+        if ((*fdouble_as_int >> ((bit_size-1)-b)) & 1)
             std_cout << "1";
         else
             std_cout << "0";
