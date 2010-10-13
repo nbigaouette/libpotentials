@@ -17,6 +17,7 @@ namespace libpotentials
 
     // **************************************************************
 
+    const fdouble zero              = fdouble(0.0);
     const fdouble one               = fdouble(1.0);
     const fdouble two               = fdouble(2.0);
     const fdouble three             = fdouble(3.0);

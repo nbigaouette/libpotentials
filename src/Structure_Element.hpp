@@ -5,14 +5,16 @@
 
 #include <cstdlib> // free()
 
+#include "FloatType.hpp"
+
 struct elem_props
 {
     char name[20];
     char symbol[20];
     int atomicNumber;
-    double mass;            // kg
-    double next_nghb;       // m
-    double next_nghb_05;    // m
+    fdouble mass;            // kg
+    fdouble next_nghb;       // m
+    fdouble next_nghb_05;    // m
     int nb_avail_ips;       // Number of available IPs
     int max_Z;              // Max charge state
     int max_n;              // Max shell (n) considered
@@ -36,14 +38,14 @@ struct elem_props
     // Because C/C++ arrays start at 0, a column for n=0 will be
     // allocated too, but not used. This will keep code consistent
     int *occ;               // Occupied orbitals
-    double *Ips;            // Ionization potentials (eV)
-    double *IpsCummul;      // Cumulative ionization potentials (eV)
-    double *IpsLowest;      // Lowest ionization potentials for each charge states (eV)
+    fdouble *Ips;            // Ionization potentials (eV)
+    fdouble *IpsCummul;      // Cumulative ionization potentials (eV)
+    fdouble *IpsLowest;      // Lowest ionization potentials for each charge states (eV)
     // aIp removed (use IpsCummul instead)
-    double *Lotz_a;        // cm^2 . (eV)^2
-    double *Lotz_aq;       // cm^2 . (eV)^2
-    double *Lotz_b;        // none
-    double *Lotz_c;        // none
+    fdouble *Lotz_a;        // cm^2 . (eV)^2
+    fdouble *Lotz_aq;       // cm^2 . (eV)^2
+    fdouble *Lotz_b;        // none
+    fdouble *Lotz_c;        // none
 
     void set_pointers_to_null()
     {

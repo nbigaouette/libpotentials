@@ -1,6 +1,8 @@
 #ifndef INC_STRUCTURE_ELEMENT_HPP
 #define INC_STRUCTURE_ELEMENT_HPP
 
+#include "FloatType.hpp"
+
 const int LASER_IS_PHOTONS  = 1;
 const int LASER_IS_FIELD    = 2;
 const int LASER_IS_BOTH     = 3;
@@ -8,18 +10,18 @@ const int LASER_IS_BOTH     = 3;
 class laser_props
 {
    public:
-   double fwhm;
-   double ww;
-   double ww_au;
-   double la;
-   double Ep;
-   double intensity;
-   double pho_engy_au;
-   double nb_photons;
+   fdouble fwhm;
+   fdouble ww;
+   fdouble ww_au;
+   fdouble la;
+   fdouble Ep;
+   fdouble intensity;
+   fdouble pho_engy_au;
+   fdouble nb_photons;
    bool cst_in_space;
    bool enable;
-   double k;
-   double field[3];
+   fdouble k;
+   fdouble field[3];
    int treated_as;
 
    bool treated_as_photons() { return (treated_as == LASER_IS_PHOTONS ? true : false); }

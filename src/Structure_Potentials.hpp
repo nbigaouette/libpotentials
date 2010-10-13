@@ -5,7 +5,7 @@
 
 // Parameter preventing the Coulomb singularity at r = 0
 // r / (r+alpha)^3                          [m]
-const fdouble sc_alpha = 0.1 * 1.0e-10; // See Mijoule2006, PRA 73, 033203
+const fdouble sc_alpha = fdouble(0.1 * 1.0e-10); // See Mijoule2006, PRA 73, 033203
 
 struct potential_paramaters {
 

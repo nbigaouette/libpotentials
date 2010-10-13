@@ -29,7 +29,7 @@ Double Vector_Length_Squared(const Double a[3])
 template <class Double>
 Double Vector_Length(const Double a[3])
 {
-    return sqrt(Vector_Length_Squared(a));
+    return std::sqrt(Vector_Length_Squared(a));
 }
 
 template <class Double>
