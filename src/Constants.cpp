@@ -9,8 +9,32 @@
 #define _QUOTEME(x) #x
 #define QUOTEME(x) _QUOTEME(x)
 
-#define Print(x) \
-    std_cout.Format(24,0,'d','l'); std_cout << QUOTEME(x) << " = "; std_cout.Format(23,16,'e'); std_cout << libpotentials_double::x << "  ("; std_cout.Format(15,8,'e'); std_cout << libpotentials::x << ")" << "\n";
+template <class T>
+inline void Assert_isinf_isnan(T value)
+{
+#ifndef __SUNPRO_CC
+//     if (isinf(value))
+//     {
+//         std_cout << "value is inf!!! value = " << value << "\n";
+//         std_cout << "Aborting\n";
+//     }
+    assert(!isinf(value));
+#endif // #ifndef __SUNPRO_CC
+//     if (isnan(value))
+//     {
+//         std_cout << "value is NaN!!! value = " << value << "\n";
+//         std_cout << "Aborting\n";
+//     }
+    assert(!isnan(value));
+}
+
+
+#define Print(x)                                                                    \
+    std_cout.Format(24,0,'d','l');  std_cout << QUOTEME(x) << " = ";                \
+    std_cout.Format(23,16,'e');     std_cout << libpotentials_double::x << "  (";   \
+    std_cout.Format(15,8,'e');      std_cout << libpotentials::x << ")" << "\n";    \
+    Assert_isinf_isnan(libpotentials_double::x);                                    \
+    Assert_isinf_isnan(libpotentials::x);
 
 void Print_Constants()
 {
