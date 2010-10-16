@@ -11,6 +11,8 @@
 #include <cstring>  // memset
 #include <cassert>
 
+#include <StdCout.hpp>
+
 #include "LibPotentials.hpp"
 #include "Constants.hpp"
 #include "Code_Functions_Declarations.hpp"
