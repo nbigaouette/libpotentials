@@ -7,6 +7,8 @@
     are code dependant.
 */
 
+#include "FloatType.hpp"
+
 extern size_t  Get_Sizeof_particle();
 
 static inline void * get_voidp(void *p, int i)
@@ -33,33 +35,33 @@ extern void    Set_Is_on(void *b, int i);
 
 extern int     Get_Charge_State(void *b);
 extern void    Set_Charge_State(void *b, int cs);
-extern double  Get_Charge(void *b);
-extern void    Set_Charge(void *b, double c);
-extern double  Get_Chargea(void *b);
-extern void    Set_Chargea(void *b, double c);
+extern fdouble Get_Charge(void *b);
+extern void    Set_Charge(void *b, fdouble c);
+extern fdouble Get_Chargea(void *b);
+extern void    Set_Chargea(void *b, fdouble c);
 
-extern double  Get_Mass(void *b);
-extern void    Set_Mass(void *b, double m);
+extern fdouble Get_Mass(void *b);
+extern void    Set_Mass(void *b, fdouble m);
 
-extern double* Get_Position(void *b);
-extern void    Set_Position(void *b, double p[3]);
-extern double* Get_Velocity(void *b);
-extern void    Set_Velocity(void *b, double p[3]);
+extern fdouble*Get_Position(void *b);
+extern void    Set_Position(void *b, fdouble p[3]);
+extern fdouble*Get_Velocity(void *b);
+extern void    Set_Velocity(void *b, fdouble p[3]);
 
-extern double  Get_Potential(void *b);
-extern void    Set_Potential(void *b, double m);
+extern fdouble Get_Potential(void *b);
+extern void    Set_Potential(void *b, fdouble m);
 
-extern double* Get_E(void *b);
-extern void    Set_E(void *b, double E[3]);
+extern fdouble*Get_E(void *b);
+extern void    Set_E(void *b, fdouble E[3]);
 
 extern int     Get_NextIon(void *b);
-extern void    Set_NextIon(void *b, double n);
+extern void    Set_NextIon(void *b, fdouble n);
 
 extern int     Get_ClosestIon(void *b);
 extern void    Set_ClosestIon(void *b, int i);
 
-extern double  Get_ClosestIon_Distance(void *b);
-extern void    Set_ClosestIon_Distance(void *b, double d);
+extern fdouble Get_ClosestIon_Distance(void *b);
+extern void    Set_ClosestIon_Distance(void *b, fdouble d);
 
 extern int     Get_Nghb_id(void *b);
 extern void    Set_Nghb_id(void *b, int i);
@@ -82,7 +84,7 @@ extern void    Set_Coll(void *b, int c);
 extern char *  Get_Name(void *b);
 extern void    Print_name(void *b);
 
-extern double* Get_Efld(void *b);
+extern fdouble*Get_Efld(void *b);
 
 // **************************************************************
 

@@ -11,6 +11,8 @@
 #include <cstring>  // memset
 #include <cassert>
 
+#include <StdCout.hpp>
+
 #include "LibPotentials.hpp"
 #include "Constants.hpp"
 #include "Code_Functions_Declarations.hpp"
@@ -28,34 +30,34 @@ bool is_libpotentials_initialized = false;
 // ********** set/calculated once at initialization, and ********
 // ********** treated as constants afterwards. ******************
 // **************************************************************
-double s_cutoff_radius_from_input_file;
-double sg_m;
-double sg_two_m;
+fdouble s_cutoff_radius_from_input_file;
+fdouble sg_m;
+fdouble sg_two_m;
 
-double sg_one_over_two_m;
-double sg_m_pow_one_over_two_m;
-double sg_exp_one_over_two_m;
+fdouble sg_one_over_two_m;
+fdouble sg_m_pow_one_over_two_m;
+fdouble sg_exp_one_over_two_m;
 
-double hs_min_rad;
+fdouble hs_min_rad;
 
-const double ps_A = 0.1   * angstrom_to_m;
-const double ps_B = 0.45  * angstrom_to_m;
-const double ps_C = 0.358 * angstrom_to_m;
-const double ps_D = 0.01  * angstrom_to_m*angstrom_to_m;
+const fdouble ps_A = 0.1   * angstrom_to_m;
+const fdouble ps_B = 0.45  * angstrom_to_m;
+const fdouble ps_C = 0.358 * angstrom_to_m;
+const fdouble ps_D = 0.01  * angstrom_to_m*angstrom_to_m;
 
-const double ps_A2          = ps_A * ps_A;
-const double ps_B2          = ps_B * ps_B;
-const double ps_A_A_minus2B = ps_A * (ps_A - 2.0*ps_B);
-const double ps_A_minus_B   = ps_A - ps_B;
-const double ps_A_minus_B2  = ps_A_minus_B*ps_A_minus_B;
-const double ps_A_minus_B3  = ps_A_minus_B*ps_A_minus_B*ps_A_minus_B;
+const fdouble ps_A2          = ps_A * ps_A;
+const fdouble ps_B2          = ps_B * ps_B;
+const fdouble ps_A_A_minus2B = ps_A * (ps_A - 2.0*ps_B);
+const fdouble ps_A_minus_B   = ps_A - ps_B;
+const fdouble ps_A_minus_B2  = ps_A_minus_B*ps_A_minus_B;
+const fdouble ps_A_minus_B3  = ps_A_minus_B*ps_A_minus_B*ps_A_minus_B;
 
 // ********** Herman-Skillman (HS) potential fit parameters *****
 // The fit function is f(x)=-a/(x^n-b)-b/x^m +d*x^o and the fit
 // parameters are in alphabetical order there is a different
 // array for each radial distance, where the cutoff radial
 // distance is the last element of the array.
-const double fit_lt_R1[10][9]={
+const fdouble fit_lt_R1[10][9]={
     {-39.3117,-0.23822 ,1137.15,1093.87,0.926033 ,1.35102,-0.902534,0.073,1.0},
     {-50.9699,-0.249349,1190.93,1137.92,0.934615,1.26191,-0.915538,0.073,1.0},
     {-103318.0,-0.0025085,109884.0,6808.38,0.452195,0.453217,-0.452051,0.073,0.6},
@@ -67,7 +69,7 @@ const double fit_lt_R1[10][9]={
     {506.586882065287, -5.70042070187032, -44.6577028237441,-1.00674477808791, -58.7532076356085, -1.00659228186075,0.0,0.02},
     {525.638029177344, -4.17758373083591, -44.8158100544942, -1.00624596615361, -58.9113171412815,-1.00622039392236,0.0,0.02}
 };
-const double fit_lt_R2[10][9]={
+const fdouble fit_lt_R2[10][9]={
     {-106456.523613218,-0.00434541093317553,106457.47661029,
         449.688681389621,1.05645523648719,1.05644674944298,-2.10055725950707,
         1.0,3.0},
@@ -96,7 +98,7 @@ const double fit_lt_R2[10][9]={
     {286.879451804095, 8.00573092007186,  -33060.3534705734, -0.760161832369098,  33083.8629659416, -0.757992817776906,0.02,0.2}
 };
 
-const double fit_lt_R3[10][9]={
+const fdouble fit_lt_R3[10][9]={
     {-106344.499357271,-0.0870404156519758,106379.969770542,
         8916.02780769541,2.34571347967461,2.34558512875328,-4.64724093315347,
         3.0,6.0},
@@ -128,15 +130,15 @@ const double fit_lt_R3[10][9]={
 // **************************************************************
 // ********** Local functions prototypes ************************
 // **************************************************************
-void Set_Coulomb_Field(const double phi12, double E[3], const double dr[3],
-                   const double dr2);
+void Set_Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3],
+                   const fdouble dr2);
 
 // Herman-Skillman (HS) potential fit functions
-double deriv_genericHSfit(const double *par, double x);
-double genericHSfit(const double *par, double x);
+fdouble deriv_genericHSfit(const fdouble *par, fdouble x);
+fdouble genericHSfit(const fdouble *par, fdouble x);
 
-double tmp_get_shieldr_2(const int chg_st_1, const int chg_st_2);
-double tmp_get_shieldr(const int chg_st, const char *message);
+fdouble tmp_get_shieldr_2(const int chg_st_1, const int chg_st_2);
+fdouble tmp_get_shieldr(const int chg_st, const char *message);
 
 // **************************************************************
 // ********** Accessible functions implementations **************
@@ -157,7 +159,7 @@ void Check_if_LibPotentials_is_initialized(void)
 }
 
 // **************************************************************
-void Initialize_Simple(const double &minr)
+void Initialize_Simple(const fdouble &minr)
 /**
  * Initialize simple cutoff potential
  * @param   minr    Minimum radius where Coulombic potential is
@@ -179,7 +181,7 @@ void Initialize_SuperGaussian(const int &m)
     sg_two_m = 2 * m;
     if (sg_m >= 1)
     {
-        sg_one_over_two_m         = 1.0 / double(sg_two_m);
+        sg_one_over_two_m         = 1.0 / fdouble(sg_two_m);
         sg_m_pow_one_over_two_m   = pow(sg_m, sg_one_over_two_m);
         sg_exp_one_over_two_m     = exp(sg_one_over_two_m);
     }
@@ -192,7 +194,7 @@ void Initialize_SuperGaussian(const int &m)
 }
 
 // **************************************************************
-void Initialize_HS(const int &m, const double &min_rad)
+void Initialize_HS(const int &m, const fdouble &min_rad)
 /**
  * Initialize super-gaussian like potential
  * @param   m       Order of the Super-Gaussian (m=1 is a simple gaussian) [-]
@@ -214,7 +216,7 @@ void Initialize_HS(const int &m, const double &min_rad)
 }
 
 // **************************************************************
-double Coulomb_Potential(const double kQ, const double r)
+fdouble Coulomb_Potential(const fdouble kQ, const fdouble r)
 /**
  * Calculate the Coulomb potential due to a point charge.
  * @param   kQ      Charge times Coulomb constant [V.m]
@@ -229,8 +231,8 @@ double Coulomb_Potential(const double kQ, const double r)
 }
 
 // **************************************************************
-void Set_Coulomb_Field(const double phi12, double E[3], const double dr[3],
-                   const double r2)
+void Set_Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3],
+                   const fdouble r2)
 /**
  * Calculate the Coulomb field due to a point charge.
  * @param   phi12   Input:  Potential at position 1 due to charge 2 [V]
@@ -242,14 +244,14 @@ void Set_Coulomb_Field(const double phi12, double E[3], const double dr[3],
     if (r2 > DBL_MIN)
     {
         // E = r[:] . (V / |r[:]|^2)
-        const double phi12_over_dr2 = phi12 / r2;
+        const fdouble phi12_over_dr2 = phi12 / r2;
         for (int d = 0 ; d < 3 ; d++)
             E[d] += dr[d] * phi12_over_dr2;
     }
 }
 
 // **************************************************************
-double deriv_genericHSfit(const double *par, double x){
+fdouble deriv_genericHSfit(const fdouble *par, fdouble x){
     // The 1/2 factor is becuase HS outputs the
     // potential as 2V(x) and that's how they were fit
     return 0.5*(
@@ -261,7 +263,7 @@ double deriv_genericHSfit(const double *par, double x){
 
 // **************************************************************
 // f(x) = -a/(x^n-b)-b/x^m +d*x^o where the parameters are passed alphabetically
-double genericHSfit(const double *par, double x){
+fdouble genericHSfit(const fdouble *par, fdouble x){
     //the 1/2 factor is becuase HS outputs the potential as 2V and that's how they were fit
     return -0.5*(
             - par[0]/(pow(x,par[5])-par[1])
@@ -271,9 +273,9 @@ double genericHSfit(const double *par, double x){
 }
 
 // **************************************************************
-double LibPotentialErf(double x)
+fdouble LibPotentialErf(fdouble x)
 {
-    double erf_value = 0.0;
+    fdouble erf_value = 0.0;
     //erf_value = nr::int_erf(x);
     //erf_value = erf(x);
     //erf_value = nr::erff(x);
@@ -282,7 +284,7 @@ double LibPotentialErf(double x)
     if (x < libpotentials_private::tl_Rmax)
     {
         const int base = int(x * libpotentials_private::tl_one_over_dR);
-        const double gain = double(x * libpotentials_private::tl_one_over_dR) - double(base);
+        const fdouble gain = fdouble(x * libpotentials_private::tl_one_over_dR) - fdouble(base);
         erf_value = libpotentials_private::tl_erf[base] * (1.0 - gain) + gain*libpotentials_private::tl_erf[base+1];
     } else {
         erf_value = 1.0;
@@ -296,9 +298,9 @@ double LibPotentialErf(double x)
 // ...setting the parameters of the potential/field calculation
 void   (*Potentials_Set_Parameters)(void *p1, void *p2, potential_paramaters &potparams) = NULL;
 // ...calculating the potential
-double (*Calculate_Potential)(      void *p1, void *p2, potential_paramaters &potparams) = NULL;
+fdouble (*Calculate_Potential)(      void *p1, void *p2, potential_paramaters &potparams) = NULL;
 // ...setting the electric field
-void   (*Set_Field)(                void *p1, void *p2, potential_paramaters &potparams, double &phi, double E[3]) = NULL;
+void   (*Set_Field)(                void *p1, void *p2, potential_paramaters &potparams, fdouble &phi, fdouble E[3]) = NULL;
 
 // **************************************************************
 void Potentials_Set_Parameters_Simple(
@@ -317,7 +319,7 @@ void Potentials_Set_Parameters_Simple(
                                   potparams.r, potparams.one_over_r);
 
     // we only add field if other particle has a charge not equal 0
-    double Q2 = Get_Charge(p2);
+    fdouble Q2 = Get_Charge(p2);
     int charge_state2 = Get_Charge_State(p2);
     if (charge_state2 != 0)
     {
@@ -335,13 +337,13 @@ void Potentials_Set_Parameters_Simple(
 }
 
 // **************************************************************
-double Calculate_Potential_Cutoff_Simple(
+fdouble Calculate_Potential_Cutoff_Simple(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
     Check_if_LibPotentials_is_initialized();
 
-    double potential;
+    fdouble potential;
 
     if (potparams.r > potparams.cutoff_radius)
         potential = Coulomb_Potential(potparams.kQ2, potparams.r);
@@ -355,7 +357,7 @@ double Calculate_Potential_Cutoff_Simple(
 void Set_Field_Cutoff_Simple(
     void *p1, void *p2,
     potential_paramaters &potparams,
-    double &phi, double E[3])
+    fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
@@ -384,7 +386,7 @@ void Potentials_Set_Parameters_Harmonic(
                                   potparams.r, potparams.one_over_r);
 
     // we only add field if other particle has a charge not equal 0
-    double Q2 = Get_Charge(p2);
+    fdouble Q2 = Get_Charge(p2);
     int charge_state2 = Get_Charge_State(p2);
 
     if( charge_state2 != 0 )
@@ -426,7 +428,7 @@ void Potentials_Set_Parameters_Harmonic(
 }
 
 // **************************************************************
-double Calculate_Potential_Cutoff_Harmonic(
+fdouble Calculate_Potential_Cutoff_Harmonic(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
@@ -436,11 +438,11 @@ double Calculate_Potential_Cutoff_Harmonic(
 {
     Check_if_LibPotentials_is_initialized();
 
-    double phi12;   // Electrostatic potential
+    fdouble phi12;   // Electrostatic potential
 
     if (potparams.r <= potparams.cutoff_radius)
     {
-        // const double A  = ( 4.0 * B*B*B) / (27.0 * kQ*kQ);
+        // const fdouble A  = ( 4.0 * B*B*B) / (27.0 * kQ*kQ);
         potparams.h_A  = (four_over_twenty_seven * potparams.B)
                             / (potparams.kQ2_over_B*potparams.kQ2_over_B);
         potparams.h_A_r = potparams.h_A*potparams.r;
@@ -461,7 +463,7 @@ double Calculate_Potential_Cutoff_Harmonic(
 void Set_Field_Cutoff_Harmonic(
     void *p1, void *p2,
     potential_paramaters &potparams,
-    double &phi, double E[3])
+    fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
@@ -470,12 +472,12 @@ void Set_Field_Cutoff_Harmonic(
     else
     {
         // The derivative of a -Ar^2+B w.r. to r is:
-        const double diff_x2 = -2.0*potparams.h_A*potparams.r;
+        const fdouble diff_x2 = -2.0*potparams.h_A*potparams.r;
 
         // We have the norm of the gradient of the potential (diff_x2),
         // we need to multiply this by the unit vector, to get
         // the electric field.
-        double unit_dr[3];
+        fdouble unit_dr[3];
         //MULVS(unit_dr, dr, one_over_distance); // Calculate unit vector
         //ADDMULVS(E, unit_dr, -diff_x2);     // Add to the electric field
         //                                    // the gradient of the potential.
@@ -505,7 +507,7 @@ void Potentials_Set_Parameters_SuperGaussian(
                                   potparams.r, potparams.one_over_r);
 
     // we only add field if other particle has a charge not equal 0
-    double Q2 = Get_Charge(p2);
+    fdouble Q2 = Get_Charge(p2);
     int charge_state2 = Get_Charge_State(p2);
 
     if( charge_state2 != 0 )
@@ -560,13 +562,13 @@ void Potentials_Set_Parameters_SuperGaussian(
 }
 
 // **************************************************************
-double Calculate_Potential_Cutoff_SuperGaussian(
+fdouble Calculate_Potential_Cutoff_SuperGaussian(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
     Check_if_LibPotentials_is_initialized();
 
-    double phi12;   // Electrostatic potential
+    fdouble phi12;   // Electrostatic potential
 
     if (potparams.r <= potparams.cutoff_radius)
     {
@@ -588,7 +590,7 @@ double Calculate_Potential_Cutoff_SuperGaussian(
 void Set_Field_Cutoff_SuperGaussian(
     void *p1, void *p2,
     potential_paramaters &potparams,
-    double &phi, double E[3])
+    fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
@@ -597,14 +599,14 @@ void Set_Field_Cutoff_SuperGaussian(
     else
     {
         // The derivative of a super gaussian w.r. to r is:
-        double diff_sg = -(potparams.B*sg_m*potparams.one_over_r)
+        fdouble diff_sg = -(potparams.B*sg_m*potparams.one_over_r)
                             * potparams.sg_r_over_sigma_two_m
                             * potparams.sg_exp_half_r_over_sigma_two_m;
 
         // We have the norm of the gradient of the potential (diff_sg),
         // we need to multiply this by the unit vector, to get
         // the electric field.
-        double unit_dr[3];
+        fdouble unit_dr[3];
 //         MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //         ADDMULVS(E, unit_dr, -diff_sg);         // Add to the electric field
 //                                                 // the gradient of the potential.
@@ -675,7 +677,7 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
 }
 
 // **************************************************************
-double Calculate_Potential_Cutoff_HS_SuperGaussian(
+fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
@@ -689,13 +691,13 @@ double Calculate_Potential_Cutoff_HS_SuperGaussian(
 {
     Check_if_LibPotentials_is_initialized();
 
-    double phi12 = 0.0;   // Electrostatic potential
+    fdouble phi12 = 0.0;   // Electrostatic potential
 
     // Fits are in atomic units
-    const double distance_au = potparams.r * si_to_au_length;
+    const fdouble distance_au = potparams.r * si_to_au_length;
 
     // Ions are given a potential inside the electron cloud.
-    // The last two doubles of the fit_lessthan_R array is the range
+    // The last two fdoubles of the fit_lessthan_R array is the range
     // the fit is valid for below the smallest range we have a simple
     // hard cutoff V(r<r_0) = V(r_0)
 
@@ -798,18 +800,18 @@ double Calculate_Potential_Cutoff_HS_SuperGaussian(
 void Set_Field_Cutoff_HS_SuperGaussian(
     void *p1, void *p2,
     potential_paramaters &potparams,
-    double &phi, double E[3])
+    fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
     // Fits are in atomic units
-    const double distance_au = potparams.r * si_to_au_length;
+    const fdouble distance_au = potparams.r * si_to_au_length;
 
     const int cs = potparams.hs_cs2;
-    double Ef;
+    fdouble Ef;
 
     // Ions are given a potential inside the electron cloud.
-    // The last two doubles of the fit_lessthan_R array is the range
+    // The last two fdoubles of the fit_lessthan_R array is the range
     // the fit is valid for below the smallest range we have a simple
     // hard cutoff V(r<r_0) = V(r_0)
     // FIXME: HS+BODY
@@ -824,7 +826,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
                     * (-0.533297816151*distance_au - 0.7486357665822807) *(-0.533297816151)
                     * exp(-0.533297816151*distance_au - 0.7486357665822807)
                     )* Eh_to_eV;
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr, Ef/a0);
             for (int d = 0 ; d < 3 ; d++)
@@ -837,7 +839,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         else if (   (distance_au < fit_lt_R3[0][8]) &&
                     (distance_au >= fit_lt_R3[0][7])){
             Ef = deriv_genericHSfit(&(fit_lt_R3[0][0]),distance_au) * Eh_to_eV;
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr, Ef/a0);
             for (int d = 0 ; d < 3 ; d++)
@@ -849,7 +851,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         else if (   (distance_au < fit_lt_R2[0][8]) &&
                     (distance_au >= fit_lt_R2[0][7])){
             Ef = deriv_genericHSfit(&(fit_lt_R2[0][0]),distance_au) * Eh_to_eV;
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr, Ef/a0);
             for (int d = 0 ; d < 3 ; d++)
@@ -861,7 +863,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         else if (   (distance_au < fit_lt_R1[0][8]) &&
                     (distance_au >= fit_lt_R1[0][7])){
             Ef = deriv_genericHSfit(&(fit_lt_R1[0][0]),distance_au) * Eh_to_eV;
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr, Ef/a0);
             for (int d = 0 ; d < 3 ; d++)
@@ -886,7 +888,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         if (distance_au >= fit_lt_R3[cs][8])
         {
             //potential outside the electron cloud is Coulombic
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr, kQ2 / distance / distance);
             for (int d = 0 ; d < 3 ; d++)
@@ -899,11 +901,11 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         else if (   (distance_au <  fit_lt_R3[cs][8]) &&
                     (distance_au >= fit_lt_R3[cs][7])
         ) {
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr,
 //                 deriv_genericHSfit(&(fit_lt_R3[cs][0]),distance_au) * Eh_to_eV/a0);
-            double tmp = deriv_genericHSfit(&(fit_lt_R3[cs][0]),distance_au) * Eh_to_eV/a0;
+            fdouble tmp = deriv_genericHSfit(&(fit_lt_R3[cs][0]),distance_au) * Eh_to_eV/a0;
             for (int d = 0 ; d < 3 ; d++)
             {
                 unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
@@ -913,11 +915,11 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         else if (   (distance_au <  fit_lt_R2[cs][8]) &&
                     (distance_au >= fit_lt_R2[cs][7])
         ) {
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr,
 //                 deriv_genericHSfit(&(fit_lt_R2[cs][0]),distance_au) * Eh_to_eV/a0);
-            double tmp = deriv_genericHSfit(&(fit_lt_R2[cs][0]),distance_au) * Eh_to_eV/a0;
+            fdouble tmp = deriv_genericHSfit(&(fit_lt_R2[cs][0]),distance_au) * Eh_to_eV/a0;
             for (int d = 0 ; d < 3 ; d++)
             {
                 unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
@@ -927,11 +929,11 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         else if (   (distance_au <  fit_lt_R1[cs][8]) &&
                     (distance_au >= fit_lt_R1[cs][7])
         ) {
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr,
 //                 deriv_genericHSfit(&(fit_lt_R1[cs][0]),distance_au) * Eh_to_eV/a0);
-            double tmp = deriv_genericHSfit(&(fit_lt_R1[cs][0]),distance_au) * Eh_to_eV/a0;
+            fdouble tmp = deriv_genericHSfit(&(fit_lt_R1[cs][0]),distance_au) * Eh_to_eV/a0;
             for (int d = 0 ; d < 3 ; d++)
             {
                 unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
@@ -954,14 +956,14 @@ void Set_Field_Cutoff_HS_SuperGaussian(
                             exp( -0.5 * potparams.sg_r_over_sigma_two_m );
 
             // The derivative of a super gaussian w.r. to r is:
-            double diff_sg =
+            fdouble diff_sg =
                 -(potparams.B*sg_m*potparams.one_over_r) * potparams.sg_r_over_sigma_two_m
                 * potparams.sg_exp_half_r_over_sigma_two_m;
 
             // We have the norm of the gradient of the potential (diff_sg),
             // we need to multiply this by the unit vector, to get
             // the electric field.
-            double unit_dr[3];
+            fdouble unit_dr[3];
 //             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //             ADDMULVS(E, unit_dr, -diff_sg);         // Add to the electric field
 //                                                     // the gradient of the  potential.
@@ -1004,15 +1006,15 @@ void Potentials_Set_Parameters_GaussianDistribution(
     assert(potparams.r > 1.0e-200);
 
     // we only add field if other particle has a charge not equal 0
-    double Q = Get_Charge(p2);
+    fdouble Q = Get_Charge(p2);
     int distribution1_charge_state = 1,distribution2_charge_state = 1;
     int charge_state2 = Get_Charge_State(p2);
     int charge_state1 = Get_Charge_State(p1);
     int factor = charge_state2;
     if( charge_state2 != 0 )
     {
-      //double Ip =element.IpsLowest[abs(charge_state2)];
-      double Ip = libpotentials_private::base_pot_well_depth;
+      //fdouble Ip =element.IpsLowest[abs(charge_state2)];
+      fdouble Ip = libpotentials_private::base_pot_well_depth;
       //charges are not equal
       //take the higher charge as the distribution
       //Thus set the parameters for the guassian
@@ -1066,8 +1068,8 @@ void Potentials_Set_Parameters_GaussianDistribution(
 
         // Make sure the other particle's charge is normalized by the current
         // particle's charge state so forces are symmetric between the two.
-        potparams.kQ2 /= double(distribution1_charge_state);
-        potparams.kQ2 *= double(distribution2_charge_state);
+        potparams.kQ2 /= fdouble(distribution1_charge_state);
+        potparams.kQ2 *= fdouble(distribution2_charge_state);
         assert(!isnan(potparams.kQ2));
 #ifndef __SUNPRO_CC
         assert(!isinf(potparams.kQ2));
@@ -1091,13 +1093,13 @@ void Potentials_Set_Parameters_GaussianDistribution(
 }
 
 // **************************************************************
-double Calculate_Potential_Cutoff_GaussianDistribution(
+fdouble Calculate_Potential_Cutoff_GaussianDistribution(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
     Check_if_LibPotentials_is_initialized();
 
-    double phi12=0.0;   // Electrostatic potential
+    fdouble phi12=0.0;   // Electrostatic potential
 
     if (potparams.r <= potparams.cutoff_radius)
     {
@@ -1105,7 +1107,7 @@ double Calculate_Potential_Cutoff_GaussianDistribution(
         // radius, we use the special potential calculated from a
         // gaussian charge distribution instead of the Coulomb potential.
 
-        const double r_over_sigma_sqrt_2 = potparams.r/ (sqrt_2 * potparams.gd_sigma);
+        const fdouble r_over_sigma_sqrt_2 = potparams.r/ (sqrt_2 * potparams.gd_sigma);
 
         // Get partial potential
         phi12 = potparams.kQ2 * (potparams.one_over_r * LibPotentialErf(r_over_sigma_sqrt_2));
@@ -1123,7 +1125,7 @@ double Calculate_Potential_Cutoff_GaussianDistribution(
 void Set_Field_Cutoff_GaussianDistribution(
     void *p1, void *p2,
     potential_paramaters &potparams,
-    double &phi, double E[3])
+    fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
@@ -1138,9 +1140,9 @@ void Set_Field_Cutoff_GaussianDistribution(
     }
     else
     {
-        const double r_over_sigma_sqrt_2 = potparams.r / (sqrt_2 * potparams.gd_sigma);
+        const fdouble r_over_sigma_sqrt_2 = potparams.r / (sqrt_2 * potparams.gd_sigma);
         // The radial component of the gradient of the potential w.r. to r is:
-        double grad_cd = potparams.kQ2 * (
+        fdouble grad_cd = potparams.kQ2 * (
             (LibPotentialErf(r_over_sigma_sqrt_2) / potparams.r2)
             - sqrt_2_over_pi * exp(- r_over_sigma_sqrt_2 * r_over_sigma_sqrt_2)
                 / (potparams.gd_sigma * potparams.r)
@@ -1148,7 +1150,7 @@ void Set_Field_Cutoff_GaussianDistribution(
         // We have the radial component of the gradient of the potential,
         // we need to multiply this by the unit vector, to get
         // the electric field.
-        double unit_dr[3];
+        fdouble unit_dr[3];
 //         MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
 //         ADDMULVS(E, unit_dr, grad_cd);          // Add to the electric field
 //                                                 // the gradient of the potential.
@@ -1200,14 +1202,14 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
         // FIXME: Should it be "sym_cs - 1" or plain "sym_cs" for the IP?
         // FIXME: The jump in energy before and after ionization occurs
         // seems to be affected by the depth of the well.
-        //double Ip1 = element.IpsLowest[max(potparams.sym_cs1-1, 0)];
-        //double Ip2 = element.IpsLowest[max(potparams.sym_cs2-1, 0)];
-        double Ip1 = libpotentials_private::base_pot_well_depth*2.0;
-        double Ip2 = libpotentials_private::base_pot_well_depth*2.0;
+        //fdouble Ip1 = element.IpsLowest[max(potparams.sym_cs1-1, 0)];
+        //fdouble Ip2 = element.IpsLowest[max(potparams.sym_cs2-1, 0)];
+        fdouble Ip1 = libpotentials_private::base_pot_well_depth*2.0;
+        fdouble Ip2 = libpotentials_private::base_pot_well_depth*2.0;
 
-        potparams.kQ2 = one_over_4Pieps0 * double(potparams.sym_cs2) * e0;
-//         potparams.sym_sigma1 = one_over_4Pieps0 * double(abs(potparams.sym_cs1)) * e0 * sqrt_2_over_pi / Ip1;
-//         potparams.sym_sigma2 = one_over_4Pieps0 * double(abs(potparams.sym_cs2)) * e0 * sqrt_2_over_pi / Ip2;
+        potparams.kQ2 = one_over_4Pieps0 * fdouble(potparams.sym_cs2) * e0;
+//         potparams.sym_sigma1 = one_over_4Pieps0 * fdouble(abs(potparams.sym_cs1)) * e0 * sqrt_2_over_pi / Ip1;
+//         potparams.sym_sigma2 = one_over_4Pieps0 * fdouble(abs(potparams.sym_cs2)) * e0 * sqrt_2_over_pi / Ip2;
         potparams.sym_sigma1 = one_over_4Pieps0 * e0 * sqrt_2_over_pi / Ip1;
         potparams.sym_sigma2 = one_over_4Pieps0 * e0 * sqrt_2_over_pi / Ip2;
     }
@@ -1220,7 +1222,7 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
 }
 
 // **************************************************************
-double Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(
+fdouble Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
@@ -1244,7 +1246,7 @@ double Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(
 {
     Check_if_LibPotentials_is_initialized();
 
-    double potential = 0.0;
+    fdouble potential = 0.0;
     // It does not make sense to calculate effect of particle 2 if
     // its charge is 0
     if (potparams.sym_cs2 != 0)
@@ -1271,7 +1273,7 @@ double Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(
 void Set_Field_Cutoff_ChargeDistribution_Symmetric(
     void *p1, void *p2,
     potential_paramaters &potparams,
-    double &phi, double E[3])
+    fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
@@ -1285,16 +1287,16 @@ void Set_Field_Cutoff_ChargeDistribution_Symmetric(
         }
         else
         {
-            const double r_over_sqrt = potparams.r / sqrt(
+            const fdouble r_over_sqrt = potparams.r / sqrt(
                       (2.0*potparams.sym_sigma1*potparams.sym_sigma1)
                     + (2.0*potparams.sym_sigma2*potparams.sym_sigma2)
                 );
-            const double absE = potparams.kQ2 * potparams.one_over_r * potparams.one_over_r * (
+            const fdouble absE = potparams.kQ2 * potparams.one_over_r * potparams.one_over_r * (
                 LibPotentialErf(r_over_sqrt) - two_over_sqrt_Pi * r_over_sqrt * exp(-r_over_sqrt*r_over_sqrt)
             );
 
-            double f;
-            double unit_vector;
+            fdouble f;
+            fdouble unit_vector;
             for (int d = 0 ; d < 3 ; d++)
             {
                 unit_vector = potparams.dr[d] * potparams.one_over_r;
@@ -1325,14 +1327,14 @@ void Potentials_Set_Parameters_ScreenedCoulomb(
 }
 
 // **************************************************************
-double Calculate_Potential_Cutoff_ScreenedCoulomb(
+fdouble Calculate_Potential_Cutoff_ScreenedCoulomb(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
     Check_if_LibPotentials_is_initialized();
 
-    const double one_over_r_plus_alpha = 1.0 / (potparams.r + sc_alpha);
-    const double phi = potparams.kQ2 * (2.0 * potparams.r + sc_alpha) * one_over_r_plus_alpha * one_over_r_plus_alpha * 0.5;
+    const fdouble one_over_r_plus_alpha = 1.0 / (potparams.r + sc_alpha);
+    const fdouble phi = potparams.kQ2 * (2.0 * potparams.r + sc_alpha) * one_over_r_plus_alpha * one_over_r_plus_alpha * 0.5;
     return phi;
 }
 
@@ -1340,11 +1342,11 @@ double Calculate_Potential_Cutoff_ScreenedCoulomb(
 void Set_Field_Cutoff_ScreenedCoulomb(
     void *p1, void *p2,
     potential_paramaters &potparams,
-    double &phi, double E[3])
+    fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
-    const double Eabs = potparams.kQ2 / pow(potparams.r + sc_alpha,3);
+    const fdouble Eabs = potparams.kQ2 / pow(potparams.r + sc_alpha,3);
     for (int d = 0 ; d < 3 ; d++)
         E[d] += potparams.dr[d] * Eabs;
 }
@@ -1363,13 +1365,13 @@ void Potentials_Set_Parameters_PseudoParticles(
 }
 
 // **************************************************************
-double Calculate_Potential_PseudoParticles(
+fdouble Calculate_Potential_PseudoParticles(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
     Check_if_LibPotentials_is_initialized();
 
-    double phi = - potparams.kQ2 * (
+    fdouble phi = - potparams.kQ2 * (
           ( ps_A2 / ( 2.0 * ps_A_minus_B * pow(ps_A + potparams.r, 2) ) )
         - ( ps_A_A_minus2B / ( ps_A_minus_B2 * (ps_A + potparams.r) ) )
         - ( ps_B2 * log( (ps_A+potparams.r)/(ps_B+potparams.r) ) / ps_A_minus_B3 )
@@ -1382,11 +1384,11 @@ double Calculate_Potential_PseudoParticles(
 void Set_Field_PseudoParticles(
     void *p1, void *p2,
     potential_paramaters &potparams,
-    double &phi, double E[3])
+    fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
-    const double Eabs = potparams.kQ2 * (
+    const fdouble Eabs = potparams.kQ2 * (
           ( potparams.r / ( pow(potparams.r + ps_A, 3) * (potparams.r + ps_B) ) )
         + ( ps_C / pow( pow(potparams.r, 2) + ps_D, 2) )
     );
@@ -1395,7 +1397,7 @@ void Set_Field_PseudoParticles(
 }
 
 // **************************************************************
-double tmp_get_shieldr(const int chg_st, const char *message)
+fdouble tmp_get_shieldr(const int chg_st, const char *message)
 {
     if( chg_st == 0 )
     {
@@ -1408,7 +1410,7 @@ double tmp_get_shieldr(const int chg_st, const char *message)
 }
 
 // **************************************************************
-double tmp_get_shieldr_2(const int chg_st_1, const int chg_st_2)
+fdouble tmp_get_shieldr_2(const int chg_st_1, const int chg_st_2)
 {
     if( chg_st_1 == 0 )
     {
