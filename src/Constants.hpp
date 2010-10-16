@@ -189,6 +189,10 @@ namespace libpotentials_double
     const double atomic_area_to_m2      = one / m2_to_atomic_area;           // m^2 . bohr^-2
     const double Mb_to_atomic_area      = Mb_to_m2 * m2_to_atomic_area;      // bohr^2 . Mb^-1
     const double atomic_area_to_Mb      = one / Mb_to_atomic_area;           // Mb . bohr^-2
+
+    // Laser Pulse: E(t) = A*sin(pi/T*t)^2, I(t) = E(t)^2 = A*sin(pi/T*t)^4
+    // T: period
+    const double sin4_fwhm_to_period    = Pi / ( Pi - 2.0 * std::asin( pow(2.0, -0.25) ) );
 }
 
 namespace libpotentials
@@ -301,14 +305,15 @@ namespace libpotentials
     const fdouble si_to_au_pot          = fdouble(libpotentials_double::si_to_au_pot           );
     const fdouble au_to_si_vel          = fdouble(libpotentials_double::au_to_si_vel           );
     const fdouble si_to_au_vel          = fdouble(libpotentials_double::si_to_au_vel           );
-    const fdouble b_to_m2               = fdouble(libpotentials_double::b_to_m2               );
-    const fdouble m2_to_b               = fdouble(libpotentials_double::m2_to_b               );
-    const fdouble Mb_to_m2              = fdouble(libpotentials_double::Mb_to_m2              );
-    const fdouble m2_to_Mb              = fdouble(libpotentials_double::m2_to_Mb              );
-    const fdouble m2_to_atomic_area     = fdouble(libpotentials_double::m2_to_atomic_area     );
-    const fdouble atomic_area_to_m2     = fdouble(libpotentials_double::atomic_area_to_m2     );
-    const fdouble Mb_to_atomic_area     = fdouble(libpotentials_double::Mb_to_atomic_area     );
-    const fdouble atomic_area_to_Mb     = fdouble(libpotentials_double::atomic_area_to_Mb     );
+    const fdouble b_to_m2               = fdouble(libpotentials_double::b_to_m2                );
+    const fdouble m2_to_b               = fdouble(libpotentials_double::m2_to_b                );
+    const fdouble Mb_to_m2              = fdouble(libpotentials_double::Mb_to_m2               );
+    const fdouble m2_to_Mb              = fdouble(libpotentials_double::m2_to_Mb               );
+    const fdouble m2_to_atomic_area     = fdouble(libpotentials_double::m2_to_atomic_area      );
+    const fdouble atomic_area_to_m2     = fdouble(libpotentials_double::atomic_area_to_m2      );
+    const fdouble Mb_to_atomic_area     = fdouble(libpotentials_double::Mb_to_atomic_area      );
+    const fdouble atomic_area_to_Mb     = fdouble(libpotentials_double::atomic_area_to_Mb      );
+    const fdouble sin4_fwhm_to_period   = fdouble(libpotentials_double::sin4_fwhm_to_period    );
 }
 
 
