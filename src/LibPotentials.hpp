@@ -6,7 +6,6 @@
 #include "FloatType.hpp"
 
 #include "Potentials.hpp"
-#include "Memory.hpp"
 #include "Vectors.hpp"
 #include "Structure_Potentials.hpp"
 #include "Version.hpp"

@@ -7,8 +7,8 @@
 
 ****************************************************************/
 
+#include <Memory.hpp>
 #include "Global.hpp"
-#include "Memory.hpp"
 #include "NR.hpp"
 
 namespace libpotentials_private
