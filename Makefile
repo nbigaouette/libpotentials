@@ -20,7 +20,7 @@ include makefiles/Makefile.rules
 
 ### Floats type: Use single precision or double precision?
 ### By default, it's double precision.
-CFLAGS          += -DFLOATTYPE_SINGLE
+#CFLAGS          += -DFLOATTYPE_SINGLE
 
 #################################################################
 # Project specific options
