@@ -186,9 +186,6 @@ $(eval $(call CFLAGS_template,$(1),$(2),$(3)))
 $(eval $(call LDFLAGS_template,$(1),$(2),$(3)))
 endef
 
-# Include if necessary
-# include makefiles/Makefile.tinyxml
-
 #################################################################
 # Tools
 RM               = rm -f
