@@ -1079,7 +1079,8 @@ void Potentials_Set_Parameters_GaussianDistribution(
 /*        std_cout << "Id(p1)="<<Get_Id(p1)<<"  B="<<potparams.B<<"  Cs(p1)="<<Get_Charge_State(p1)<<" Cs(p2)="<<Get_Charge_State(p2)<<" kQ2_over_B="<<potparams.kQ2_over_B<<" well="<<libpotentials_private::base_pot_well_depth<<"\n";*/
         // Radius where the Coulomb potential and its first derivative are
         // equal to a the gaussian charge distribution potential.
-        potparams.cutoff_radius = 4.0 * potparams.gd_sigma;
+        //potparams.cutoff_radius = 4.0 * potparams.gd_sigma;
+        potparams.cutoff_radius = 2.5 * potparams.gd_sigma;
 
     }
     else
