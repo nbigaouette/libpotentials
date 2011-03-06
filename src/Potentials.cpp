@@ -1254,8 +1254,8 @@ void Set_Field_Cutoff_GaussianDistribution(
     if (potparams.r > potparams.cutoff_radius)
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
     // A debug statement to catch very small distances where the true formular should be inf - inf
-    //This rarely cancels well and thus divergers giving a huge kick to the particles so
-    //we test for small r and set the field to 0 (a true expansion would be costly for little return)
+    // This rarely cancels well and thus divergers giving a huge kick to the particles so
+    // we test for small r and set the field to 0 (a true expansion would be costly for little return)
     else if (potparams.r < 1.48e-12 ) //r-vale determined by code trial and error for base_potential of 0.5
     {
       return; //don''t add any field making it effectively 0
