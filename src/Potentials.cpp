@@ -1101,6 +1101,7 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 
     fdouble phi12=0.0;   // Electrostatic potential
 
+    /*
     if (potparams.r <= potparams.cutoff_radius)
     {
         // If the distance between two bodys is less than the shielding
@@ -1118,6 +1119,48 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
         // normal Coulomb potential.
         phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
     }
+    */
+    if (potparams.r > potparams.cutoff_radius)
+        phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
+    else
+    {
+        const fdouble a = sqrt_2 * potparams.gd_sigma;
+        const fdouble &r = potparams.r;
+        phi12 = potparams.kQ2 * (
+              2.0                  / (                                        sqrt_Pi * a)
+            - 2.0 * std::pow(r,2)  / (3.0                                   * sqrt_Pi * std::pow(a,3))
+            +       std::pow(r,4)  / (5.0                                   * sqrt_Pi * std::pow(a,5))
+            -       std::pow(r,6)  / (21.0                                  * sqrt_Pi * std::pow(a,7))
+            +       std::pow(r,8)  / (108.0                                 * sqrt_Pi * std::pow(a,9))
+            -       std::pow(r,10) / (660.0                                 * sqrt_Pi * std::pow(a,11))
+            +       std::pow(r,12) / (4680.0                                * sqrt_Pi * std::pow(a,13))
+            -       std::pow(r,14) / (37800.0                               * sqrt_Pi * std::pow(a,15))
+            +       std::pow(r,16) / (342720.0                              * sqrt_Pi * std::pow(a,17))
+            -       std::pow(r,18) / (3447360.0                             * sqrt_Pi * std::pow(a,19))
+            +       std::pow(r,20) / (38102400.0                            * sqrt_Pi * std::pow(a,21))
+            -       std::pow(r,22) / (459043200.0                           * sqrt_Pi * std::pow(a,23))
+            +       std::pow(r,24) / (5987520000.0                          * sqrt_Pi * std::pow(a,25))
+            -       std::pow(r,26) / (84064780800.0                         * sqrt_Pi * std::pow(a,27))
+            +       std::pow(r,28) / (1264085222400.0                       * sqrt_Pi * std::pow(a,29))
+            -       std::pow(r,30) / (20268952704000.0                      * sqrt_Pi * std::pow(a,31))
+//             +       std::pow(r,32) / (345226033152000.0                     * sqrt_Pi * std::pow(a,33))
+//             -       std::pow(r,34) / (6224529991680000.0                    * sqrt_Pi * std::pow(a,35))
+//             +       std::pow(r,36) / (118443913555968000.0                  * sqrt_Pi * std::pow(a,37))
+//             -       std::pow(r,38) / (2372079457972224000.0                 * sqrt_Pi * std::pow(a,39))
+//             +       std::pow(r,40) / (49874491167621120000.0                * sqrt_Pi * std::pow(a,41))
+//             -       std::pow(r,42 / (1098455256691752960000.0               * sqrt_Pi * std::pow(a,43))
+//             +       std::pow(r,44) / (25290016374996172800000.0             * sqrt_Pi * std::pow(a,45))
+//             -       std::pow(r,46) / (607522393363796951040000.0            * sqrt_Pi * std::pow(a,47))
+//             +       std::pow(r,48) / (15200985842464366264320000.0          * sqrt_Pi * std::pow(a,49))
+//             -       std::pow(r,50) / (395535856104940142592000000.0         * sqrt_Pi * std::pow(a,51))
+//             +       std::pow(r,52) / (10687223719855049342976000000.0       * sqrt_Pi * std::pow(a,53))
+//             -       std::pow(r,54) / (299443909886504684421120000000.0      * sqrt_Pi * std::pow(a,55))
+//             +       std::pow(r,56) / (8689317821433845024292864000000.0     * sqrt_Pi * std::pow(a,57))
+//             -       std::pow(r,58) / (260831978815321207659036672000000.0   * sqrt_Pi * std::pow(a,59))
+//             +       std::pow(r,60) / (8090212224271827288407408640000000.0  * sqrt_Pi * std::pow(a,61))
+            );
+    }
+
     return phi12;
 }
 
@@ -1129,6 +1172,85 @@ void Set_Field_Cutoff_GaussianDistribution(
 {
     Check_if_LibPotentials_is_initialized();
 
+    if (potparams.r > potparams.cutoff_radius)
+        Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
+    else
+    {
+        const fdouble a = sqrt_2 * potparams.gd_sigma;
+        const fdouble &r = potparams.r;
+        /*
+        const fdouble Er = potparams.kQ2 * (
+              4.0 *          r     / (3.0 * sqrt_Pi * std::pow(a,3))
+            - 4.0 * std::pow(r,3)  / (5.0 * sqrt_Pi * std::pow(a,5))
+            + 2.0 * std::pow(r,5)  / (7.0 * sqrt_Pi * std::pow(a,7))
+            - 2.0 * std::pow(r,7)  / (27.0 * sqrt_Pi * std::pow(a,9))
+            +       std::pow(r,9)  / (66.0 * sqrt_Pi * std::pow(a,11))
+            -       std::pow(r,11) / (390.0 * sqrt_Pi * std::pow(a,13))
+            +       std::pow(r,13) / (2700.0 * sqrt_Pi * std::pow(a,15))
+            -       std::pow(r,15) / (21420.0 * sqrt_Pi * std::pow(a,17))
+            +       std::pow(r,17) / (191520.0 * sqrt_Pi * std::pow(a,19))
+            -       std::pow(r,19) / (1905120.0 * sqrt_Pi * std::pow(a,21))
+            +       std::pow(r,21) / (20865600.0 * sqrt_Pi * std::pow(a,23))
+            -       std::pow(r,23) / (249480000.0 * sqrt_Pi * std::pow(a,25))
+            +       std::pow(r,25) / (3233260800.0 * sqrt_Pi * std::pow(a,27))
+            -       std::pow(r,27) / (45145900800.0 * sqrt_Pi * std::pow(a,29))
+            +       std::pow(r,29) / (675631756800.0 * sqrt_Pi * std::pow(a,31))
+            -       std::pow(r,31) / (10788313536000.0 * sqrt_Pi * std::pow(a,33))
+            +       std::pow(r,33) / (183074411520000.0 * sqrt_Pi * std::pow(a,35))
+            -       std::pow(r,35) / (3290108709888000.0 * sqrt_Pi * std::pow(a,37))
+            +       std::pow(r,37) / (62423143630848000.0 * sqrt_Pi * std::pow(a,39))
+            -       std::pow(r,39) / (1246862279190528000.0 * sqrt_Pi * std::pow(a,41))
+            +       std::pow(r,41) / (26153696587898880000.0 * sqrt_Pi * std::pow(a,43))
+            -       std::pow(r,43) / (574773099431731200000.0 * sqrt_Pi * std::pow(a,45))
+            +       std::pow(r,45) / (13207008551386890240000.0 * sqrt_Pi * std::pow(a,47))
+            -       std::pow(r,47) / (316687205051340963840000.0 * sqrt_Pi * std::pow(a,49))
+            +       std::pow(r,49) / (7910717122098802851840000.0 * sqrt_Pi * std::pow(a,51))
+            -       std::pow(r,51) / (205523533074135564288000000.0 * sqrt_Pi * std::pow(a,53))
+        */
+        const fdouble Er = potparams.kQ2 * (
+               4.0                            / (3.0                            * sqrt_Pi * std::pow(a,3))
+            - (4.0 * std::pow(potparams.r,2)) / (5.0                            * sqrt_Pi * std::pow(a,5))
+            + (2.0 * std::pow(potparams.r,4)) / (7.0                            * sqrt_Pi * std::pow(a,7))
+            - (2.0 * std::pow(potparams.r,6)) / (27.0                           * sqrt_Pi * std::pow(a,9))
+            +        std::pow(potparams.r,8)  / (66.0                           * sqrt_Pi * std::pow(a,11))
+            -        std::pow(potparams.r,10) / (390.0                          * sqrt_Pi * std::pow(a,13))
+            +        std::pow(potparams.r,12) / (2700.0                         * sqrt_Pi * std::pow(a,15))
+            -        std::pow(potparams.r,14) / (21420.0                        * sqrt_Pi * std::pow(a,17))
+            +        std::pow(potparams.r,16) / (191520.0                       * sqrt_Pi * std::pow(a,19))
+            -        std::pow(potparams.r,18) / (1905120.0                      * sqrt_Pi * std::pow(a,21))
+            +        std::pow(potparams.r,20) / (20865600.0                     * sqrt_Pi * std::pow(a,23))
+            -        std::pow(potparams.r,22) / (249480000.0                    * sqrt_Pi * std::pow(a,25))
+            +        std::pow(potparams.r,24) / (3233260800.0                   * sqrt_Pi * std::pow(a,27))
+            -        std::pow(potparams.r,26) / (45145900800.0                  * sqrt_Pi * std::pow(a,29))
+            +        std::pow(potparams.r,28) / (675631756800.0                 * sqrt_Pi * std::pow(a,31))
+//             -        std::pow(potparams.r,30) / (10788313536000.0               * sqrt_Pi * std::pow(a,33))
+//             +        std::pow(potparams.r,32) / (183074411520000.0              * sqrt_Pi * std::pow(a,35))
+//             -        std::pow(potparams.r,34) / (3290108709888000.0             * sqrt_Pi * std::pow(a,37))
+//             +        std::pow(potparams.r,36) / (62423143630848000.0            * sqrt_Pi * std::pow(a,39))
+//             -        std::pow(potparams.r,38) / (1246862279190528000.0          * sqrt_Pi * std::pow(a,41))
+//             +        std::pow(potparams.r,40) / (26153696587898880000.0         * sqrt_Pi * std::pow(a,43))
+//             -        std::pow(potparams.r,42) / (574773099431731200000.0        * sqrt_Pi * std::pow(a,45))
+//             +        std::pow(potparams.r,44) / (13207008551386890240000.0      * sqrt_Pi * std::pow(a,47))
+//             -        std::pow(potparams.r,46) / (316687205051340963840000.0     * sqrt_Pi * std::pow(a,49))
+//             +        std::pow(potparams.r,48) / (7910717122098802851840000.0    * sqrt_Pi * std::pow(a,51))
+//             -        std::pow(potparams.r,50) / (205523533074135564288000000.0  * sqrt_Pi * std::pow(a,53))
+        );
+
+        Assert_isinf_isnan(Er);
+
+        const fdouble dr[3] = {
+            Get_Position(p1)[0] - Get_Position(p2)[0],
+            Get_Position(p1)[1] - Get_Position(p2)[1],
+            Get_Position(p1)[2] - Get_Position(p2)[2]
+        };
+        std::cout << "Expansion: dr = (" << m_to_bohr*dr[0] << ", " << m_to_bohr*dr[1] << ", " << m_to_bohr*dr[2] << ")   Er = " << Er << "\n";
+
+        for (int d = 0 ; d < 3 ; d++)
+        {
+            E[d]  += dr[d] * Er;
+        }
+    }
+/*
     if (potparams.r > potparams.cutoff_radius)
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
     // A debug statement to catch very small distances where the true formular should be inf - inf
