@@ -1104,8 +1104,14 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 
     fdouble phi12=0.0;   // Electrostatic potential
 
-    /*
-    if (potparams.r <= potparams.cutoff_radius)
+    if      (potparams.r > 8.0*potparams.gd_sigma)
+    {
+        // If the distance is not less then the shielding radius, get the
+        // normal Coulomb potential.
+
+        phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
+    }
+    else if (potparams.r > 1.0*potparams.gd_sigma)
     {
         // If the distance between two bodys is less than the shielding
         // radius, we use the special potential calculated from a
@@ -1118,15 +1124,8 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
     }
     else
     {
-        // If the distance is not less then the shielding radius, get the
-        // normal Coulomb potential.
-        phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
-    }
-    */
-    if (potparams.r > potparams.cutoff_radius)
-        phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
-    else
-    {
+        // Taylor expension around r = 0 which prevent over-/under-flows.
+
         const fdouble a = sqrt_2 * potparams.gd_sigma;
         const fdouble &r = potparams.r;
         phi12 = potparams.kQ2 * (
