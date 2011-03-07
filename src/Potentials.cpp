@@ -277,18 +277,18 @@ fdouble LibPotentialErf(fdouble x)
 {
     fdouble erf_value = 0.0;
     //erf_value = nr::int_erf(x);
-    //erf_value = erf(x);
+    erf_value = erf(x);
     //erf_value = nr::erff(x);
     //erf_value = nr::python_erf(x);
     //erf_value = gsl_sf_erf (x);
-    if (x < libpotentials_private::tl_Rmax)
-    {
-        const int base = int(x * libpotentials_private::tl_one_over_dR);
-        const fdouble gain = fdouble(x * libpotentials_private::tl_one_over_dR) - fdouble(base);
-        erf_value = libpotentials_private::tl_erf[base] * (1.0 - gain) + gain*libpotentials_private::tl_erf[base+1];
-    } else {
-        erf_value = 1.0;
-    }
+//     if (x < libpotentials_private::tl_Rmax)
+//     {
+//         const int base = int(x * libpotentials_private::tl_one_over_dR);
+//         const fdouble gain = fdouble(x * libpotentials_private::tl_one_over_dR) - fdouble(base);
+//         erf_value = libpotentials_private::tl_erf[base] * (1.0 - gain) + gain*libpotentials_private::tl_erf[base+1];
+//     } else {
+//         erf_value = 1.0;
+//     }
 
     return erf_value;
 }
