@@ -335,7 +335,7 @@ gdb: $(BIN)
 mpi: force
 omp: force
 optimized: force
-dg: force
+ds: force
 
 # Force target
 .PHONY: force
