@@ -9,9 +9,9 @@
 #include <cstdlib>
 #include <iostream> // cout
 #include <cstring>  // memset
-#include <cassert>
 
 #include <StdCout.hpp>
+#include <Assert.hpp>
 
 #include "LibPotentials.hpp"
 #include "Constants.hpp"
@@ -1283,6 +1283,7 @@ void Set_Field_Cutoff_GaussianDistribution(
             E[d]  += unit_dr[d] * grad_cd;
         }
     }
+*/
 }
 
 // **************************************************************
