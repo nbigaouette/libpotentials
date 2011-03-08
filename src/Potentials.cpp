@@ -994,16 +994,16 @@ void Potentials_Set_Parameters_GaussianDistribution(
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
                                   potparams.r, potparams.one_over_r);
-#ifdef YDEBUG
-    if (potparams.r <= 1.0e-200 || isnan(potparams.r))
-    {
-        Print_Particles(p1, 1);
-        Print_Particles(p2, 1);
-        assert(potparams.r > 1.0e-200);
-        abort();
-    }
-#endif // #ifdef YDEBUG
-    assert(potparams.r > 1.0e-200);
+// #ifdef YDEBUG
+//     if (potparams.r <= 1.0e-200 || isnan(potparams.r))
+//     {
+//         Print_Particles(p1, 1);
+//         Print_Particles(p2, 1);
+//         assert(potparams.r > 1.0e-200);
+//         abort();
+//     }
+// #endif // #ifdef YDEBUG
+//     assert(potparams.r > 1.0e-200);
 
     // we only add field if other particle has a charge not equal 0
     fdouble Q = Get_Charge(p2);
@@ -1111,7 +1111,7 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 
         phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
     }
-    else //if (potparams.r > 1.0*potparams.gd_sigma)
+    else if (potparams.r > 1.0*potparams.gd_sigma)
     {
         // If the distance between two bodys is less than the shielding
         // radius, we use the special potential calculated from a
@@ -1121,7 +1121,7 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 
         // Get partial potential
         phi12 = potparams.kQ2 * (potparams.one_over_r * LibPotentialErf(r_over_sigma_sqrt_2));
-    }/*
+    }
     else
     {
         // Taylor expension around r = 0 which prevent over-/under-flows.
@@ -1162,7 +1162,7 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 //             +       std::pow(r,60) / (8090212224271827288407408640000000.0  * sqrt_Pi * std::pow(a,61))
             );
     }
-*/
+
     return phi12;
 }
 
@@ -1179,7 +1179,7 @@ void Set_Field_Cutoff_GaussianDistribution(
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
         //std_cout << "Long range field: Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")\n";
     }
-    else //if (potparams.r > 1.0*potparams.gd_sigma)
+    else if (potparams.r > 1.0*potparams.gd_sigma)
     {
         const fdouble r_over_sigma_sqrt_2 = potparams.r / (sqrt_2 * potparams.gd_sigma);
         // The radial component of the gradient of the potential w.r. to r is:
@@ -1198,7 +1198,7 @@ void Set_Field_Cutoff_GaussianDistribution(
             E[d]  += unit_dr[d] * grad_cd;
         }
         //std_cout << "Medium range field: Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")\n";
-    }/*
+    }
     else
     {
         // http://www.wolframalpha.com/input/?i=erf%28r%2Fa%29%2Fr**3-2%2Fsqrt%28pi%29*exp%28-r**2%2Fa**2%29%2F%28a*r**2%29
@@ -1241,7 +1241,7 @@ void Set_Field_Cutoff_GaussianDistribution(
 
 //         std_cout << "Low range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")    Er = " << Er << "     Er.dr = (" << Er*potparams.dr[0] <<", "<< Er*potparams.dr[1] <<", "<< Er*potparams.dr[2] << ")\n";
     }
-*/
+
 }
 
 // **************************************************************
