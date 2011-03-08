@@ -82,7 +82,9 @@ void Potentials_Initialize(const std::string potential_shape,
     {
         std_cout << "### Using a gaussian charge distribution                           ###\n";
         std_cout << "### potential for close range interaction                          ###\n";
+        std_cout << "### Initializing the erf() lookup table..." << std::flush;
         libpotentials_private::initialize_erf_lookup_table();
+        std_cout <<                                            "Done!...                ###\n";
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_GaussianDistribution;
         Calculate_Potential       = &Calculate_Potential_Cutoff_GaussianDistribution;
@@ -104,7 +106,9 @@ void Potentials_Initialize(const std::string potential_shape,
     {
         std_cout << "### Using the symmetric two charge                                 ###\n";
         std_cout << "### distribution interaction                                       ###\n";
+        std_cout << "### Initializing the erf() lookup table..." << std::flush;
         libpotentials_private::initialize_erf_lookup_table();
+        std_cout <<                                            "Done!...                ###\n";
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_ChargeDistribution_Symmetric;
         Calculate_Potential       = &Calculate_Potential_Cutoff_ChargeDistribution_Symmetric;
