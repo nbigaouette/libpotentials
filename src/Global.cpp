@@ -17,7 +17,7 @@ namespace libpotentials_private
 
     // Error function lookup table erf(R)
     fdouble *tl_erf;
-    const int    tl_n = 100000;    // Number of points of the lookup table
+    const int    tl_n = 1000;    // Number of points of the lookup table
     const fdouble tl_Rmax = 6.0; // Maximum value of R: erf(4) = 0.999999984582742
     const fdouble tl_dR = tl_Rmax / (tl_n-1); // Step
     const fdouble tl_one_over_dR = 1.0 / tl_dR;
