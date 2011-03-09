@@ -158,6 +158,8 @@ void Print_Constants()
     Print(si_to_au_pot);
     Print(au_to_si_vel);
     Print(si_to_au_vel);
+    Print(au_to_si_acc);
+    Print(au_to_si_acc);
     std_cout << "----------------------------------------------------------------------\n";
     std_cout << " Laser Pulse: E(t) = A*sin(pi/T*t)^2, I(t) = E(t)^2 = A*sin(pi/T*t)^4 \n";
     Print(sin4_fwhm_to_period);

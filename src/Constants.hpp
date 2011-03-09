@@ -175,8 +175,11 @@ namespace libpotentials_double
     const double au_to_si_pot           = au_electric_field * a0; // V . au^-1
     const double si_to_au_pot           = one / au_to_si_pot;   // au . V^-1
 
-    const double au_to_si_vel           = Eh * a0 / hbar;       // m.s^-1 . au^-1
+    const double au_to_si_vel           = Eh * a0 / hbar;       // m.s^-1 . bohr . aut^-1
     const double si_to_au_vel           = one / au_to_si_vel;   // au . m.s^-1
+
+    const double au_to_si_acc           = au_to_si_vel / au_to_si_time; // m.s^-2 . bohr^-1.aut^2
+    const double si_to_au_acc           = one / au_to_si_acc;   // au . m.s^-1
 
 
     // ********** Other Usefull Conversions
@@ -305,6 +308,8 @@ namespace libpotentials
     const fdouble si_to_au_pot          = fdouble(libpotentials_double::si_to_au_pot           );
     const fdouble au_to_si_vel          = fdouble(libpotentials_double::au_to_si_vel           );
     const fdouble si_to_au_vel          = fdouble(libpotentials_double::si_to_au_vel           );
+    const fdouble au_to_si_acc           = fdouble(libpotentials_double::au_to_si_acc           );
+    const fdouble si_to_au_acc           = fdouble(libpotentials_double::si_to_au_acc           );
     const fdouble b_to_m2               = fdouble(libpotentials_double::b_to_m2                );
     const fdouble m2_to_b               = fdouble(libpotentials_double::m2_to_b                );
     const fdouble Mb_to_m2              = fdouble(libpotentials_double::Mb_to_m2               );
