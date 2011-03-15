@@ -83,7 +83,8 @@ void Potentials_Initialize(const std::string potential_shape,
         std_cout << "### Using a gaussian charge distribution                           ###\n";
         std_cout << "### potential for close range interaction                          ###\n";
         std_cout << "### Initializing the erf() lookup table..." << std::flush;
-        libpotentials_private::initialize_erf_lookup_table();
+        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, 4.5*std::sqrt(2.0), 10000, "Potential LookUpTable");
+        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, 4.5*std::sqrt(2.0), 10000, "Field LookUpTable");
         std_cout <<                                            "Done!...                ###\n";
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_GaussianDistribution;
@@ -107,7 +108,8 @@ void Potentials_Initialize(const std::string potential_shape,
         std_cout << "### Using the symmetric two charge                                 ###\n";
         std_cout << "### distribution interaction                                       ###\n";
         std_cout << "### Initializing the erf() lookup table..." << std::flush;
-        libpotentials_private::initialize_erf_lookup_table();
+        std_cout << "FIXME: Fix lookup table.\n";
+        abort();
         std_cout <<                                            "Done!...                ###\n";
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_ChargeDistribution_Symmetric;
@@ -144,7 +146,6 @@ void Potentials_Initialize(const std::string potential_shape,
 // **************************************************************
 void Potentials_Finalize()
 {
-    free(libpotentials_private::tl_erf);
 }
 
 // **************************************************************
