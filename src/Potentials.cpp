@@ -147,6 +147,14 @@ fdouble tmp_get_shieldr(const int chg_st, const char *message);
 
 fdouble erf_over_x(fdouble x)
 /**
+ * Calculate electrostatic potential:
+ *      V(x) / (k*Q / (sqrt(2)*sigma))
+ * where x = r/(sqrt(2)*sigma)
+ *
+ * Used to construct the lookup table.
+ *
+ * See scripts/expansions.py
+ *
  * http://www.wolframalpha.com/input/?i=erf%28x%29%2Fx
  */
 {
@@ -191,7 +199,15 @@ fdouble erf_over_x(fdouble x)
 // **************************************************************
 fdouble erf_over_x3_minus_exp_over_x2(fdouble x)
 /**
- * http://www.wolframalpha.com/input/?i=erf%28x%29%2Fx**3-2%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
+ * Calculate electrostatic field:
+ *      (E(x) / x) / (k*Q / (sqrt(2)*sigma^3))
+ * where x = r/(sqrt(2)*sigma)
+ *
+ * Used to construct the lookup table.
+ *
+ * See scripts/expansions.py
+ *
+ * http://www.wolframalpha.com/input/?i=expansion+erf%28x%29%2F%282*x**3%29-1%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
  */
 {
     fdouble value;
@@ -200,32 +216,31 @@ fdouble erf_over_x3_minus_exp_over_x2(fdouble x)
     {
         // http://www.wolframalpha.com/input/?i=expansion+erf%28x%29%2F%282*x**3%29-1%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
         value = (
-            2.0 / 3.0
-            -(2.0 * x*x) / 5.0
-            + x*x*x*x  / 7.0
-            - x*x*x*x*x*x  / 27.0
-            + x*x*x*x*x*x*x*x / 132.0
-            - x*x*x*x*x*x*x*x*x*x / 780.0
-            + x*x*x*x*x*x*x*x*x*x*x*x / 5400.0
-            - x*x*x*x*x*x*x*x*x*x*x*x*x*x / 42840.0
-            + x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 383040.0
-            - x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 3810240.0
-            + x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 41731200.0
-            - x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 498960000.0
-            + x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 6466521600.0
-            - x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 90291801600.0
-            + x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 1351263513600.0
-            - x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 21576627072000.0
-            + x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 366148823040000.0
-            - x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 6580217419776000.0
-            + x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 124846287261696000.0
-            - x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 2493724558381056000.0
-            + x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 52307393175797760000.0
-            - x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 1149546198863462400000.0
-            + x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x / 26414017102773780480000.0
-            //+O(x^45)
-        );
-        value /= sqrt_Pi;
+               2.0                                                                                              / 3.0
+            - (2.0 * x*x)                                                                                       / 5.0
+            +        x*x*x*x                                                                                    / 7.0
+            -        x*x*x*x*x*x                                                                                / 27.0
+            +        x*x*x*x*x*x*x*x                                                                            / 132.0
+            -        x*x*x*x*x*x*x*x*x*x                                                                        / 780.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x                                                                    / 5400.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                                / 42840.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                            / 383040.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / 3810240.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / 41731200.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / 498960000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / 6466521600.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / 90291801600.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / 1351263513600.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / 21576627072000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / 366148823040000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / 6580217419776000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / 124846287261696000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / 2493724558381056000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / 52307393175797760000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / 1149546198863462400000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / 26414017102773780480000.0
+            // +O(x^45)
+        ) / sqrt_Pi;
     }
     else
     {
