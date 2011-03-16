@@ -1,3 +1,4 @@
 .kdev4
 src/Version.hpp
 *~
+*.pyc
