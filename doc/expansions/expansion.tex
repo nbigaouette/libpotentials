@@ -1,0 +1,284 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%          Written by Nicolas Bigaouette               %%
+%%                    Winter 2008                       %%
+%%              nbigaouette@gmail.com                   %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt,letterpaper]{article}
+% \documentclass[12pt,letterpaper,draft]{article}
+
+\title{Expansions}
+\date{\today}
+% \date{Wednesday, November 4th (\today)}
+\author{Nicolas Bigaouette}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Useful macros
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{macros.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Needed packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Needed for \begin{subequations}...\end{subequations}
+\usepackage{amsmath}
+% Needed for bold Greek letters
+\usepackage{bm}
+% Multiple figures
+% \usepackage{subfigure}
+% For 1/2 symbol
+\usepackage{ltugcomn}
+% For \cqfd
+% \usepackage{latexsym}
+% To prevent a newline after call to ``\subsection{}''
+% See http://stackoverflow.com/questions/1469096/no-newline-after-subsection
+% \usepackage{titlesec}
+% \titleformat{\subsection}[runin]{\bfseries}{}{}{}[]
+% \usepackage{empheq}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% \usepackage{lscape}
+% \usepackage{pdflscape}
+% \def\Tiny{\fontsize{6pt}{6pt}\selectfont}
+
+
+%%%%
+% Voir http://forums.gentoo.org/viewtopic-t-202973-highlight-fonts+latex.html
+% \usepackage{mathptmx}
+% \usepackage[scaled=.90]{helvet}
+% \usepackage{courier}
+%%%%
+
+% cd /tmp
+% wget http://ftp.ktug.or.kr/tex-archive/macros/latex/contrib/misc/cases.sty
+% sudo mkdir /usr/share/texmf/tex/latex/cases/
+% sudo cp test/cases.sty /usr/share/texmf/tex/latex/cases/
+% sudo texhash
+%\usepackage{cases}                  %
+% http://ftp.ktug.or.kr/tex-archive/macros/latex/contrib/misc/cases.sty
+
+\usepackage{ifpdf}
+\ifpdf
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % PDF compilation with "pdflatex"
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \usepackage[pdftex]{graphicx}
+    \def\pdfshellescape{1}
+    \pdfcompresslevel=9
+    %%%
+    % PDF options
+    % See http://barrault.free.fr/ressources/rapports/pdflatex/
+    \usepackage[pdftex,
+        bookmarks = true,
+        bookmarksnumbered = true,
+        bookmarksopen = false,
+        %pdfpagemode = UseOutlines,
+        pdfpagemode = UseNone,
+        pdfstartview = FitH,
+        colorlinks,
+        citecolor=black,urlcolor=blue,linkcolor=black,
+        pdfauthor={Nicolas Bigaouette},
+        pdftitle={Expansions},
+        unicode = true,
+        plainpages = false,pdfpagelabels
+    ]{hyperref}
+\else
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % DVI compilation with "latex"
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \usepackage[dvips]{graphicx}
+    \newcommand{\url}[1]{{\color{blue}#1}}
+\fi
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       Page format
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textheight=21cm
+\textwidth=17.0cm
+\oddsidemargin=0cm
+\evensidemargin=0cm
+\topmargin=0cm
+\headsep=20pt
+\topskip=10pt
+\large
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% These adjust how LaTeX puts figures onto pages with text. These values
+% reduce the likelihood that a figure will end up by itself on a page.
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+
+
+\begin{document}
+\maketitle
+% \osvpace{-50 pts}
+
+
+% \tableofcontents
+% \newpage
+% *************************************************************
+
+\section{Expansions}
+The potential and field of a charge distribution are:
+\begin{align}
+\phi\pa{r} & = \frac{k Q}{r} \erf{\frac{r}{\sqrt{2} \sigma}}
+\\
+\vE\pa{r}  & = k Q \pa{
+    \frac{ \erf{\frac{r}{\sqrt{2} \sigma}} }{r^2}
+    - \sqrt{ \frac{2}{\pi} } \frac{ \ex{ -\frac{r^2}{2 \sigma^2} } }{\sigma r}
+} \orv
+\end{align}
+Because $r$ might become quite small if 2 particles are close, $\orv$ can cause problem.
+We thus replace it with $\orv = \vr / \abs{\vr}$:
+\begin{align}
+\vE\pa{x}  & = k Q \pa{
+    \frac{ \erf{\frac{r}{\sqrt{2} \sigma}} }{r^2}
+    - \sqrt{ \frac{2}{\pi} } \frac{ \ex{ -\frac{r^2}{2 \sigma^2} } }{\sigma r}
+} \frac{\vr}{r}
+\\
+\vE\pa{x}  & = k Q \pa{
+    \frac{ \erf{\frac{r}{\sqrt{2} \sigma}} }{r^3}
+    - \sqrt{ \frac{2}{\pi} } \frac{ \ex{ -\frac{r^2}{2 \sigma^2} } }{\sigma r^2}
+} \vr
+\end{align}
+The value $\vr$ is easy to calculate. For two particle $p_0$ and $p_1$, it is $\vr = \vr_0 - \vr_1$.
+
+Using $\orv = \vr / \abs{\vr}$ and $x = \frac{r}{\sqrt{2} \sigma}$, the previous equations
+are simplified to:
+\begin{align}
+\vE\pa{x}
+& = k Q \pa{
+    \frac{ \erf{x} }{\pa{\sqrt{2} \sigma x}^3}
+    - \sqrt{ \frac{2}{\pi} } \frac{ \ex{-x^2} }{\sigma \pa{\sqrt{2} \sigma x}^2}
+} \vr
+\nonumber \\
+& = k Q \pa{
+    \frac{ \erf{x} }{2^{3/2} \sigma^3 x^3}
+    - \sqrt{ \frac{2}{\pi} } \frac{ \ex{-x^2} }{2 \sigma^3 x^2}
+} \vr
+\nonumber \\
+\vE\pa{x}
+& = \frac{k Q}{\sqrt{2} \sigma^3} \pa{
+    \frac{ \erf{x} }{2 x^3}
+    - \frac{1}{\sqrt{\pi}} \frac{ \ex{-x^2} }{x^2}
+} \vr
+\nonumber \\
+\vE\pa{x}
+& = \frac{k Q}{\sqrt{2} \sigma^3} F\pa{x} \vr
+\\
+\phi\pa{x} & = \frac{k Q}{\sqrt{2} \sigma} \frac{\erf{x}}{x}
+\\
+\phi\pa{x} & = \frac{k Q}{\sqrt{2} \sigma} G\pa{x}
+\end{align}
+where
+\begin{align}
+G\pa{x} & = \frac{\erf{x}}{x} \\
+F\pa{x} & = \frac{ \erf{x} }{2 x^3} - \frac{1}{\sqrt{\pi}} \frac{ \ex{-x^2} }{x^2}
+\end{align}
+
+A lookup table will be used for $F\pa{x}$ and $G\pa{x}$, and for $x<1$, an expansion is
+performed. This is necessary since $F\pa{x}$ is prone to floating point errors
+for $x \rightarrow 0$ ($0/0 - 1/0$).
+
+Wolfram Alpha gives the expansion. $G\pa{x}$ now
+becomes\footnote{\url{http://www.wolframalpha.com/input/?i=erf\%28x\%29\%2Fx}}:
+\begin{align}
+\sqrt{\pi} G\pa{x} & \simeq
+      2
+    - \frac{2 x^{2}}{3}
+    + \frac{x^{4}}{5}
+    - \frac{x^{6}}{21}
+    + \frac{x^{8}}{108}
+    - \frac{x^{10}}{660}
+    + \frac{x^{12}}{4680}
+    - \frac{x^{14}}{37800}
+    + \frac{x^{16}}{342720}
+    - \frac{x^{18}}{3447360}
+    + \frac{x^{20}}{38102400}
+\nonumber \\ & \hspace{22pt}
+    - \frac{x^{22}}{459043200}
+    + \frac{x^{24}}{5987520000}
+    - \frac{x^{26}}{84064780800}
+    + \frac{x^{28}}{1264085222400}
+    - \frac{x^{30}}{20268952704000}
+\nonumber \\ & \hspace{22pt}
+    + \frac{x^{32}}{345226033152000}
+    - \frac{x^{34}}{6224529991680000}
+    + \frac{x^{36}}{118443913555968000}
+\nonumber \\ & \hspace{22pt}
+    - \frac{x^{38}}{2372079457972224000}
+    + \frac{x^{40}}{49874491167621120000}
+    + O\pa{x^{41}}
+\end{align}
+and $F\pa{x}$
+is\footnote{\url{http://www.wolframalpha.com/input/?i=expansion+erf\%28x\%29\%2F\%282*x**3\%29-1\%2Fsqrt\%28pi\%29*exp\%28-x**2\%29\%2F\%28x**2\%29}}:
+\begin{align}
+\sqrt{\pi} F\pa{x} & \simeq
+      \frac{2}{3}
+    - \frac{2 x^{2}}{5}
+    + \frac{x^{4}}{7}
+    - \frac{x^{6}}{27}
+    + \frac{x^{8}}{132}
+    - \frac{x^{10}}{780}
+    + \frac{x^{12}}{5400}
+    - \frac{x^{14}}{42840}
+    + \frac{x^{16}}{383040}
+    - \frac{x^{18}}{3810240}
+    + \frac{x^{20}}{41731200}
+\nonumber \\ & \hspace{24pt}
+    - \frac{x^{22}}{498960000}
+    + \frac{x^{24}}{6466521600}
+    - \frac{x^{26}}{90291801600}
+    + \frac{x^{28}}{1351263513600}
+    - \frac{x^{30}}{21576627072000}
+\nonumber \\ & \hspace{24pt}
+    + \frac{x^{32}}{366148823040000}
+    - \frac{x^{34}}{6580217419776000}
+    + \frac{x^{36}}{124846287261696000}
+\nonumber \\ & \hspace{24pt}
+    - \frac{x^{38}}{2493724558381056000}
+    + \frac{x^{40}}{52307393175797760000}
+\nonumber \\ & \hspace{24pt}
+    - \frac{x^{42}}{1149546198863462400000}
+    + \frac{x^{44}}{26414017102773780480000}
+    +O\pa{x^{45}}
+\end{align}
+
+Figure \ref{fig:expansions_F_G} shows the expansions of $F\pa{x}$ and $G\pa{x}$
+compared to the exact values. For $x < 1.5$, the error is less then the floating
+point noise.
+
+\begin{figure}
+    \includegraphics[width=0.98\columnwidth]{expansions_F_G}
+    \caption{Expansions of $F\pa{x}$ and $G\pa{x}$}
+    \label{fig:expansions_F_G}
+\end{figure}
+
+
+
+
+% *************************************************************
+
+
+% % *************************************************************
+% \label{references}
+% \newpage
+% % \nocite{*}    % Si commenté, n'inclut pas ce qui n'est pas cité
+% % \bibliographystyle{iso690-2}
+% \bibliographystyle{plain}
+% % \bibliographystyle{ametsoc}
+% \bibliography{references}
+% % \bibliography{library}
+
+
+
+\end{document}
