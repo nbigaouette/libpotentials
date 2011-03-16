@@ -153,7 +153,7 @@ fdouble erf_over_x(fdouble x)
  *
  * Used to construct the lookup table.
  *
- * See scripts/expansions.py
+ * See doc/expansions/expansions.pdf and scripts/expansions.py
  *
  * http://www.wolframalpha.com/input/?i=erf%28x%29%2Fx
  */
@@ -205,7 +205,7 @@ fdouble erf_over_x3_minus_exp_over_x2(fdouble x)
  *
  * Used to construct the lookup table.
  *
- * See scripts/expansions.py
+ * See doc/expansions/expansions.pdf and scripts/expansions.py
  *
  * http://www.wolframalpha.com/input/?i=expansion+erf%28x%29%2F%282*x**3%29-1%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
  */
