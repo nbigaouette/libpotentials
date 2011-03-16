@@ -1196,7 +1196,7 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 
     fdouble phi12=0.0;   // Electrostatic potential
 
-    if      (potparams.r > 8.0*potparams.gd_sigma)
+    if      (potparams.r > potparams.cutoff_radius)
     {
         // If the distance is not less then the shielding radius, get the
         // normal Coulomb potential.
@@ -1221,7 +1221,7 @@ void Set_Field_Cutoff_GaussianDistribution(
 {
     Check_if_LibPotentials_is_initialized();
 
-    if      (potparams.r > 8.0*potparams.gd_sigma)
+    if      (potparams.r > potparams.cutoff_radius)
     {
         // If the distance is not less then the shielding radius, get the
         // normal Coulomb potential.
