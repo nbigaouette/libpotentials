@@ -1252,14 +1252,14 @@ void Set_Field_Cutoff_GaussianDistribution(
         const fdouble E_over_r = potparams.kQ2 / (sqrt_2 * potparams.gd_sigma * potparams.gd_sigma * potparams.gd_sigma) *
                                         libpotentials_private::lut_field.read(potparams.r / (potparams.gd_sigma * sqrt_2));
 
-        Assert_isinf_isnan(Er);
+        Assert_isinf_isnan(E_over_r);
 
         for (int d = 0 ; d < 3 ; d++)
         {
             // We multiply E/r by r to get E
             E[d]  += E_over_r * potparams.dr[d];
         }
-        //std_cout << "Low range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")    Er = " << Er << "     Er.dr = (" << Er*potparams.dr[0] <<", "<< Er*potparams.dr[1] <<", "<< Er*potparams.dr[2] << ")\n";
+        //std_cout << "Low range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")    E_over_r = " << E_over_r << "     E_over_r.dr = (" << E_over_r*potparams.dr[0] <<", "<< E_over_r*potparams.dr[1] <<", "<< E_over_r*potparams.dr[2] << ")\n";
 
     }
 }
