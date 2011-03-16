@@ -84,14 +84,14 @@ fig = on_key.figure()
 axprops = dict()
 axes_xmin  = 0.1
 axes_sizex = 0.8
-axes_sizey = 0.45
+axes_sizey = 0.42
 axes_ymin  = [0.5, 0.5 - axes_sizey]
 
 ax1 = fig.add_axes([axes_xmin, axes_ymin[0], axes_sizex, axes_sizey], **axprops)
-plt.plot(x, lut_field(x),               'b-',  label=r'$f(x) = \frac{\rm{erf}(x)}{x^{3}} - \frac{1}{\sqrt{\pi}} \frac{\rm{exp}(-x^2)}{x^{2}}$')
+plt.plot(x, lut_field(x),               'b-',  label=r'$F(x) = \frac{\rm{erf}(x)}{x^{3}} - \frac{1}{\sqrt{\pi}} \frac{\rm{exp}(-x^2)}{x^{2}}$')
 plt.plot(x, lut_field_expanded(x),      'b--', label='expansion')
 plt.plot(x, 1.0/x**3,                   'b:',  label=r'$x^{-2}/x$')
-plt.plot(x, lut_potential(x),           'r-',  label=r'$g(x) = \frac{\rm{erf}(x)}{x}$')
+plt.plot(x, lut_potential(x),           'r-',  label=r'$G(x) = \frac{\rm{erf}(x)}{x}$')
 plt.plot(x, lut_potential_expanded(x),  'r--', label='expansion')
 plt.plot(x, 1.0/x,                      'r:',  label=r'$x^{-1}$')
 plt.grid()
@@ -103,8 +103,8 @@ plt.setp(ax1.get_xticklabels(), visible=False)
 
 
 ax2 = fig.add_axes([axes_xmin, axes_ymin[1], axes_sizex, axes_sizey], **axprops)
-plt.semilogy(x, abs(lut_field(x)     - lut_field_expanded(x)),      'b-', label=r'$|f(x) - \rm{expansion}|$')
-plt.semilogy(x, abs(lut_potential(x) - lut_potential_expanded(x)),  'r-',  label=r'$|g(x) - \rm{expansion}|$')
+plt.semilogy(x, abs(lut_field(x)     - lut_field_expanded(x)),      'b-', label=r'$|F(x) - \rm{expansion}|$')
+plt.semilogy(x, abs(lut_potential(x) - lut_potential_expanded(x)),  'r-',  label=r'$|G(x) - \rm{expansion}|$')
 plt.grid()
 plt.legend(loc='center left')
 plt.xlabel("x")
