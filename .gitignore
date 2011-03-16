@@ -1,3 +1,11 @@
 .kdev4
 src/Version.hpp
 *~
+*.pyc
+*.log
+*.tex.backup
+*.aux
+*.out
+*.pdf
+*.toc
+*.swp.*

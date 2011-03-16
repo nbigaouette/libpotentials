@@ -9,9 +9,9 @@
 #include <cstdlib>
 #include <iostream> // cout
 #include <cstring>  // memset
-#include <cassert>
 
 #include <StdCout.hpp>
+#include <Assert.hpp>
 
 #include "LibPotentials.hpp"
 #include "Constants.hpp"
@@ -144,6 +144,113 @@ fdouble tmp_get_shieldr(const int chg_st, const char *message);
 // ********** Accessible functions implementations **************
 // **************************************************************
 
+
+fdouble erf_over_x(fdouble x)
+/**
+ * Calculate electrostatic potential:
+ *      V(x) / (k*Q / (sqrt(2)*sigma))
+ * where x = r/(sqrt(2)*sigma)
+ *
+ * Used to construct the lookup table.
+ *
+ * See doc/expansions/expansions.pdf and scripts/expansions.py
+ *
+ * http://www.wolframalpha.com/input/?i=erf%28x%29%2Fx
+ */
+{
+    fdouble value;
+
+    if (x < 1.0)
+    {
+        value = (
+               2.0
+            - (2.0 * x*x)                                                                               / 3.0
+            +        x*x*x*x                                                                            / 5.0
+            -        x*x*x*x*x*x                                                                        / 21.0
+            +        x*x*x*x*x*x*x*x                                                                    / 108.0
+            -        x*x*x*x*x*x*x*x*x*x                                                                / 660.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x                                                            / 4680.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / 37800.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / 342720.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / 3447360.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / 38102400.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / 459043200.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / 5987520000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / 84064780800.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / 1264085222400.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / 20268952704000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / 345226033152000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / 6224529991680000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / 118443913555968000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / 2372079457972224000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / 49874491167621120000.0
+            //   +O(x^41)
+        );
+        value /= sqrt_Pi;
+    }
+    else
+    {
+        value = erf(x) / x;
+    }
+
+    return value;
+}
+
+// **************************************************************
+fdouble erf_over_x3_minus_exp_over_x2(fdouble x)
+/**
+ * Calculate electrostatic field:
+ *      (E(x) / x) / (k*Q / (sqrt(2)*sigma^3))
+ * where x = r/(sqrt(2)*sigma)
+ *
+ * Used to construct the lookup table.
+ *
+ * See doc/expansions/expansions.pdf and scripts/expansions.py
+ *
+ * http://www.wolframalpha.com/input/?i=expansion+erf%28x%29%2F%282*x**3%29-1%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
+ */
+{
+    fdouble value;
+
+    if (x < 1.0)
+    {
+        // http://www.wolframalpha.com/input/?i=expansion+erf%28x%29%2F%282*x**3%29-1%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
+        value = (
+               2.0                                                                                              / 3.0
+            - (2.0 * x*x)                                                                                       / 5.0
+            +        x*x*x*x                                                                                    / 7.0
+            -        x*x*x*x*x*x                                                                                / 27.0
+            +        x*x*x*x*x*x*x*x                                                                            / 132.0
+            -        x*x*x*x*x*x*x*x*x*x                                                                        / 780.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x                                                                    / 5400.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                                / 42840.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                            / 383040.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / 3810240.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / 41731200.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / 498960000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / 6466521600.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / 90291801600.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / 1351263513600.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / 21576627072000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / 366148823040000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / 6580217419776000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / 124846287261696000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / 2493724558381056000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / 52307393175797760000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / 1149546198863462400000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / 26414017102773780480000.0
+            // +O(x^45)
+        ) / sqrt_Pi;
+    }
+    else
+    {
+        value = erf(x)/(2.0*x*x*x) - 1.0/sqrt_Pi*std::exp(-x*x)/(x*x);
+    }
+
+    return value;
+}
+
+// **************************************************************
 void Check_if_LibPotentials_is_initialized(void)
 {
 #ifdef YDEBUG
@@ -277,18 +384,18 @@ fdouble LibPotentialErf(fdouble x)
 {
     fdouble erf_value = 0.0;
     //erf_value = nr::int_erf(x);
-    //erf_value = erf(x);
+    erf_value = erf(x);
     //erf_value = nr::erff(x);
     //erf_value = nr::python_erf(x);
     //erf_value = gsl_sf_erf (x);
-    if (x < libpotentials_private::tl_Rmax)
-    {
-        const int base = int(x * libpotentials_private::tl_one_over_dR);
-        const fdouble gain = fdouble(x * libpotentials_private::tl_one_over_dR) - fdouble(base);
-        erf_value = libpotentials_private::tl_erf[base] * (1.0 - gain) + gain*libpotentials_private::tl_erf[base+1];
-    } else {
-        erf_value = 1.0;
-    }
+//     if (x < libpotentials_private::tl_Rmax)
+//     {
+//         const int base = int(x * libpotentials_private::tl_one_over_dR);
+//         const fdouble gain = fdouble(x * libpotentials_private::tl_one_over_dR) - fdouble(base);
+//         erf_value = libpotentials_private::tl_erf[base] * (1.0 - gain) + gain*libpotentials_private::tl_erf[base+1];
+//     } else {
+//         erf_value = 1.0;
+//     }
 
     return erf_value;
 }
@@ -994,16 +1101,16 @@ void Potentials_Set_Parameters_GaussianDistribution(
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
                                   potparams.r, potparams.one_over_r);
-#ifdef YDEBUG
-    if (potparams.r <= 1.0e-200 || isnan(potparams.r))
-    {
-        Print_Particles(p1, 1);
-        Print_Particles(p2, 1);
-        assert(potparams.r > 1.0e-200);
-        abort();
-    }
-#endif // #ifdef YDEBUG
-    assert(potparams.r > 1.0e-200);
+// #ifdef YDEBUG
+//     if (potparams.r <= 1.0e-200 || isnan(potparams.r))
+//     {
+//         Print_Particles(p1, 1);
+//         Print_Particles(p2, 1);
+//         assert(potparams.r > 1.0e-200);
+//         abort();
+//     }
+// #endif // #ifdef YDEBUG
+//     assert(potparams.r > 1.0e-200);
 
     // we only add field if other particle has a charge not equal 0
     fdouble Q = Get_Charge(p2);
@@ -1079,7 +1186,10 @@ void Potentials_Set_Parameters_GaussianDistribution(
 /*        std_cout << "Id(p1)="<<Get_Id(p1)<<"  B="<<potparams.B<<"  Cs(p1)="<<Get_Charge_State(p1)<<" Cs(p2)="<<Get_Charge_State(p2)<<" kQ2_over_B="<<potparams.kQ2_over_B<<" well="<<libpotentials_private::base_pot_well_depth<<"\n";*/
         // Radius where the Coulomb potential and its first derivative are
         // equal to a the gaussian charge distribution potential.
-        potparams.cutoff_radius = 4.0 * potparams.gd_sigma;
+        potparams.cutoff_radius = 8.0 * potparams.gd_sigma;
+//         potparams.cutoff_radius = 4.0 * potparams.gd_sigma;
+//         potparams.cutoff_radius = 2.5 * potparams.gd_sigma;
+        //potparams.cutoff_radius = 2.0 * potparams.gd_sigma;
 
     }
     else
@@ -1101,23 +1211,20 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 
     fdouble phi12=0.0;   // Electrostatic potential
 
-    if (potparams.r <= potparams.cutoff_radius)
-    {
-        // If the distance between two bodys is less than the shielding
-        // radius, we use the special potential calculated from a
-        // gaussian charge distribution instead of the Coulomb potential.
-
-        const fdouble r_over_sigma_sqrt_2 = potparams.r/ (sqrt_2 * potparams.gd_sigma);
-
-        // Get partial potential
-        phi12 = potparams.kQ2 * (potparams.one_over_r * LibPotentialErf(r_over_sigma_sqrt_2));
-    }
-    else
+    if      (potparams.r > potparams.cutoff_radius)
     {
         // If the distance is not less then the shielding radius, get the
         // normal Coulomb potential.
+
         phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
     }
+    else
+    {
+        // Else, use the lookup table for erf(x)/x
+        phi12 = potparams.kQ2 / (potparams.gd_sigma * sqrt_2) *
+                    libpotentials_private::lut_potential.read(potparams.r / (potparams.gd_sigma * sqrt_2));
+    }
+
     return phi12;
 }
 
@@ -1129,36 +1236,31 @@ void Set_Field_Cutoff_GaussianDistribution(
 {
     Check_if_LibPotentials_is_initialized();
 
-    if (potparams.r > potparams.cutoff_radius)
-        Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
-    // A debug statement to catch very small distances where the true formular should be inf - inf
-    //This rarely cancels well and thus divergers giving a huge kick to the particles so
-    //we test for small r and set the field to 0 (a true expansion would be costly for little return)
-    else if (potparams.r < 1.48e-12 ) //r-vale determined by code trial and error for base_potential of 0.5
+    if      (potparams.r > potparams.cutoff_radius)
     {
-      return; //don''t add any field making it effectively 0
+        // If the distance is not less then the shielding radius, get the
+        // normal Coulomb potential.
+
+        Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
+
+        //std_cout << "High range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")\n";
     }
     else
     {
-        const fdouble r_over_sigma_sqrt_2 = potparams.r / (sqrt_2 * potparams.gd_sigma);
-        // The radial component of the gradient of the potential w.r. to r is:
-        fdouble grad_cd = potparams.kQ2 * (
-            (LibPotentialErf(r_over_sigma_sqrt_2) / potparams.r2)
-            - sqrt_2_over_pi * exp(- r_over_sigma_sqrt_2 * r_over_sigma_sqrt_2)
-                / (potparams.gd_sigma * potparams.r)
-        );
-        // We have the radial component of the gradient of the potential,
-        // we need to multiply this by the unit vector, to get
-        // the electric field.
-        fdouble unit_dr[3];
-//         MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//         ADDMULVS(E, unit_dr, grad_cd);          // Add to the electric field
-//                                                 // the gradient of the potential.
+        // Else, use the lookup table
+        // Get E/r
+        const fdouble E_over_r = potparams.kQ2 / (sqrt_2 * potparams.gd_sigma * potparams.gd_sigma * potparams.gd_sigma) *
+                                        libpotentials_private::lut_field.read(potparams.r / (potparams.gd_sigma * sqrt_2));
+
+        Assert_isinf_isnan(E_over_r);
+
         for (int d = 0 ; d < 3 ; d++)
         {
-            unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-            E[d]  += unit_dr[d] * grad_cd;
+            // We multiply E/r by r to get E
+            E[d]  += E_over_r * potparams.dr[d];
         }
+        //std_cout << "Low range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")    E_over_r = " << E_over_r << "     E_over_r.dr = (" << E_over_r*potparams.dr[0] <<", "<< E_over_r*potparams.dr[1] <<", "<< E_over_r*potparams.dr[2] << ")\n";
+
     }
 }
 
