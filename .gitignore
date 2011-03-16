@@ -8,3 +8,4 @@ src/Version.hpp
 *.out
 *.pdf
 *.toc
+*.swp.*
