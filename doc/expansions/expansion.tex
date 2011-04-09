@@ -130,9 +130,9 @@
 \section{Expansions}
 The potential and field of a charge distribution are:
 \begin{align}
-\phi\pa{r} & = \frac{k Q}{r} \erf{\frac{r}{\sqrt{2} \sigma}}
+\phi\pa{\vr} & = \frac{k Q}{r} \erf{\frac{r}{\sqrt{2} \sigma}}
 \\
-\vE\pa{r}  & = k Q \pa{
+\vE\pa{\vr}  & = k Q \pa{
     \frac{ \erf{\frac{r}{\sqrt{2} \sigma}} }{r^2}
     - \sqrt{ \frac{2}{\pi} } \frac{ \ex{ -\frac{r^2}{2 \sigma^2} } }{\sigma r}
 } \orv
@@ -140,12 +140,12 @@ The potential and field of a charge distribution are:
 Because $r$ might become quite small if 2 particles are close, $\orv$ can cause problem.
 We thus replace it with $\orv = \vr / \abs{\vr}$:
 \begin{align}
-\vE\pa{x}  & = k Q \pa{
+\vE\pa{\vr}  & = k Q \pa{
     \frac{ \erf{\frac{r}{\sqrt{2} \sigma}} }{r^2}
     - \sqrt{ \frac{2}{\pi} } \frac{ \ex{ -\frac{r^2}{2 \sigma^2} } }{\sigma r}
 } \frac{\vr}{r}
 \\
-\vE\pa{x}  & = k Q \pa{
+\vE\pa{\vr}  & = k Q \pa{
     \frac{ \erf{\frac{r}{\sqrt{2} \sigma}} }{r^3}
     - \sqrt{ \frac{2}{\pi} } \frac{ \ex{ -\frac{r^2}{2 \sigma^2} } }{\sigma r^2}
 } \vr
@@ -263,6 +263,58 @@ point noise.
     \label{fig:expansions_F_G}
 \end{figure}
 
+
+\section{Expansions with r=log(a)}
+Let's define:
+\begin{align}
+a &= \lnp{x} \\
+\e{a} & = x
+\end{align}
+The two functions $F$ and $G$ becomes:
+\begin{align}
+G\pa{x} & = \frac{\erf{\e{a}}}{\e{a}} \\
+F\pa{x} & = \frac{ \erf{\e{a}} }{2 \pa{\e{a}}^3} - \frac{1}{\sqrt{\pi}} \frac{ \ex{-\pa{\e{a}}^2} }{\pa{\e{a}}^2} \\
+F\pa{x} & = \frac{ \erf{\e{a}} }{2 \e{3 a}} - \frac{1}{\sqrt{\pi}} \frac{ \ex{-\e{2 a}} }{\e{2 a}}
+\end{align}
+
+The expansions are:
+\begin{align}
+% http://www.wolframalpha.com/input/?i=erf%28exp%28a%29%29+%2F+%28exp%28a%29%29
+G\pa{x} & \approx
+    erf(1)
+    +a (2/(e sqrt(pi))-erf(1))
+    +a^2 ((erf(1))/2-3/(e sqrt(pi)))
+    +a^3 (1/(e sqrt(pi))-(erf(1))/6)
+    +1/24 a^4 (erf(1)+10/(e sqrt(pi)))
+    +1/120 a^5 (22/(e sqrt(pi))-erf(1))
+    +1/720 a^6 (erf(1)-150/(e sqrt(pi)))
+    -(a^7 (e erf(1)+1002/sqrt(pi)))/(5040 e)
+    +(a^8 (erf(1)-1302/(e sqrt(pi))))/40320
+    +(a^9 (26902/(e sqrt(pi))-erf(1)))/362880
+    +(a^10 (e erf(1)+246506/sqrt(pi)))/(3628800 e)
+    +(a^11 (599318/sqrt(pi)-e erf(1)))/(39916800 e)
+    -(a^12 (9528598/sqrt(pi)-e erf(1)))/(479001600 e)
+    -(a^13 (e erf(1)+135723754/sqrt(pi)))/(6227020800 e)
+    -(a^14 (692208918/sqrt(pi)-e erf(1)))/(87178291200 e)
+    +(a^15 (4302456086/sqrt(pi)-e erf(1)))/(1307674368000 e)
+    +(a^16 (e erf(1)+124593552106/sqrt(pi)))/(20922789888000 e)
+    +(a^17 (1178087671062/sqrt(pi)-e erf(1)))/(355687428096000 e)
+    +(a^18 (e erf(1)+1086500420330/sqrt(pi)))/(6402373705728000 e)
+    -(a^19 (e erf(1)+147087633201898/sqrt(pi)))/(121645100408832000 e)
+    -(a^20 (2517298379179286/sqrt(pi)-e erf(1)))/(2432902008176640000 e)
+    -(a^21 (e erf(1)+18070149954321130/sqrt(pi)))/(51090942171709440000 e)
+    +(a^22 (e erf(1)+132038987875400426/sqrt(pi)))/(1124000727777607680000 e)
+    +(a^23 (5953921562136495382/sqrt(pi)-e erf(1)))/(25852016738884976640000 e)
+    +(a^24 (e erf(1)+87873383278392163050/sqrt(pi)))/(620448401733239439360000 e)
+    +(a^25 (443078107750850315542/sqrt(pi)-e erf(1)))/(15511210043330985984000000 e)
+    -(a^26 (11743714906826509075734/sqrt(pi)-e erf(1)))/(403291461126605635584000000 e)
+    -(a^27 (e erf(1)+370523876199881176562410/sqrt(pi)))/(10888869450418352160768000000 e)
+    -(a^28 (5218119697123425490257174/sqrt(pi)-e erf(1)))/(304888344611713860501504000000 e)
+    -(a^29 (e erf(1)+15610098398647240048556778/sqrt(pi)))/(8841761993739701954543616000000 e)
+    +(a^30 (e erf(1)+1220358267742920850482969322/sqrt(pi)))/(265252859812191058636308480000000 e)
+    +(a^31 (35791740664812835109132518678/sqrt(pi)-e erf(1)))/(8222838654177922817725562880000000 e)
+    +O(a^32)
+\end{align}
 
 
 
