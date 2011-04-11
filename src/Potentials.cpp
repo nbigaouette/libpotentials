@@ -1097,7 +1097,6 @@ void Potentials_Set_Parameters_GaussianDistribution(
 // std::cout << "chg1 = " << Get_Charge(p1) <<" chg2 = " << Get_Charge(p2) << std::endl;
 // std::cout << "chgs1 = " << Get_Charge_State(p1) <<" chgs2 = " << Get_Charge_State(p2) << std::endl;
 
-
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
                                   potparams.r, potparams.one_over_r);
@@ -1118,7 +1117,16 @@ void Potentials_Set_Parameters_GaussianDistribution(
     int charge_state2 = Get_Charge_State(p2);
     int charge_state1 = Get_Charge_State(p1);
     int factor = charge_state2;
-    if( charge_state2 != 0 )
+    //if the first particle is neutral then skip the rest otherwise when the second is an electron
+    //one would get negative width for the electron!
+    if (charge_state1 == 0 and charge_state2 < 0) {
+        potparams.cutoff_radius = 0.0;
+        potparams.kQ2           = 0.0;
+        potparams.kQ2_over_B    = 0.0;
+        potparams.B             = 0.0;
+        potparams.gd_sigma      = 0.0;
+    }
+    else if( charge_state2 != 0 )
     {
       //fdouble Ip =element.IpsLowest[abs(charge_state2)];
       fdouble Ip = libpotentials_private::base_pot_well_depth;
