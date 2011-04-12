@@ -183,5 +183,110 @@ void Print_Particles(void *list, const int &N)
     }
     std_cout << "--------\n\n";
 }
+fdouble erf_over_x(fdouble x)
+/**
+ * Calculate electrostatic potential:
+ *      V(x) / (k*Q / (sqrt(2)*sigma))
+ * where x = r/(sqrt(2)*sigma)
+ *
+ * Used to construct the lookup table.
+ *
+ * See doc/expansions/expansions.pdf and scripts/expansions.py
+ *
+ * http://www.wolframalpha.com/input/?i=erf%28x%29%2Fx
+ */
+{
+    fdouble value;
+
+    if (x < 1.0)
+    {
+        value = (
+               2.0
+            - (2.0 * x*x)                                                                               / 3.0
+            +        x*x*x*x                                                                            / 5.0
+            -        x*x*x*x*x*x                                                                        / 21.0
+            +        x*x*x*x*x*x*x*x                                                                    / 108.0
+            -        x*x*x*x*x*x*x*x*x*x                                                                / 660.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x                                                            / 4680.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / 37800.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / 342720.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / 3447360.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / 38102400.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / 459043200.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / 5987520000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / 84064780800.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / 1264085222400.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / 20268952704000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / 345226033152000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / 6224529991680000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / 118443913555968000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / 2372079457972224000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / 49874491167621120000.0
+            //   +O(x^41)
+        );
+        value /= libpotentials::sqrt_Pi;
+    }
+    else
+    {
+        value = erf(x) / x;
+    }
+
+    return value;
+}
+
+// **************************************************************
+fdouble erf_over_x3_minus_exp_over_x2(fdouble x)
+/**
+ * Calculate electrostatic field:
+ *      (E(x) / x) / (k*Q / (sqrt(2)*sigma^3))
+ * where x = r/(sqrt(2)*sigma)
+ *
+ * Used to construct the lookup table.
+ *
+ * See doc/expansions/expansions.pdf and scripts/expansions.py
+ *
+ * http://www.wolframalpha.com/input/?i=expansion+erf%28x%29%2F%282*x**3%29-1%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
+ */
+{
+    fdouble value;
+
+    if (x < 1.0)
+    {
+        // http://www.wolframalpha.com/input/?i=expansion+erf%28x%29%2F%282*x**3%29-1%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
+        value = (
+               2.0                                                                                              / 3.0
+            - (2.0 * x*x)                                                                                       / 5.0
+            +        x*x*x*x                                                                                    / 7.0
+            -        x*x*x*x*x*x                                                                                / 27.0
+            +        x*x*x*x*x*x*x*x                                                                            / 132.0
+            -        x*x*x*x*x*x*x*x*x*x                                                                        / 780.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x                                                                    / 5400.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                                / 42840.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                            / 383040.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / 3810240.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / 41731200.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / 498960000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / 6466521600.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / 90291801600.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / 1351263513600.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / 21576627072000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / 366148823040000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / 6580217419776000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / 124846287261696000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / 2493724558381056000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / 52307393175797760000.0
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / 1149546198863462400000.0
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / 26414017102773780480000.0
+            // +O(x^45)
+        ) / libpotentials::sqrt_Pi;
+    }
+    else
+    {
+        value = erf(x)/(2.0*x*x*x) - 1.0/libpotentials::sqrt_Pi*std::exp(-x*x)/(x*x);
+    }
+
+    return value;
+}
+
 
 // ********** End of file ***************************************

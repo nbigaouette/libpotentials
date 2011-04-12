@@ -15,9 +15,6 @@ void   Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3], con
 
 fdouble LibPotentialErf(fdouble x);
 
-fdouble erf_over_x(fdouble x);
-fdouble erf_over_x3_minus_exp_over_x2(fdouble x);
-
 // **************************************************************
 // ********** Function pointers for... **************************
 
