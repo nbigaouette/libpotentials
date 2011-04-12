@@ -1,8 +1,9 @@
 LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $(OBJ) ) )
 
 ### Just build "full" and install
-.PHONY: f
-f:
+.PHONY: f full
+f: full
+full:
 	$(MAKE) shared static install $(filter-out f, $(MAKECMDGOALS) )
 
 .PHONY: shared lib_shared
