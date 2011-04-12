@@ -200,6 +200,11 @@ namespace libpotentials_double
 
 namespace libpotentials
 {
+    // To compare with the return value of strcmp()
+    // 0 = same strings, 1 = different strings
+    // http://www.cplusplus.com/reference/clibrary/cstring/strcmp/
+    const int strcmp_success = 0;
+
     const fdouble zero                  = fdouble(libpotentials_double::zero                   );
     const fdouble one                   = fdouble(libpotentials_double::one                    );
     const fdouble two                   = fdouble(libpotentials_double::two                    );
