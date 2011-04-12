@@ -78,8 +78,7 @@ endif
 #HEADERS_NOTESTING=$(filter-out src/Version.hpp, $(filter-out $(wildcard testing/*.$(HEADEXT)), $(HEADERS) ) )
 HEADERS_NOTESTING=$(filter-out , $(filter-out $(wildcard testing/*.$(HEADEXT)), $(HEADERS) ) )
 HEADERS_NOTESTING_NOSRC=$(subst src/,,$(HEADERS_NOTESTING) )
-HEADERS_NOTESTING_NOSRC_NOMEM=$(filter-out Constants.hpp, $(HEADERS_NOTESTING_NOSRC) )
-INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_NOTESTING_NOSRC_NOMEM) )
+INSTALLED_HEADERS=$(addprefix $(DESTDIR)/include/$(LIB)/, $(HEADERS_NOTESTING_NOSRC) )
 ###############################################################
 
 
