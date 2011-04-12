@@ -30,4 +30,16 @@ $(eval $(call Flags_template,stdcout,StdCout.hpp,ssh://optimusprime.selfip.net/g
 # Project is a library. Include the makefile for build and install.
 include makefiles/Makefile.library
 
+.PHONY: version
+version: src/Version.hpp
+src/Version.hpp: force
+	echo "#ifndef INC_LIBPOTENTIALS_VERSION_hpp" > src/Version.hpp
+	echo "#define INC_LIBPOTENTIALS_VERSION_hpp" >> src/Version.hpp
+	echo "namespace libpotentials {" >> src/Version.hpp
+	echo "    const char *const build_time = \"`date`\";" >> src/Version.hpp
+	echo "    const char *const build_sha = \"$(GIT_BRANCH)\";" >> src/Version.hpp
+	echo "    const char *const build_branch = \"`$(GIT) rev-parse HEAD`\";" >> src/Version.hpp
+	echo "}" >> src/Version.hpp
+	echo "#endif // #ifndef INC_LIBPOTENTIALS_VERSION_hpp" >> src/Version.hpp
+
 ############ End of file ########################################
