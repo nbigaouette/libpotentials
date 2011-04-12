@@ -12,20 +12,20 @@
 template <class T>
 inline void Assert_isinf_isnan(T value)
 {
-#ifndef __SUNPRO_CC
-//     if (isinf(value))
+#ifndef __SUNPRO_CC_
+//     if (std::isinf(value))
 //     {
 //         std_cout << "value is inf!!! value = " << value << "\n";
 //         std_cout << "Aborting\n";
 //     }
-    assert(!isinf(value));
+    assert(!std::isinf(value));
 #endif // #ifndef __SUNPRO_CC
-//     if (isnan(value))
+//     if (std::isnan(value))
 //     {
 //         std_cout << "value is NaN!!! value = " << value << "\n";
 //         std_cout << "Aborting\n";
 //     }
-    assert(!isnan(value));
+    assert(!std::isnan(value));
 }
 
 

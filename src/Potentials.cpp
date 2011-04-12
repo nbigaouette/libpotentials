@@ -1185,10 +1185,7 @@ void Potentials_Set_Parameters_GaussianDistribution(
         // particle's charge state so forces are symmetric between the two.
         potparams.kQ2 /= fdouble(distribution1_charge_state);
         potparams.kQ2 *= fdouble(distribution2_charge_state);
-        assert(!isnan(potparams.kQ2));
-#ifndef __SUNPRO_CC
-        assert(!isinf(potparams.kQ2));
-#endif // #ifndef __SUNPRO_CC
+        Assert_isinf_isnan(potparams.kQ2);
 
         potparams.gd_sigma = potparams.kQ2_over_B * sqrt_2_over_pi;
 /*        std_cout << "Id(p1)="<<Get_Id(p1)<<"  B="<<potparams.B<<"  Cs(p1)="<<Get_Charge_State(p1)<<" Cs(p2)="<<Get_Charge_State(p2)<<" kQ2_over_B="<<potparams.kQ2_over_B<<" well="<<libpotentials_private::base_pot_well_depth<<"\n";*/
@@ -1294,7 +1291,7 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
     if (potparams.sym_cs2 == 0) return;
 #ifdef YDEBUG
     // Failsafe
-    if (potparams.r <= 1.0e-200 || isnan(potparams.r))
+    if (potparams.r <= 1.0e-200 || std::isnan(potparams.r))
     {
         std_cout << "Error in Potentials_Set_Parameters_ChargeDistribution_Symmetric()\n";
         std_cout << "Particles p1 ("<<p1<<") and p2 ("<<p2<<") are too close.\n";
@@ -1411,10 +1408,7 @@ void Set_Field_Cutoff_ChargeDistribution_Symmetric(
             {
                 unit_vector = potparams.dr[d] * potparams.one_over_r;
                 f = unit_vector * absE;
-                assert(!isnan(f));
-#ifndef __SUNPRO_CC
-                assert(!isinf(f));
-#endif // #ifndef __SUNPRO_CC
+                Assert_isinf_isnan(f);
                 assert(f < 1.0e200);
                 E[d] += f;
             }
