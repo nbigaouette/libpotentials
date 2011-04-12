@@ -25,8 +25,6 @@ include makefiles/Makefile.rules
 #################################################################
 # Project specific options
 
-LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $(OBJ) ) )
-
 $(eval $(call Flags_template,stdcout,StdCout.hpp,ssh://optimusprime.selfip.net/git/nicolas/stdcout.git))
 
 # Project is a library. Include the makefile for build and install.

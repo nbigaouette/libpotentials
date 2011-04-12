@@ -1,3 +1,5 @@
+LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $(OBJ) ) )
+
 ### Just build "full" and install
 .PHONY: f
 f:
