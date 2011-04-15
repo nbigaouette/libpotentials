@@ -1238,8 +1238,12 @@ fdouble Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(
         else
         {
             // Else, use the lookup table for erf(x)/x
+            // Note that y = x / sqrt(2) where x is the unitless distance from GaussianDistribution
             const fdouble y = potparams.r / ( two * potparams.gd_sigma );
             potential = potparams.kQ2 / (two * potparams.gd_sigma) * libpotentials_private::lut_potential.read(y);
+
+            //printf("kQ2 = %20.15g  sigma = %20.15g  potential = %20.15g  E = %20.15g   x=%20.15g\n",
+            //       potparams.kQ2, potparams.gd_sigma*si_to_au_length, potential*si_to_au_pot, 0*si_to_au_field, y);
         }
     }
 
@@ -1269,6 +1273,7 @@ void Set_Field_Cutoff_ChargeDistribution_Symmetric(
         {
             // Else, use the lookup table
             // Get E/r
+            // Note that y = x / sqrt(2) where x is the unitless distance from GaussianDistribution
             const fdouble y = potparams.r / (two * potparams.gd_sigma);
             const fdouble E_over_r = potparams.kQ2 / (four * potparams.gd_sigma * potparams.gd_sigma * potparams.gd_sigma) * libpotentials_private::lut_field.read(y);
 
@@ -1280,6 +1285,8 @@ void Set_Field_Cutoff_ChargeDistribution_Symmetric(
                 E[d]  += E_over_r * potparams.dr[d];
             }
 
+            //printf("kQ2 = %20.15g  sigma = %20.15g  potential = %20.15g  E = %20.15g   x=%20.15g\n",
+            //       potparams.kQ2, potparams.gd_sigma*si_to_au_length, 0, E[0]*si_to_au_field, y);
         }
     }
 }
