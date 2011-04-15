@@ -1183,44 +1183,58 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
     set_vector_between_particles(Get_Position(p1), Get_Position(p2),
                                   potparams.dr, potparams.r2,
                                   potparams.r, potparams.one_over_r);
-    if (potparams.sym_cs2 == 0) return;
-#ifdef YDEBUG
-    // Failsafe
-    if (potparams.r <= 1.0e-200 || std::isnan(potparams.r))
-    {
-        std_cout << "Error in Potentials_Set_Parameters_ChargeDistribution_Symmetric()\n";
-        std_cout << "Particles p1 ("<<p1<<") and p2 ("<<p2<<") are too close.\n";
-        std_cout << "Distance = " << potparams.r * si_to_au_length << "\n";
-        Print_Particles(p1, 1);
-        Print_Particles(p2, 1);
-        assert(potparams.r > 1.0e-200);
-        abort();
-    }
-#endif // #ifdef YDEBUG
-    assert(potparams.r > 1.0e-200);
+//     if (potparams.sym_cs2 == 0) return;
+// #ifdef YDEBUG
+//     // Failsafe
+//     if (potparams.r <= 1.0e-200 || std::isnan(potparams.r))
+//     {
+//         std_cout << "Error in Potentials_Set_Parameters_ChargeDistribution_Symmetric()\n";
+//         std_cout << "Particles p1 ("<<p1<<") and p2 ("<<p2<<") are too close.\n";
+//         std_cout << "Distance = " << potparams.r * si_to_au_length << "\n";
+//         Print_Particles(p1, 1);
+//         Print_Particles(p2, 1);
+//         assert(potparams.r > 1.0e-200);
+//         abort();
+//     }
+// #endif // #ifdef YDEBUG
+//     assert(potparams.r > 1.0e-200);
 
-    if (potparams.sym_cs1 != 0 &&  potparams.sym_cs2 != 0)
-    {
-        // FIXME: Should it be "sym_cs - 1" or plain "sym_cs" for the IP?
-        // FIXME: The jump in energy before and after ionization occurs
-        // seems to be affected by the depth of the well.
-        //fdouble Ip1 = element.IpsLowest[max(potparams.sym_cs1-1, 0)];
-        //fdouble Ip2 = element.IpsLowest[max(potparams.sym_cs2-1, 0)];
-        fdouble Ip1 = libpotentials_private::base_pot_well_depth*2.0;
-        fdouble Ip2 = libpotentials_private::base_pot_well_depth*2.0;
+//     if (potparams.sym_cs1 != 0 &&  potparams.sym_cs2 != 0)
+//     {
+//         // FIXME: Should it be "sym_cs - 1" or plain "sym_cs" for the IP?
+//         // FIXME: The jump in energy before and after ionization occurs
+//         // seems to be affected by the depth of the well.
+//         //fdouble Ip1 = element.IpsLowest[max(potparams.sym_cs1-1, 0)];
+//         //fdouble Ip2 = element.IpsLowest[max(potparams.sym_cs2-1, 0)];
+//         fdouble Ip1 = libpotentials_private::base_pot_well_depth*2.0;
+//         fdouble Ip2 = libpotentials_private::base_pot_well_depth*2.0;
+//
+//         potparams.kQ2 = one_over_4Pieps0 * fdouble(potparams.sym_cs2) * e0;
+// //         potparams.sym_sigma1 = one_over_4Pieps0 * fdouble(abs(potparams.sym_cs1)) * e0 * sqrt_2_over_pi / Ip1;
+// //         potparams.sym_sigma2 = one_over_4Pieps0 * fdouble(abs(potparams.sym_cs2)) * e0 * sqrt_2_over_pi / Ip2;
+//         potparams.sym_sigma1 = one_over_4Pieps0 * e0 * sqrt_2_over_pi / Ip1;
+//         potparams.sym_sigma2 = one_over_4Pieps0 * e0 * sqrt_2_over_pi / Ip2;
+//     }
+//     else
+//     {
+//         potparams.kQ2         = 0.0;
+//         potparams.sym_sigma1  = 0.0;
+//         potparams.sym_sigma2  = 0.0;
+//     }
 
+    if (potparams.sym_cs2 != 0)
+    {
         potparams.kQ2 = one_over_4Pieps0 * fdouble(potparams.sym_cs2) * e0;
-//         potparams.sym_sigma1 = one_over_4Pieps0 * fdouble(abs(potparams.sym_cs1)) * e0 * sqrt_2_over_pi / Ip1;
-//         potparams.sym_sigma2 = one_over_4Pieps0 * fdouble(abs(potparams.sym_cs2)) * e0 * sqrt_2_over_pi / Ip2;
-        potparams.sym_sigma1 = one_over_4Pieps0 * e0 * sqrt_2_over_pi / Ip1;
-        potparams.sym_sigma2 = one_over_4Pieps0 * e0 * sqrt_2_over_pi / Ip2;
+        potparams.gd_sigma = one_over_4Pieps0 * e0 * sqrt_2_over_pi / (libpotentials_private::base_pot_well_depth * sqrt_Pi);
+        potparams.cutoff_radius = 8.0 * potparams.gd_sigma;
     }
     else
     {
-        potparams.kQ2         = 0.0;
-        potparams.sym_sigma1  = 0.0;
-        potparams.sym_sigma2  = 0.0;
+        potparams.kQ2 = 0.0;
+        potparams.gd_sigma = 0.0;
+        potparams.cutoff_radius = 0.0;
     }
+    std_cout << "kQ2 = " << potparams.kQ2 << "   sigma = " << potparams.gd_sigma << "\n";
 }
 
 // **************************************************************
@@ -1249,25 +1263,42 @@ fdouble Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(
     Check_if_LibPotentials_is_initialized();
 
     fdouble potential = 0.0;
-    // It does not make sense to calculate effect of particle 2 if
-    // its charge is 0
+//     // It does not make sense to calculate effect of particle 2 if
+//     // its charge is 0
+//     if (potparams.sym_cs2 != 0)
+//     {
+//         if (potparams.sym_cs1 == 0)
+//         {
+//             potential = Coulomb_Potential(potparams.kQ2, potparams.one_over_r);
+//         }
+//         else
+//         {
+//             potential = (potparams.kQ2 * potparams.one_over_r)
+//                 * LibPotentialErf(
+//                     potparams.r / sqrt(
+//                         2.0*potparams.sym_sigma1*potparams.sym_sigma1
+//                         + 2.0*potparams.sym_sigma2*potparams.sym_sigma2
+//                     )
+//                 );
+//         }
+//     }
     if (potparams.sym_cs2 != 0)
     {
-        if (potparams.sym_cs1 == 0)
+        if (potparams.r > potparams.cutoff_radius)
         {
-            potential = Coulomb_Potential(potparams.kQ2, potparams.one_over_r);
+            // If the distance is not less then the shielding radius, get the
+            // normal Coulomb potential.
+
+            potential = Coulomb_Potential(potparams.kQ2, potparams.r);
         }
         else
         {
-            potential = (potparams.kQ2 * potparams.one_over_r)
-                * LibPotentialErf(
-                    potparams.r / sqrt(
-                        2.0*potparams.sym_sigma1*potparams.sym_sigma1
-                        + 2.0*potparams.sym_sigma2*potparams.sym_sigma2
-                    )
-                );
+            // Else, use the lookup table for erf(x)/x
+            const fdouble y = potparams.r / ( two * potparams.gd_sigma );
+            potential = potparams.kQ2 / (two * potparams.gd_sigma) * libpotentials_private::lut_potential.read(y);
         }
     }
+
     return potential;
 }
 
@@ -1279,34 +1310,63 @@ void Set_Field_Cutoff_ChargeDistribution_Symmetric(
 {
     Check_if_LibPotentials_is_initialized();
 
-    // It does not make sense to calculate effect of particle 2 if
-    // its charge is 0
+//     // It does not make sense to calculate effect of particle 2 if
+//     // its charge is 0
+//     if (potparams.sym_cs2 != 0)
+//     {
+//         if (potparams.sym_cs1 == 0)
+//         {
+//             Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
+//         }
+//         else
+//         {
+//             const fdouble r_over_sqrt = potparams.r / sqrt(
+//                       (2.0*potparams.sym_sigma1*potparams.sym_sigma1)
+//                     + (2.0*potparams.sym_sigma2*potparams.sym_sigma2)
+//                 );
+//             const fdouble absE = potparams.kQ2 * potparams.one_over_r * potparams.one_over_r * (
+//                 LibPotentialErf(r_over_sqrt) - two_over_sqrt_Pi * r_over_sqrt * exp(-r_over_sqrt*r_over_sqrt)
+//             );
+//
+//             fdouble f;
+//             fdouble unit_vector;
+//             for (int d = 0 ; d < 3 ; d++)
+//             {
+//                 unit_vector = potparams.dr[d] * potparams.one_over_r;
+//                 f = unit_vector * absE;
+//                 Assert_isinf_isnan(f);
+//                 assert(f < 1.0e200);
+//                 E[d] += f;
+//             }
+//
+//         }
+//     }
     if (potparams.sym_cs2 != 0)
     {
-        if (potparams.sym_cs1 == 0)
+        if (potparams.r > potparams.cutoff_radius)
         {
+            // If the distance is not less then the shielding radius, get the
+            // normal Coulomb potential.
+
             Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
+
+            //std_cout << "High range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")\n";
         }
         else
         {
-            const fdouble r_over_sqrt = potparams.r / sqrt(
-                      (2.0*potparams.sym_sigma1*potparams.sym_sigma1)
-                    + (2.0*potparams.sym_sigma2*potparams.sym_sigma2)
-                );
-            const fdouble absE = potparams.kQ2 * potparams.one_over_r * potparams.one_over_r * (
-                LibPotentialErf(r_over_sqrt) - two_over_sqrt_Pi * r_over_sqrt * exp(-r_over_sqrt*r_over_sqrt)
-            );
+            // Else, use the lookup table
+            // Get E/r
+            const fdouble y = potparams.r / (two * potparams.gd_sigma);
+            const fdouble E_over_r = potparams.kQ2 / (four * potparams.gd_sigma * potparams.gd_sigma * potparams.gd_sigma) * libpotentials_private::lut_field.read(y);
 
-            fdouble f;
-            fdouble unit_vector;
+            Assert_isinf_isnan(E_over_r);
+
             for (int d = 0 ; d < 3 ; d++)
             {
-                unit_vector = potparams.dr[d] * potparams.one_over_r;
-                f = unit_vector * absE;
-                Assert_isinf_isnan(f);
-                assert(f < 1.0e200);
-                E[d] += f;
+                // We multiply E/r by r to get E
+                E[d]  += E_over_r * potparams.dr[d];
             }
+            //std_cout << "Low range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")    E_over_r = " << E_over_r << "     E_over_r.dr = (" << E_over_r*potparams.dr[0] <<", "<< E_over_r*potparams.dr[1] <<", "<< E_over_r*potparams.dr[2] << ")\n";
 
         }
     }
