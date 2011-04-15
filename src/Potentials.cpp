@@ -1186,7 +1186,7 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
     if (potparams.sym_cs2 != 0)
     {
         potparams.kQ2 = one_over_4Pieps0 * fdouble(potparams.sym_cs2) * e0;
-        potparams.gd_sigma = one_over_4Pieps0 * e0 * sqrt_2_over_pi / (libpotentials_private::base_pot_well_depth * sqrt_Pi);
+        potparams.gd_sigma = one_over_4Pieps0 * e0 / (libpotentials_private::base_pot_well_depth * sqrt_Pi);
         potparams.cutoff_radius = 8.0 * potparams.gd_sigma;
     }
     else
