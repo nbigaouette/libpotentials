@@ -41,82 +41,88 @@ size_t      Get_Sizeof_particle()   { return sizeof(Particle); }
 // **************************************************************
 int main(int argc, char *argv[])
 {
-    const std::string potential_shape("HermanSkillman");
-    //const std::string potential_shape("Symmetric");
 
-    const std::string cmd = std::string("mkdir -p output/") + potential_shape;
-    system(cmd.c_str());
+    std::vector<std::string> potential_shapes;
+    potential_shapes.push_back("HermanSkillman");
+    potential_shapes.push_back("Symmetric");
 
-    Potentials_Initialize(potential_shape,
-                            fdouble(1.0 * libpotentials::Eh_to_eV),     // base potential
-                            fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
-                            1);                                 // Super Gaussian order (m=1 for gaussian)
-
-    Particle p0;
-    Particle p1;
-    potential_paramaters potparams;
-
-    fdouble E_at_p0_from_p1[3]  = {libpotentials::zero, libpotentials::zero, libpotentials::zero};
-    fdouble potential_at_p0_from_p1;
-
-    for (int d = 0 ; d < 3 ; d++)
+    for (unsigned int pi = 0 ; pi < potential_shapes.size() ; pi++)
     {
-        p0.pos[d] = libpotentials::zero;
-        p1.pos[d] = libpotentials::zero;
-    }
-    p0.charge_state = libpotentials::one;
-    p1.charge_state = libpotentials::one;
+        const std::string potential_shape = potential_shapes[pi];
 
-    const int N = 1000;
-    const fdouble xmin =  0.001 * libpotentials::bohr_to_m;
-    const fdouble xmax = 20.000 * libpotentials::bohr_to_m;
-    const fdouble dx = (xmax - xmin) / fdouble(N);
+        const std::string cmd = std::string("mkdir -p output/") + potential_shape;
+        system(cmd.c_str());
 
-    fdouble r;
+        Potentials_Initialize(potential_shape,
+                                fdouble(1.0 * libpotentials::Eh_to_eV),     // base potential
+                                fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
+                                1);                                 // Super Gaussian order (m=1 for gaussian)
 
-    for (int cs = -1 ; cs < 11 ; cs++)
-    {
-        p1.charge_state = cs;
+        Particle p0;
+        Particle p1;
+        potential_paramaters potparams;
 
-        char filename[1024];
-        if (cs == -1)
-            sprintf(filename, "output/%s/field_-%1d.csv", potential_shape.c_str(), std::abs(cs));
-        else
-            sprintf(filename, "output/%s/field_%02d.csv", potential_shape.c_str(), cs);
-        std::ofstream f_field(filename);
-        if (cs == -1)
-            sprintf(filename, "output/%s/poten_-%1d.csv", potential_shape.c_str(), std::abs(cs));
-        else
-            sprintf(filename, "output/%s/poten_%02d.csv", potential_shape.c_str(), cs);
-        std::ofstream f_poten(filename);
+        fdouble E_at_p0_from_p1[3]  = {libpotentials::zero, libpotentials::zero, libpotentials::zero};
+        fdouble potential_at_p0_from_p1;
 
-        assert(f_poten.is_open());
-        assert(f_field.is_open());
-
-        for (int i = 0 ; i < N ; i++)
+        for (int d = 0 ; d < 3 ; d++)
         {
-            r = fdouble(i) * dx + xmin;
-            p1.pos[0] = r;
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                E_at_p0_from_p1[d]  = libpotentials::zero;
-            }
-            potential_at_p0_from_p1 = libpotentials::zero;
-
-            // Set parameters, calculate potential and field
-            Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
-            potential_at_p0_from_p1 = Calculate_Potential((void *) &p0, (void *) &p1, potparams);
-            Set_Field((void *) &p0, (void *) &p1, potparams, potential_at_p0_from_p1, E_at_p0_from_p1);
-
-            // Save potential and field
-            f_poten << r * libpotentials::m_to_bohr << ", " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
-            f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
+            p0.pos[d] = libpotentials::zero;
+            p1.pos[d] = libpotentials::zero;
         }
+        p0.charge_state = libpotentials::one;
+        p1.charge_state = libpotentials::one;
 
-        f_poten.close();
-        f_field.close();
+        const int N = 1000;
+        const fdouble xmin = fdouble( 0.001 * libpotentials::bohr_to_m);
+        const fdouble xmax = fdouble(20.000 * libpotentials::bohr_to_m);
+        const fdouble dx = (xmax - xmin) / fdouble(N);
+
+        fdouble r;
+
+        for (int cs = -1 ; cs < 11 ; cs++)
+        {
+            p1.charge_state = cs;
+
+            char filename[1024];
+            if (cs == -1)
+                sprintf(filename, "output/%s/field_-%1d.csv", potential_shape.c_str(), std::abs(cs));
+            else
+                sprintf(filename, "output/%s/field_%02d.csv", potential_shape.c_str(), cs);
+            std::ofstream f_field(filename);
+            if (cs == -1)
+                sprintf(filename, "output/%s/poten_-%1d.csv", potential_shape.c_str(), std::abs(cs));
+            else
+                sprintf(filename, "output/%s/poten_%02d.csv", potential_shape.c_str(), cs);
+            std::ofstream f_poten(filename);
+
+            assert(f_poten.is_open());
+            assert(f_field.is_open());
+
+            for (int i = 0 ; i < N ; i++)
+            {
+                r = fdouble(i) * dx + xmin;
+                p1.pos[0] = r;
+                for (int d = 0 ; d < 3 ; d++)
+                {
+                    E_at_p0_from_p1[d]  = libpotentials::zero;
+                }
+                potential_at_p0_from_p1 = libpotentials::zero;
+
+                // Set parameters, calculate potential and field
+                Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
+                potential_at_p0_from_p1 = Calculate_Potential((void *) &p0, (void *) &p1, potparams);
+                Set_Field((void *) &p0, (void *) &p1, potparams, potential_at_p0_from_p1, E_at_p0_from_p1);
+
+                // Save potential and field
+                f_poten << r * libpotentials::m_to_bohr << ", " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
+                f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
+            }
+
+            f_poten.close();
+            f_field.close();
+        }
     }
-
 
     return EXIT_SUCCESS;
 }
