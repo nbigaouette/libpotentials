@@ -97,6 +97,10 @@ void Potentials_Initialize(const std::string potential_shape,
         std_cout << "### for close range interaction                                    ###\n";
         std_cout << "### and Super-Gaussian for electrons and 8+                        ###\n";
         std_cout << "### and up ions (m = " << input_sg_m << ")                                           ###\n";
+        std_cout << "### Initializing the lookup tables...                              ###\n" << std::flush;
+        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, 4.5*std::sqrt(2.0), 10000, "Potential LookUpTable");
+        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, 4.5*std::sqrt(2.0), 10000, "Field LookUpTable");
+        std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
         Initialize_HS(input_sg_m, input_s_rmin);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_HS_SuperGaussian;

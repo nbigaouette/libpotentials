@@ -654,7 +654,7 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
         // treated as HS potential (neutral to 7+) and coulomb (8+ and up)
         if ( (potparams.hs_cs2 == -1) or (potparams.hs_cs2 >= 8) )
         {
-
+/*
             // Negative charge (electron), negative potential
             // B is the (negative of the)
             // ionization potential of the ion.
@@ -674,6 +674,8 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
             potparams.sg_r_over_sigma_two_m = pow(potparams.r / potparams.sg_sigma, sg_two_m);
             potparams.sg_exp_half_r_over_sigma_two_m =
                                 exp( -0.5 * potparams.sg_r_over_sigma_two_m );
+*/
+            Potentials_Set_Parameters_ChargeDistribution_Symmetric(p1, p2, potparams);
         }
     }
 }
@@ -779,6 +781,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     }
     else
     {
+/*
         if (potparams.r <= potparams.cutoff_radius)
         {
             // If the distance between two bodys is less than the shielding
@@ -792,6 +795,8 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             // normal Coulomb potential.
             phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
         }
+*/
+        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
 //     std_cout << "HS: phi12 = " << phi12 << "\n";
 
@@ -947,6 +952,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
     }
     else
     {
+/*
         if (potparams.r > potparams.cutoff_radius)
         {
             Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
@@ -975,6 +981,8 @@ void Set_Field_Cutoff_HS_SuperGaussian(
                 E[d]  += unit_dr[d] * -diff_sg;
             }
         }
+*/
+        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
     }
 }
 
