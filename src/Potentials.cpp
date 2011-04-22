@@ -824,7 +824,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         {
             // Potential outside the electron cloud goes to 0
             // exponentially using f(x)=h*exp(-v*x+k)
-            Ef = 0.272*(    -1.93775072943628
+            Ef = -0.272*(    -1.93775072943628
                     * (-0.533297816151*distance_au - 0.7486357665822807) *(-0.533297816151)
                     * exp(-0.533297816151*distance_au - 0.7486357665822807)
                     )* Eh_to_eV;
