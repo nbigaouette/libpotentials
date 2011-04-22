@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
     std::vector<std::string> potential_shapes;
     potential_shapes.push_back("HermanSkillman");
     potential_shapes.push_back("Symmetric");
+//     potential_shapes.push_back("SuperGaussian");
+//     potential_shapes.push_back("PureCoulomb");
 
     for (unsigned int pi = 0 ; pi < potential_shapes.size() ; pi++)
     {
