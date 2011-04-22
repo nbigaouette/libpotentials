@@ -777,7 +777,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             phi12 = genericHSfit(&(fit_lt_R1[cs][0]),hs_min_rad) * Eh_to_eV;
         }
     }
-    else if( abs(cs) >= 1 )
+    else
     {
         if (potparams.r <= potparams.cutoff_radius)
         {
@@ -945,7 +945,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
 //         else
             // No field because of hard cutoff (-grad(constant) = 0 )
     }
-    else if( abs(cs) >= 1 )
+    else
     {
         if (potparams.r > potparams.cutoff_radius)
         {
