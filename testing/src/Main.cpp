@@ -75,15 +75,33 @@ int main(int argc, char *argv[])
         p0.charge_state = libpotentials::one;
         p1.charge_state = libpotentials::one;
 
-        const int N = 1000;
+        const int N = 10000;
         const fdouble xmin = fdouble(0.001 * libpotentials::bohr_to_m);
-        const fdouble xmax = fdouble(7.000 * libpotentials::bohr_to_m);
+        const fdouble xmax = fdouble(100.000 * libpotentials::bohr_to_m);
         const fdouble dx = (xmax - xmin) / fdouble(N);
 
         fdouble r;
 
-        for (int cs = -1 ; cs < 10 ; cs++)
+        std::vector<int> charge_states;
+        charge_states.push_back(-1);
+        charge_states.push_back(0);
+        charge_states.push_back(1);
+        charge_states.push_back(2);
+        charge_states.push_back(3);
+        charge_states.push_back(4);
+        //charge_states.push_back(5);
+        //charge_states.push_back(6);
+        //charge_states.push_back(7);
+        //charge_states.push_back(8);
+        //charge_states.push_back(9);
+        //charge_states.push_back(10);
+        //charge_states.push_back(11);
+        //charge_states.push_back(12);
+
+        for (unsigned int csi = 0 ; csi < charge_states.size() ; csi++)
         {
+            const int cs = charge_states[csi];
+
             p1.charge_state = cs;
 
             char filename[1024];
