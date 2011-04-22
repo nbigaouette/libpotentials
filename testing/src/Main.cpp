@@ -7,6 +7,9 @@
 #include <iostream>
 #include <vector>
 #include <stdint.h> // uint64_t
+#include <stdio.h>
+#include <fstream>
+
 
 #include <LibPotentials.hpp>
 #include "FloatType.hpp"
@@ -57,9 +60,16 @@ int main(int argc, char *argv[])
         p0.pos[d] = libpotentials::zero;
         p1.pos[d] = libpotentials::zero;
     }
-    p0.charge_state = libpotentials::one;
-    p1.charge_state = libpotentials::one;
+    p0.charge_state = +libpotentials::one;
+    p1.charge_state = -libpotentials::one;
 
+    Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
+
+    std::cout
+        << "Charge states:\n"
+        << "    p0: " << p0.charge_state << "\n"
+        << "    p1: " << p1.charge_state << "\n"
+        << "    cutoff_radius: " << potparams.cutoff_radius * libpotentials::m_to_bohr << " Bohr\n";
 
     const int N = 1000;
     const fdouble xmin =  0.001 * libpotentials::bohr_to_m;
@@ -67,25 +77,43 @@ int main(int argc, char *argv[])
     const fdouble dx = (xmax - xmin) / fdouble(N);
 
     fdouble r;
-    for (int i = 0 ; i < N ; i++)
+
+    for (int cs = -1 ; cs < 11 ; cs++)
     {
-        r = fdouble(i) * dx + xmin;
-        p1.pos[0] = r;
-        for (int d = 0 ; d < 3 ; d++)
+        char filename[1024];
+        if (cs == -1)
+            sprintf(filename, "output/field_-%1d.csv", -cs);
+        else
+            sprintf(filename, "output/field_%02d.csv", cs);
+        std::ofstream f_field(filename);
+        if (cs == -1)
+            sprintf(filename, "output/poten_-%1d.csv", -cs);
+        else
+            sprintf(filename, "output/poten_%02d.csv", cs);
+        std::ofstream f_poten(filename);
+
+        for (int i = 0 ; i < N ; i++)
         {
-            E_at_p0_from_p1[d]  = libpotentials::zero;
+            r = fdouble(i) * dx + xmin;
+            p1.pos[0] = r;
+            for (int d = 0 ; d < 3 ; d++)
+            {
+                E_at_p0_from_p1[d]  = libpotentials::zero;
+            }
+            potential_at_p0_from_p1 = libpotentials::zero;
+
+            // Set parameters, calculate potential and field
+            Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
+            potential_at_p0_from_p1 = Calculate_Potential((void *) &p0, (void *) &p1, potparams);
+            Set_Field((void *) &p0, (void *) &p1, potparams, potential_at_p0_from_p1, E_at_p0_from_p1);
+
+            // Save potential and field
+            f_poten << r * libpotentials::m_to_bohr << ", " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
+            f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
         }
-        potential_at_p0_from_p1 = libpotentials::zero;
 
-        // Set parameters, calculate potential and field
-        Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
-        potential_at_p0_from_p1 = Calculate_Potential((void *) &p0, (void *) &p1, potparams);
-        Set_Field((void *) &p0, (void *) &p1, potparams, potential_at_p0_from_p1, E_at_p0_from_p1);
-
-        // Print potential
-        std::cerr << r * libpotentials::m_to_bohr << "  " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
-        // Print field
-        //std::cerr << r * libpotentials::m_to_bohr << "  " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
+        f_poten.close();
+        f_field.close();
     }
 
 
