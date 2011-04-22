@@ -37,8 +37,10 @@ size_t      Get_Sizeof_particle()   { return sizeof(Particle); }
 // **************************************************************
 int main(int argc, char *argv[])
 {
-    //Potentials_Initialize("HermanSkillman",
-    Potentials_Initialize("Symmetric",
+    const std::string potential_shape("HermanSkillman");
+    //const std::string potential_shape("Symmetric");
+
+    Potentials_Initialize(potential_shape,
                             fdouble(1.0 * libpotentials::Eh_to_eV),     // base potential
                             fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
                             1);                                 // Super Gaussian order (m=1 for gaussian)
