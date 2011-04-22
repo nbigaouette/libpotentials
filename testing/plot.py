@@ -55,7 +55,7 @@ ax2.set_ylabel("Field (au)")
 ax2.set_xlabel("r (Bohr)")
 
 ax1.set_ylim((-2.0, 11.0))
-ax2.set_ylim((-5.0, 1.0))
+#ax2.set_ylim((-1.0, 5.0))
 
 plt.legend()
 
