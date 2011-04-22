@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
         fdouble r;
 
-        for (int cs = -1 ; cs < 11 ; cs++)
+        for (int cs = -1 ; cs < 2 ; cs++)
         {
             p1.charge_state = cs;
 
