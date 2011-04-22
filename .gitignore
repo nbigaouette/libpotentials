@@ -9,3 +9,4 @@ src/Version.hpp
 *.pdf
 *.toc
 *.swp.*
+*.o
