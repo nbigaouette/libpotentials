@@ -10,8 +10,13 @@ import on_key
 globber = glob.glob(os.path.join("output", "*"))
 
 fig = on_key.figure()
-ax1 = plt.subplot(211)
-ax2 = plt.subplot(212)
+axprops = dict()
+#ax1 = plt.subplot(211)
+#ax2 = plt.subplot(212)
+ax1 = fig.add_axes([0.15, 0.51, 0.6, 0.4], **axprops)
+axprops['sharex'] = ax1
+plt.setp(ax1.get_xticklabels(), visible=False)
+ax2 = fig.add_axes([0.15, 0.1, 0.6, 0.4], **axprops)
 
 for folder in globber:
 
