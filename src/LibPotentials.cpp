@@ -100,7 +100,7 @@ void Potentials_Initialize(const std::string potential_shape,
         Initialize_HS(input_sg_m, input_s_rmin);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_HS_SuperGaussian;
-        Calculate_Potential       = &Calculate_Potential_Cutoff_Harmonic;
+        Calculate_Potential       = &Calculate_Potential_Cutoff_HS_SuperGaussian;
         Set_Field                 = &Set_Field_Cutoff_HS_SuperGaussian;
     }
     else if (potential_shape == "Symmetric")
