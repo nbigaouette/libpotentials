@@ -38,14 +38,16 @@ for folder in globber:
         r     = data[:,0]
         pot   = data[:,1]
 
-        ax1.plot(r, pot, label = folder.replace("output/", ""))
+        charge_state = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
+        ax1.plot(r, pot, label = str(charge_state) + " " + folder.replace("output/", ""))
 
     for cs in xrange(nb_cs):
         data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
         r     = data[:,0]
         field = data[:,1]
 
-        ax2.plot(r, field, label = folder.replace("output/", ""))
+        charge_state = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
+        ax2.plot(r, field, label = str(charge_state) + " " + folder.replace("output/", ""))
 
 
 ax1.set_ylabel("Potential (au)")
