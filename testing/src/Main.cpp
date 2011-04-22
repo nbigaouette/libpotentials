@@ -4,6 +4,7 @@
  ***************************************************************/
 
 #include <cstdlib>
+#include <cassert>
 #include <iostream>
 #include <vector>
 #include <stdint.h> // uint64_t
@@ -43,6 +44,9 @@ int main(int argc, char *argv[])
     const std::string potential_shape("HermanSkillman");
     //const std::string potential_shape("Symmetric");
 
+    const std::string cmd = std::string("mkdir -p output/") + potential_shape;
+    system(cmd.c_str());
+
     Potentials_Initialize(potential_shape,
                             fdouble(1.0 * libpotentials::Eh_to_eV),     // base potential
                             fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
@@ -60,16 +64,8 @@ int main(int argc, char *argv[])
         p0.pos[d] = libpotentials::zero;
         p1.pos[d] = libpotentials::zero;
     }
-    p0.charge_state = +libpotentials::one;
-    p1.charge_state = -libpotentials::one;
-
-    Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
-
-    std::cout
-        << "Charge states:\n"
-        << "    p0: " << p0.charge_state << "\n"
-        << "    p1: " << p1.charge_state << "\n"
-        << "    cutoff_radius: " << potparams.cutoff_radius * libpotentials::m_to_bohr << " Bohr\n";
+    p0.charge_state = libpotentials::one;
+    p1.charge_state = libpotentials::one;
 
     const int N = 1000;
     const fdouble xmin =  0.001 * libpotentials::bohr_to_m;
@@ -80,17 +76,22 @@ int main(int argc, char *argv[])
 
     for (int cs = -1 ; cs < 11 ; cs++)
     {
+        p1.charge_state = cs;
+
         char filename[1024];
         if (cs == -1)
-            sprintf(filename, "output/field_-%1d.csv", -cs);
+            sprintf(filename, "output/%s/field_-%1d.csv", potential_shape.c_str(), std::abs(cs));
         else
-            sprintf(filename, "output/field_%02d.csv", cs);
+            sprintf(filename, "output/%s/field_%02d.csv", potential_shape.c_str(), cs);
         std::ofstream f_field(filename);
         if (cs == -1)
-            sprintf(filename, "output/poten_-%1d.csv", -cs);
+            sprintf(filename, "output/%s/poten_-%1d.csv", potential_shape.c_str(), std::abs(cs));
         else
-            sprintf(filename, "output/poten_%02d.csv", cs);
+            sprintf(filename, "output/%s/poten_%02d.csv", potential_shape.c_str(), cs);
         std::ofstream f_poten(filename);
+
+        assert(f_poten.is_open());
+        assert(f_field.is_open());
 
         for (int i = 0 ; i < N ; i++)
         {
