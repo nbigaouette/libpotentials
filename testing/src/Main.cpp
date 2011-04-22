@@ -102,7 +102,10 @@ int main(int argc, char *argv[])
             for (int i = 0 ; i < N ; i++)
             {
                 r = fdouble(i) * dx + xmin;
-                p1.pos[0] = r;
+
+                // Put first particle at right of second. The particle creating the field is at the left,
+                // so a positively charged p1 will create a positive field.
+                p0.pos[0] = r;
                 for (int d = 0 ; d < 3 ; d++)
                 {
                     E_at_p0_from_p1[d]  = libpotentials::zero;
