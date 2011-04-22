@@ -74,8 +74,8 @@ int main(int argc, char *argv[])
         p1.charge_state = libpotentials::one;
 
         const int N = 1000;
-        const fdouble xmin = fdouble( 0.001 * libpotentials::bohr_to_m);
-        const fdouble xmax = fdouble(20.000 * libpotentials::bohr_to_m);
+        const fdouble xmin = fdouble(0.001 * libpotentials::bohr_to_m);
+        const fdouble xmax = fdouble(7.000 * libpotentials::bohr_to_m);
         const fdouble dx = (xmax - xmin) / fdouble(N);
 
         fdouble r;
