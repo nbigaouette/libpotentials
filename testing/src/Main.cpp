@@ -82,8 +82,10 @@ int main(int argc, char *argv[])
         potential_at_p0_from_p1 = Calculate_Potential((void *) &p0, (void *) &p1, potparams);
         Set_Field((void *) &p0, (void *) &p1, potparams, potential_at_p0_from_p1, E_at_p0_from_p1);
 
-        //std::cerr << r * libpotentials::m_to_bohr << "  " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
-        std::cerr << r * libpotentials::m_to_bohr << "  " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
+        // Print potential
+        std::cerr << r * libpotentials::m_to_bohr << "  " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
+        // Print field
+        //std::cerr << r * libpotentials::m_to_bohr << "  " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
     }
 
 
