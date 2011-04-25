@@ -26,7 +26,8 @@ for i in xrange(10):
 
 plt.plot(r, Ve,         label='$V_{e}$')
 #plt.plot(r, V2+Ve,      label='$V_{+2} + V_e$')
-plt.plot(r, 10.0/r+9.0*Ve,      label='$V_{+10} + 9*V_e$')
+z = 8.0
+plt.plot(r, z/r+(z-1)*Ve,      label='$V_{+'+str('%d' % z) + '} + '+str('%d' % (z-1))+'*V_e$')
 
 # Plot HS's cuttofs
 cs = 1
