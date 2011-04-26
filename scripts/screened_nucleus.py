@@ -55,6 +55,8 @@ for Ne in [14]:
 
 
 plt.plot(r, herman_skillman.HS(r, 1), '--k', label='$V_{HS}$')
+plt.plot(r, 1.0/r, '--k', label='$V_{1+}$')
+
 
 
 for e in xrange(len(sigmas1)):
