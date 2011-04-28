@@ -658,10 +658,6 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
     potparams.cutoff_radius = 0.073 * au_to_si_length;
     potparams.kQ2_over_B    = 0.0;
 
-    // If p2 is not a body (thus it is a cell), no approximation is needed
-    // because it should be far away, so it should already be approximated.
-    // FIXME: HS+BODY
-    //if (potparams.hs_type2 == BODY)
     {
         // If we have an electron, set the correct parameters for the
         // potential cutoff. All other cases (neutral atom or ion) are
