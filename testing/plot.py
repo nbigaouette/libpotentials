@@ -48,6 +48,7 @@ for folder in globber:
 
         charge_state = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
         ax1.plot(r, pot, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
+        ax1.plot(r, charge_state/r, ':'+colors[cs%len(colors)], lw=line_width)
 
         # Plot HS's cuttofs
         if (potential_shape == "HermanSkillman" and cs < herman_skillman.max_hs_cs+2):
@@ -61,6 +62,7 @@ for folder in globber:
 
         charge_state = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
         ax2.plot(r, field, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
+        ax2.plot(r, charge_state/(r*r), ':'+colors[cs%len(colors)], lw=line_width)
 
         # Plot HS's cuttofs
         if (potential_shape == "HermanSkillman" and cs < herman_skillman.max_hs_cs+2):
@@ -75,7 +77,7 @@ ax2.set_ylabel("Field (au)")
 ax2.set_xlabel("r (Bohr)")
 
 ax1.set_ylim((-2.0, 11.0))
-#ax2.set_ylim((-1.0, 5.0))
+ax2.set_ylim((-2.0, 5.0))
 #ax1.set_yscale('log')
 #ax2.set_yscale('log')
 #ax1.set_xscale('log')
