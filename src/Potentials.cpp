@@ -704,30 +704,25 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             phi12 = 1.93775072943628 * exp(
                 -0.533297816151*distance_au
                 -0.7486357665822807
-            ); /*std_cout << "0. HS in C\n";*/
         }
         else if (   (distance_au <  fit_lt_R3[0][8]) &&
                     (distance_au >= fit_lt_R3[0][7]))               /* In R3 */
         {
             phi12 = genericHSfit(&(fit_lt_R3[0][0]),distance_au);
-            /*std_cout << "1. HS in R3\n";*/
         }
         else if (   (distance_au <  fit_lt_R2[0][8]) &&
                     (distance_au >= fit_lt_R2[0][7]))               /* In R2 */
         {
             phi12 = genericHSfit(&(fit_lt_R2[0][0]),distance_au);
-            /*std_cout << "2. HS in R2\n";*/
         }
         else if (   (distance_au <  fit_lt_R1[0][8]) &&
                     (distance_au >= fit_lt_R1[0][7]))               /* In R1 */
         {
             phi12 = genericHSfit(&(fit_lt_R1[0][0]),distance_au);
-            /*std_cout << "3. HS in R1\n";*/
         }
         else    // Hard cutoff
         {
             phi12 = genericHSfit(&(fit_lt_R1[0][0]), hs_min_rad[cs]);
-            /*std_cout << "4. HS inside\n";*/
         }
         phi12 *= Eh_to_eV;
     }
@@ -736,27 +731,28 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 
         if          (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
         {
-            phi12 = (fdouble(cs) / distance_au) * Eh_to_eV;   // Outside electron cloud: Coulombic pot.
+            phi12 = (fdouble(cs) / distance_au);   // Outside electron cloud: Coulombic pot.
         }
         else if (   (distance_au <  fit_lt_R3[cs][8]) &&
                     (distance_au >= fit_lt_R3[cs][7]))   /* In R3 */
         {
-            phi12 = genericHSfit(&(fit_lt_R3[cs][0]),distance_au) * Eh_to_eV;
+            phi12 = genericHSfit(&(fit_lt_R3[cs][0]),distance_au);
         }
         else if (   (distance_au < fit_lt_R2[cs][8]) &&
                     (distance_au >= fit_lt_R2[cs][7]))   /* In R2 */
         {
-            phi12 = genericHSfit(&(fit_lt_R2[cs][0]),distance_au) * Eh_to_eV;
+            phi12 = genericHSfit(&(fit_lt_R2[cs][0]),distance_au);
         }
         else if (   (distance_au <  fit_lt_R1[cs][8]) &&
                     (distance_au >= fit_lt_R1[cs][7]))   /* In R1 */
         {
-            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),distance_au) * Eh_to_eV;
+            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),distance_au);
         }
         else                                   /* In CP (constant potential) */
         {
-            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),hs_min_rad[cs]) * Eh_to_eV;
+            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),hs_min_rad[cs]);
         }
+        phi12 *= Eh_to_eV;
     }
     else
     {
