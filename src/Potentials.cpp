@@ -681,7 +681,14 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     fdouble phi12 = 0.0;   // Electrostatic potential
 
     // Fits are in atomic units
-    const fdouble distance_au = potparams.r * si_to_au_length;
+    fdouble distance_au = potparams.r * si_to_au_length;
+
+    const int cs = potparams.hs_cs2;
+
+    // Make sure that for distances less then the hard cutoff, we
+    // use that cutoff;
+    if (distance_au < hs_min_rad[cs])
+        distance_au = hs_min_rad[cs];
 
     // Ions are given a potential inside the electron cloud.
     // The last two fdoubles of the fit_lessthan_R array is the range
@@ -692,8 +699,6 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     // |        |             |                |       |
     // |  CP    |     R1      |     R2         |  R3   |  Coulomb
     // |________|_____________|________________|_______|__________________ ...
-
-    const int cs = potparams.hs_cs2;
 
     if (cs == -1 or cs > max_hs_cs)
     {
