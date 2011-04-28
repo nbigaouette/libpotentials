@@ -755,7 +755,6 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 
     const int cs = potparams.hs_cs2;
 
-    // FIXME: HS+BODY
     //if ((cs == 0) && ( potparams.hs_type2 == BODY))
     if (cs == 0)
     {
@@ -793,8 +792,6 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
         }
         phi12 *= Eh_to_eV;
     }
-    // FIXME: HS+BODY
-    //else if ( (cs < 10) && (cs > 0) && ( potparams.hs_type2 == BODY) )
     else if ( (cs <= max_hs_cs) && (cs > 0) )
     { // If charge state is between 0 and 9 (inclusive)...
 
@@ -925,8 +922,6 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         //else
             // No field because of hard cutoff (-grad(constant) = 0 )
     }
-    // FIXME: HS+BODY
-    //else if ( (cs < 8) && (cs > 0) && ( potparams.hs_type2 == BODY) )
     else if ( (cs <= max_hs_cs) && (cs > 0) )
     {
 
