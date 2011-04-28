@@ -661,7 +661,7 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
     // If we have an electron, set the correct parameters for the
     // potential cutoff. All other cases (neutral atom or ion) are
     // treated as HS potential (neutral to 7+) and coulomb (8+ and up)
-    if ( (potparams.hs_cs2 == -1) or (potparams.hs_cs2 >= 8) )
+    if ( (potparams.hs_cs2 == -1) or (potparams.hs_cs2 > max_hs_cs) )
     {
 /*
         // Negative charge (electron), negative potential
