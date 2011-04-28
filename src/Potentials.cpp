@@ -710,9 +710,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             {
                 // Potential outside the electron cloud goes to 0
                 // exponentially using f(x)=h*exp(-v*x+k)
-                phi12 = 1.93775072943628 * exp(
-                    -0.533297816151*distance_au
-                    -0.7486357665822807
+                phi12 = 1.93775072943628 * exp(-0.533297816151*distance_au -0.7486357665822807);
             }
             else
             {
