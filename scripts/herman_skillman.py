@@ -79,9 +79,9 @@ fit_lt_R3 = [
     [-156436.219173519,-13.360177523064,     10907.4536590735, -0.0178811573295934, 0.0295757482829108, 0.398808602998421, -5.49402342863045,   0.96,   0.96]
 ]
 
-assert(max_hs_cs+1 == shape(fit_lt_R1)[0])
-assert(max_hs_cs+1 == shape(fit_lt_R2)[0])
-assert(max_hs_cs+1 == shape(fit_lt_R3)[0])
+assert(max_hs_cs+1 == np.shape(fit_lt_R1)[0])
+assert(max_hs_cs+1 == np.shape(fit_lt_R2)[0])
+assert(max_hs_cs+1 == np.shape(fit_lt_R3)[0])
 
 def HS(r, cs):
 
