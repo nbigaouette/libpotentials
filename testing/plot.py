@@ -6,24 +6,9 @@ import numpy
 import matplotlib.pyplot as plt
 
 import on_key
+import herman_skillman
 
 globber = glob.glob(os.path.join("output", "*"))
-
-
-# Taken from libpotentials.git's Potential.cpp, variables fit_lt_R1, fit_lt_R2 and fit_lt_R3 (247a4be84f2b7e84504a723eeeb07b8c6c2c3537)
-HS_cutoffs = numpy.array([
-        [0.000, 0.00, 0.00, 0.000], # Electron
-        [0.073, 1.00, 3.00,  6.00], # Neutral
-        [0.073, 1.00, 5.00, 12.00], # 1+
-        [0.073, 0.60, 2.00,  6.00], # 2+...
-        [0.073, 0.75, 4.60, 12.00],
-        [0.073, 0.75, 1.49,  2.00],
-        [0.073, 0.75, 1.50,  1.49],
-        [0.073, 0.75, 1.10,  1.10],
-        [0.073, 0.35, 0.96,  0.96],
-        [0.020, 0.00, 0.00,  0.00]
-    ])
-
 
 
 
