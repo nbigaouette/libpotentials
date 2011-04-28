@@ -836,6 +836,8 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
         }
 */
+        assert(p1 != NULL);
+        assert(p2 != NULL);
         phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
 //     std_cout << "HS: phi12 = " << phi12 << "\n";
