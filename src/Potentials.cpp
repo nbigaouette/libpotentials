@@ -658,35 +658,33 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
     potparams.cutoff_radius = 0.073 * au_to_si_length;
     potparams.kQ2_over_B    = 0.0;
 
+    // If we have an electron, set the correct parameters for the
+    // potential cutoff. All other cases (neutral atom or ion) are
+    // treated as HS potential (neutral to 7+) and coulomb (8+ and up)
+    if ( (potparams.hs_cs2 == -1) or (potparams.hs_cs2 >= 8) )
     {
-        // If we have an electron, set the correct parameters for the
-        // potential cutoff. All other cases (neutral atom or ion) are
-        // treated as HS potential (neutral to 7+) and coulomb (8+ and up)
-        if ( (potparams.hs_cs2 == -1) or (potparams.hs_cs2 >= 8) )
-        {
 /*
-            // Negative charge (electron), negative potential
-            // B is the (negative of the)
-            // ionization potential of the ion.
-            potparams.B = -libpotentials_private::base_pot_well_depth;
+        // Negative charge (electron), negative potential
+        // B is the (negative of the)
+        // ionization potential of the ion.
+        potparams.B = -libpotentials_private::base_pot_well_depth;
 
-            potparams.kQ2_over_B = potparams.kQ2 / potparams.B;
+        potparams.kQ2_over_B = potparams.kQ2 / potparams.B;
 
-            // Radius where the Coulomb potential and its first derivative are
-            // equal to a the super-gaussian potential.
-            potparams.cutoff_radius = potparams.kQ2_over_B * sg_exp_one_over_two_m;
+        // Radius where the Coulomb potential and its first derivative are
+        // equal to a the super-gaussian potential.
+        potparams.cutoff_radius = potparams.kQ2_over_B * sg_exp_one_over_two_m;
 
-            // Width of Super-Gaussian
-            potparams.sg_sigma = potparams.kQ2_over_B
-                                    * sg_m_pow_one_over_two_m
-                                    * sg_exp_one_over_two_m;
+        // Width of Super-Gaussian
+        potparams.sg_sigma = potparams.kQ2_over_B
+                                * sg_m_pow_one_over_two_m
+                                * sg_exp_one_over_two_m;
 
-            potparams.sg_r_over_sigma_two_m = pow(potparams.r / potparams.sg_sigma, sg_two_m);
-            potparams.sg_exp_half_r_over_sigma_two_m =
-                                exp( -0.5 * potparams.sg_r_over_sigma_two_m );
+        potparams.sg_r_over_sigma_two_m = pow(potparams.r / potparams.sg_sigma, sg_two_m);
+        potparams.sg_exp_half_r_over_sigma_two_m =
+                            exp( -0.5 * potparams.sg_r_over_sigma_two_m );
 */
-            Potentials_Set_Parameters_ChargeDistribution_Symmetric(p1, p2, potparams);
-        }
+        Potentials_Set_Parameters_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
 }
 
