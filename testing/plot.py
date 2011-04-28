@@ -47,12 +47,12 @@ for folder in globber:
         pot   = data[:,1]
 
         charge_state = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
-        ax1.plot(r, pot, symbols[fi]+colors[cs], label = str(charge_state) + " " + potential_shape, lw=line_width)
+        ax1.plot(r, pot, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
 
         # Plot HS's cuttofs
         if (potential_shape == "HermanSkillman"):
             for hsi in xrange(1,4):
-                ax2.plot([HS_cutoffs[cs,hsi], HS_cutoffs[cs,hsi], HS_cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs])
+                ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs])
 
     for cs in xrange(nb_cs):
         data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
@@ -60,12 +60,12 @@ for folder in globber:
         field = data[:,1]
 
         charge_state = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
-        ax2.plot(r, field, symbols[fi]+colors[cs], label = str(charge_state) + " " + potential_shape, lw=line_width)
+        ax2.plot(r, field, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
 
         # Plot HS's cuttofs
         if (potential_shape == "HermanSkillman"):
             for hsi in xrange(1,4):
-                ax2.plot([HS_cutoffs[cs,hsi], HS_cutoffs[cs,hsi], HS_cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs])
+                ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs])
 
     fi += 1
 
