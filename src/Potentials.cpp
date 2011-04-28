@@ -763,8 +763,6 @@ void Set_Field_Cutoff_HS_SuperGaussian(
     // The last two fdoubles of the fit_lessthan_R array is the range
     // the fit is valid for below the smallest range we have a simple
     // hard cutoff V(r<r_0) = V(r_0)
-    // FIXME: HS+BODY
-    //if ((cs == 0) && ( potparams.hs_type2 == BODY))
     if (cs == 0)
     {
         if (distance_au >= fit_lt_R3[0][8])
@@ -892,36 +890,6 @@ void Set_Field_Cutoff_HS_SuperGaussian(
     }
     else
     {
-/*
-        if (potparams.r > potparams.cutoff_radius)
-        {
-            Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
-        }
-        else
-        {
-            potparams.sg_r_over_sigma_two_m = pow(potparams.r / potparams.sg_sigma, sg_two_m);
-            potparams.sg_exp_half_r_over_sigma_two_m =
-                            exp( -0.5 * potparams.sg_r_over_sigma_two_m );
-
-            // The derivative of a super gaussian w.r. to r is:
-            fdouble diff_sg =
-                -(potparams.B*sg_m*potparams.one_over_r) * potparams.sg_r_over_sigma_two_m
-                * potparams.sg_exp_half_r_over_sigma_two_m;
-
-            // We have the norm of the gradient of the potential (diff_sg),
-            // we need to multiply this by the unit vector, to get
-            // the electric field.
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr, -diff_sg);         // Add to the electric field
-//                                                     // the gradient of the  potential.
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * -diff_sg;
-            }
-        }
-*/
         Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
     }
 }
