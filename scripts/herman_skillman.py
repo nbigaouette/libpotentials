@@ -18,7 +18,7 @@ cutoffs = np.array([
         [0.073, 0.35, 0.96,  0.96], # 7+
     ])
 
-assert(max_hs_cs+2 == cutoff.shape[0])
+assert(max_hs_cs+2 == cutoffs.shape[0])
 
 def genericHSfit(par, r):
     # The 1/2 factor is becuase HS outputs the potential as 2V and that's how they were fit
