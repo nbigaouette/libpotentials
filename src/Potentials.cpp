@@ -210,9 +210,7 @@ void Initialize_HS(const int &m, const fdouble &base_potential)
         Assert_isinf_isnan(found_r);
         Assert_isinf_isnan(pot);
         assert(found_r > 0.0);
-        assert(std::abs(pot - base_potential) < 1.0e-5);
-        if (cs >= 1)
-            assert(found_r > hs_min_rad[cs-1]);
+        assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
 
         if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs])
         {
