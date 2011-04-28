@@ -3,6 +3,8 @@
 
 import numpy as np
 
+max_hs_cs = 7
+
 # Taken from libpotentials.git's Potential.cpp, variables fit_lt_R1, fit_lt_R2 and fit_lt_R3 (247a4be84f2b7e84504a723eeeb07b8c6c2c3537)
 cutoffs = np.array([
         [0.000, 0.00, 0.00, 0.000], # Electron
@@ -16,6 +18,7 @@ cutoffs = np.array([
         [0.073, 0.35, 0.96,  0.96], # 7+
     ])
 
+assert(max_hs_cs+2 == cutoff.shape[0])
 
 def genericHSfit(par, r):
     # The 1/2 factor is becuase HS outputs the potential as 2V and that's how they were fit
@@ -76,11 +79,14 @@ fit_lt_R3 = [
     [-156436.219173519,-13.360177523064,     10907.4536590735, -0.0178811573295934, 0.0295757482829108, 0.398808602998421, -5.49402342863045,   0.96,   0.96]
 ]
 
+assert(max_hs_cs+1 == shape(fit_lt_R1)[0])
+assert(max_hs_cs+1 == shape(fit_lt_R2)[0])
+assert(max_hs_cs+1 == shape(fit_lt_R3)[0])
 
 def HS(r, cs):
 
     if (cs == 0):
-        
+
         if   (r >= fit_lt_R3[0][8]):
             # Potential outside the electron cloud goes to 0
             # exponentially using f(x)=h*exp(-v*x+k)
