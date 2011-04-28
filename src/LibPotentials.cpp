@@ -9,7 +9,7 @@
 
 extern void Initialize_Simple(const fdouble &minr);
 extern void Initialize_SuperGaussian(const int &m);
-extern void Initialize_HS(const int &input_sg_m, const fdouble &min_rad);
+extern void Initialize_HS(const int &input_sg_m, const fdouble &base_potential);
 
 // **************************************************************
 void Potentials_Initialize(const std::string potential_shape,
@@ -101,7 +101,7 @@ void Potentials_Initialize(const std::string potential_shape,
         libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, 4.5*std::sqrt(2.0), 10000, "Potential LookUpTable");
         libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, 4.5*std::sqrt(2.0), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
-        Initialize_HS(input_sg_m, input_s_rmin);
+        Initialize_HS(input_sg_m, base_potential_depth);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_HS_SuperGaussian;
         Calculate_Potential       = &Calculate_Potential_Cutoff_HS_SuperGaussian;

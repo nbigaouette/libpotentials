@@ -198,24 +198,71 @@ void Initialize_SuperGaussian(const int &m)
 }
 
 // **************************************************************
-void Initialize_HS(const int &m, const fdouble &min_rad)
+void Initialize_HS(const int &m, const fdouble &base_potential)
 /**
  * Initialize super-gaussian like potential
- * @param   m       Order of the Super-Gaussian (m=1 is a simple gaussian) [-]
- * @param   min_rad Minimum radius where Herman-Skillman (HS) potential is
- *                  calculated. For smaller distances, a hard cutoffis used. [m]
+ * @param   m               Order of the Super-Gaussian (m=1 is a simple gaussian) [-]
+ * @param   base_potential  Potential depth wanted [eV]
  */
 {
-    hs_min_rad.resize(max_hs_cs);
+    hs_min_rad.resize(max_hs_cs+1); // +1 for the neutral.
+    potential_paramaters potparams;
 
+    // Find the radius where the HS potential is equal to "base_potential"
+    // by doing a bisection, for all supported charge states.
+    double r_left, r_right, found_r, pot; // [Bohr]
+    for (int cs = 0 ; cs <= max_hs_cs ; cs++)
     {
-        std_cout << "##############################################\n";
-        DEBUGP("Initialize_HS() called with a minimum too small radius\n");
-        std_cout << "The value "<<hs_min_rad * au_to_si_length<<" au ("<<hs_min_rad<<" m) should not be lower than 0.073 a.u. ("<<0.073 * au_to_si_length<<" m)\n";
-        std_cout << "Note that this distance should be set in SI units and NOT in atomic units.\n";
-        std_cout << "Exiting\n";
-        abort();
+        // Initial conditions
+        hs_min_rad[cs] = fit_lt_R1[cs][7];
+        r_left  = fit_lt_R1[cs][7]; // Minimum radius of fit
+        r_right = 10.0;             // At 10 bohr, it should be coulombic
+
+        // Start bisection!
+        // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
+        found_r = r_right + (r_left - r_right) / 2.0;
+
+        potparams.hs_cs2 = cs;
+        potparams.kQ2 = cs * e0;
+
+        while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
+        {
+            potparams.r = found_r * bohr_to_m;
+            pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
+            //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
+            if (pot <= base_potential)
+            {
+                r_right = found_r;
+            }
+            else
+            {
+                r_left = found_r;
+            }
+            found_r = r_right + (r_left - r_right) / 2.0;
+        }
+        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
+
+        Assert_isinf_isnan(found_r);
+        Assert_isinf_isnan(pot);
+        assert(found_r > 0.0);
+        assert(std::abs(pot - base_potential) < 1.0e-5);
+        if (cs >= 1)
+            assert(found_r > hs_min_rad[cs-1]);
+
+        if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs])
+        {
+            std_cout << "##############################################\n";
+            DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
+            std_cout << "The value found " << found_r * si_to_au_length << " Bohr (" << found_r << " m)\n";
+            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs] << " Bohr (" << hs_min_rad[cs] * au_to_si_length<<" m)\n";
+            std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*eV_to_Eh << " Eh)\n";
+            std_cout << "Exiting\n";
+            abort();
+        }
+
+        hs_min_rad[cs] = found_r;
     }
+
     Initialize_SuperGaussian(m);
 }
 
