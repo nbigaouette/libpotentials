@@ -788,7 +788,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
         }
         else    // Hard cutoff
         {
-            phi12 = genericHSfit(&(fit_lt_R1[0][0]), hs_min_rad);
+            phi12 = genericHSfit(&(fit_lt_R1[0][0]), hs_min_rad[cs]);
             /*std_cout << "4. HS inside\n";*/
         }
         phi12 *= Eh_to_eV;
@@ -819,7 +819,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
         }
         else                                   /* In CP (constant potential) */
         {
-            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),hs_min_rad) * Eh_to_eV;
+            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),hs_min_rad[cs]) * Eh_to_eV;
         }
     }
     else
