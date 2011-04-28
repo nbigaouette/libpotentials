@@ -756,6 +756,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     }
     else
     {
+        // Electron
         assert(p1 != NULL);
         assert(p2 != NULL);
         phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
