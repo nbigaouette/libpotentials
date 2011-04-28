@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <iostream> // cout
 #include <cstring>  // memset
+#include <vector>
 
 #include <StdCout.hpp>
 #include <Assert.hpp>
@@ -38,7 +39,8 @@ fdouble sg_one_over_two_m;
 fdouble sg_m_pow_one_over_two_m;
 fdouble sg_exp_one_over_two_m;
 
-fdouble hs_min_rad;
+std::vector<fdouble> hs_min_rad;
+const int max_hs_cs = 9;
 
 const fdouble ps_A = 0.1   * angstrom_to_m;
 const fdouble ps_B = 0.45  * angstrom_to_m;
@@ -204,8 +206,8 @@ void Initialize_HS(const int &m, const fdouble &min_rad)
  *                  calculated. For smaller distances, a hard cutoffis used. [m]
  */
 {
-    hs_min_rad = min_rad;
-    if (hs_min_rad <= (0.0729 * au_to_si_length))
+    hs_min_rad.resize(max_hs_cs);
+
     {
         std_cout << "##############################################\n";
         DEBUGP("Initialize_HS() called with a minimum too small radius\n");
