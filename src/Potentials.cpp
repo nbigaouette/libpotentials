@@ -695,7 +695,6 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 
     const int cs = potparams.hs_cs2;
 
-    //if ((cs == 0) && ( potparams.hs_type2 == BODY))
     if (cs == 0)
     {
         if (distance_au >= fit_lt_R3[0][8])    /* In Coulomb */
@@ -761,26 +760,10 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     }
     else
     {
-/*
-        if (potparams.r <= potparams.cutoff_radius)
-        {
-            // If the distance between two bodys is less than the shielding
-            // radius, we use the special Super-Gaussian potential instead
-            // of the Coulomb potential.
-            phi12 = potparams.B * potparams.sg_exp_half_r_over_sigma_two_m;
-        }
-        else
-        {
-            // If the distance is not less then the shielding radius, get the
-            // normal Coulomb potential.
-            phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
-        }
-*/
         assert(p1 != NULL);
         assert(p2 != NULL);
         phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
-//     std_cout << "HS: phi12 = " << phi12 << "\n";
 
     return phi12;
 }
