@@ -6,24 +6,9 @@ import numpy
 import matplotlib.pyplot as plt
 
 import on_key
+import herman_skillman
 
 globber = glob.glob(os.path.join("output", "*"))
-
-
-# Taken from libpotentials.git's Potential.cpp, variables fit_lt_R1, fit_lt_R2 and fit_lt_R3 (247a4be84f2b7e84504a723eeeb07b8c6c2c3537)
-HS_cutoffs = numpy.array([
-        [0.000, 0.00, 0.00, 0.000], # Electron
-        [0.073, 1.00, 3.00,  6.00], # Neutral
-        [0.073, 1.00, 5.00, 12.00], # 1+
-        [0.073, 0.60, 2.00,  6.00], # 2+...
-        [0.073, 0.75, 4.60, 12.00],
-        [0.073, 0.75, 1.49,  2.00],
-        [0.073, 0.75, 1.50,  1.49],
-        [0.073, 0.75, 1.10,  1.10],
-        [0.073, 0.35, 0.96,  0.96],
-        [0.020, 0.00, 0.00,  0.00]
-    ])
-
 
 
 
@@ -62,12 +47,13 @@ for folder in globber:
         pot   = data[:,1]
 
         charge_state = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
-        ax1.plot(r, pot, symbols[fi]+colors[cs], label = str(charge_state) + " " + potential_shape, lw=line_width)
+        ax1.plot(r, pot, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
+        ax1.plot(r, charge_state/r, ':'+colors[cs%len(colors)], lw=line_width)
 
         # Plot HS's cuttofs
-        if (potential_shape == "HermanSkillman"):
+        if (potential_shape == "HermanSkillman" and cs < herman_skillman.max_hs_cs+2):
             for hsi in xrange(1,4):
-                ax2.plot([HS_cutoffs[cs,hsi], HS_cutoffs[cs,hsi], HS_cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs])
+                ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs%len(colors)])
 
     for cs in xrange(nb_cs):
         data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
@@ -75,12 +61,13 @@ for folder in globber:
         field = data[:,1]
 
         charge_state = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
-        ax2.plot(r, field, symbols[fi]+colors[cs], label = str(charge_state) + " " + potential_shape, lw=line_width)
+        ax2.plot(r, field, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
+        ax2.plot(r, charge_state/(r*r), ':'+colors[cs%len(colors)], lw=line_width)
 
         # Plot HS's cuttofs
-        if (potential_shape == "HermanSkillman"):
+        if (potential_shape == "HermanSkillman" and cs < herman_skillman.max_hs_cs+2):
             for hsi in xrange(1,4):
-                ax2.plot([HS_cutoffs[cs,hsi], HS_cutoffs[cs,hsi], HS_cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs])
+                ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs%len(colors)])
 
     fi += 1
 
@@ -90,8 +77,11 @@ ax2.set_ylabel("Field (au)")
 ax2.set_xlabel("r (Bohr)")
 
 ax1.set_ylim((-2.0, 11.0))
-#ax2.set_ylim((-1.0, 5.0))
+ax2.set_ylim((-2.0, 5.0))
+#ax1.set_yscale('log')
 #ax2.set_yscale('log')
+#ax1.set_xscale('log')
+#ax2.set_xscale('log')
 ax1.grid(True)
 ax2.grid(True)
 
