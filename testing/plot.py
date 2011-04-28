@@ -50,9 +50,9 @@ for folder in globber:
         ax1.plot(r, pot, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
 
         # Plot HS's cuttofs
-        if (potential_shape == "HermanSkillman"):
+        if (potential_shape == "HermanSkillman" and cs < herman_skillman.max_hs_cs+2):
             for hsi in xrange(1,4):
-                ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs])
+                ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs%len(colors)])
 
     for cs in xrange(nb_cs):
         data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
@@ -63,9 +63,9 @@ for folder in globber:
         ax2.plot(r, field, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
 
         # Plot HS's cuttofs
-        if (potential_shape == "HermanSkillman"):
+        if (potential_shape == "HermanSkillman" and cs < herman_skillman.max_hs_cs+2):
             for hsi in xrange(1,4):
-                ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs])
+                ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs%len(colors)])
 
     fi += 1
 
@@ -76,7 +76,10 @@ ax2.set_xlabel("r (Bohr)")
 
 ax1.set_ylim((-2.0, 11.0))
 #ax2.set_ylim((-1.0, 5.0))
+#ax1.set_yscale('log')
 #ax2.set_yscale('log')
+#ax1.set_xscale('log')
+#ax2.set_xscale('log')
 ax1.grid(True)
 ax2.grid(True)
 
