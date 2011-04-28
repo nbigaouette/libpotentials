@@ -759,7 +759,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 
         if          (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
         {
-            phi12 = (potparams.kQ2 / potparams.r);   // Outside electron cloud: Coulombic pot.
+            phi12 = (fdouble(cs) / distance_au) * Eh_to_eV;   // Outside electron cloud: Coulombic pot.
         }
         else if (   (distance_au <  fit_lt_R3[cs][8]) &&
                     (distance_au >= fit_lt_R3[cs][7]))   /* In R3 */
