@@ -754,143 +754,81 @@ void Set_Field_Cutoff_HS_SuperGaussian(
     Check_if_LibPotentials_is_initialized();
 
     // Fits are in atomic units
-    const fdouble distance_au = potparams.r * si_to_au_length;
+    fdouble distance_au = potparams.r * si_to_au_length;
 
     const int cs = potparams.hs_cs2;
-    fdouble Ef;
+    fdouble Ef, unit_dr[3];
 
     // Ions are given a potential inside the electron cloud.
     // The last two fdoubles of the fit_lessthan_R array is the range
     // the fit is valid for below the smallest range we have a simple
     // hard cutoff V(r<r_0) = V(r_0)
-    if (cs == 0)
+
+    // ___________________________________________________________________ ...
+    // |        |             |                |       |
+    // |  CP    |     R1      |     R2         |  R3   |  Coulomb
+    // |________|_____________|________________|_______|__________________ ...
+
+
+    if (cs == -1 or cs > max_hs_cs)
     {
-        if (distance_au >= fit_lt_R3[0][8])
-        {
-            // Potential outside the electron cloud goes to 0
-            // exponentially using f(x)=h*exp(-v*x+k)
-            Ef = -0.272*(    -1.93775072943628
-                    * (-0.533297816151*distance_au - 0.7486357665822807) *(-0.533297816151)
-                    * exp(-0.533297816151*distance_au - 0.7486357665822807)
-                    )* Eh_to_eV;
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr, Ef/a0);
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * (Ef/a0);
-            }
-
-        }
-        else if (   (distance_au < fit_lt_R3[0][8]) &&
-                    (distance_au >= fit_lt_R3[0][7])){
-            Ef = deriv_genericHSfit(&(fit_lt_R3[0][0]),distance_au) * Eh_to_eV;
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr, Ef/a0);
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * (Ef/a0);
-            }
-        }
-        else if (   (distance_au < fit_lt_R2[0][8]) &&
-                    (distance_au >= fit_lt_R2[0][7])){
-            Ef = deriv_genericHSfit(&(fit_lt_R2[0][0]),distance_au) * Eh_to_eV;
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr, Ef/a0);
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * (Ef/a0);
-            }
-        }
-        else if (   (distance_au < fit_lt_R1[0][8]) &&
-                    (distance_au >= fit_lt_R1[0][7])){
-            Ef = deriv_genericHSfit(&(fit_lt_R1[0][0]),distance_au) * Eh_to_eV;
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr, Ef/a0);
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * (Ef/a0);
-            }
-         }
-        //else
-            // No field because of hard cutoff (-grad(constant) = 0 )
-    }
-    else if ( (cs <= max_hs_cs) && (cs > 0) )
-    {
-
-        // Find what range the radial distance_au is in and use the appropriate potential
-        // ___________________________________________________________________ ...
-        // |        |             |                |       |
-        // |  CP    |     R1      |     R2         |  R3   |  Coulomb
-        // |________|_____________|________________|_______|__________________ ...
-        if (distance_au >= fit_lt_R3[cs][8])
-        {
-            //potential outside the electron cloud is Coulombic
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr, kQ2 / distance / distance);
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * (potparams.kQ2 / potparams.r / potparams.r);
-            }
-
-        }
-        else if (   (distance_au <  fit_lt_R3[cs][8]) &&
-                    (distance_au >= fit_lt_R3[cs][7])
-        ) {
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr,
-//                 deriv_genericHSfit(&(fit_lt_R3[cs][0]),distance_au) * Eh_to_eV/a0);
-            fdouble tmp = deriv_genericHSfit(&(fit_lt_R3[cs][0]),distance_au) * Eh_to_eV/a0;
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * tmp;
-            }
-        }
-        else if (   (distance_au <  fit_lt_R2[cs][8]) &&
-                    (distance_au >= fit_lt_R2[cs][7])
-        ) {
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr,
-//                 deriv_genericHSfit(&(fit_lt_R2[cs][0]),distance_au) * Eh_to_eV/a0);
-            fdouble tmp = deriv_genericHSfit(&(fit_lt_R2[cs][0]),distance_au) * Eh_to_eV/a0;
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * tmp;
-            }
-        }
-        else if (   (distance_au <  fit_lt_R1[cs][8]) &&
-                    (distance_au >= fit_lt_R1[cs][7])
-        ) {
-            fdouble unit_dr[3];
-//             MULVS(unit_dr, dr, one_over_distance);  // Calculate unit vector
-//             ADDMULVS(E, unit_dr,
-//                 deriv_genericHSfit(&(fit_lt_R1[cs][0]),distance_au) * Eh_to_eV/a0);
-            fdouble tmp = deriv_genericHSfit(&(fit_lt_R1[cs][0]),distance_au) * Eh_to_eV/a0;
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * tmp;
-            }
-        }
-//         else
-            // No field because of hard cutoff (-grad(constant) = 0 )
+        // Electron or high charge state ion
+        assert(p1 != NULL);
+        assert(p2 != NULL);
+        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
     }
     else
     {
-        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
+        if (distance_au < hs_min_rad[cs]) /* In CP (constant potential) */
+        {
+            // No field in hard cutoff region
+            Ef = 0.0;
+        }
+        else if (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
+        {
+            if (cs == 0)
+            {
+                // Potential outside the electron cloud goes to 0
+                // exponentially using f(x)=h*exp(-v*x+k)
+                Ef = -0.272 * (
+                             (-1.93775072943628)
+                        *    (-0.533297816151)
+                        *    (-0.533297816151*distance_au - 0.7486357665822807)
+                        * exp(-0.533297816151*distance_au - 0.7486357665822807)
+                    );
+            }
+            else
+            {
+                Ef = fdouble(cs) / (distance_au*distance_au);
+            }
+        }
+        else if (   (distance_au <  fit_lt_R3[cs][8]) &&
+                    (distance_au >= fit_lt_R3[cs][7]))   /* In R3 */
+        {
+            Ef = deriv_genericHSfit(&(fit_lt_R3[cs][0]),distance_au);
+        }
+        else if (   (distance_au <  fit_lt_R2[cs][8]) &&
+                    (distance_au >= fit_lt_R2[cs][7]))   /* In R2 */
+        {
+            Ef = deriv_genericHSfit(&(fit_lt_R2[cs][0]),distance_au);
+        }
+        else if (   (distance_au <  fit_lt_R1[cs][8]) &&
+                    (distance_au >= fit_lt_R1[cs][7]))   /* In R1 */
+        {
+            Ef = deriv_genericHSfit(&(fit_lt_R1[cs][0]),distance_au);
+        }
+        else                                   /* In CP (constant potential) */
+        {
+            printf("CAN'T BE HERE!!!\n");
+            abort();
+        }
+
+        Ef *= au_to_si_field;
+        for (int d = 0 ; d < 3 ; d++)
+        {
+            unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
+            E[d]  += unit_dr[d] * Ef;
+        }
     }
 }
 
