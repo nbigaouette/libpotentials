@@ -685,6 +685,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 
     // Make sure that for distances less then the hard cutoff, we
     // use that cutoff;
+    assert(cs < hs_min_rad.size());
     if (distance_au < hs_min_rad[cs])
         distance_au = hs_min_rad[cs];
 
