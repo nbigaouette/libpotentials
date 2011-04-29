@@ -683,12 +683,6 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 
     const int cs = potparams.hs_cs2;
 
-    // Make sure that for distances less then the hard cutoff, we
-    // use that cutoff;
-    assert(cs < hs_min_rad.size());
-    if (distance_au < hs_min_rad[cs])
-        distance_au = hs_min_rad[cs];
-
     // Ions are given a potential inside the electron cloud.
     // The last two fdoubles of the fit_lessthan_R array is the range
     // the fit is valid for below the smallest range we have a simple
@@ -708,6 +702,12 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     }
     else
     {
+        // Make sure that for distances less then the hard cutoff, we
+        // use that cutoff;
+        assert(cs < hs_min_rad.size());
+        if (distance_au < hs_min_rad[cs])
+            distance_au = hs_min_rad[cs];
+
         if          (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
         {
             if (cs == 0)
