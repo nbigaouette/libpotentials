@@ -770,6 +770,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
     // |  CP    |     R1      |     R2         |  R3   |  Coulomb
     // |________|_____________|________________|_______|__________________ ...
 
+    bool field_vector_multiplication = true;
 
     if (cs == -1 or cs > max_hs_cs)
     {
@@ -784,6 +785,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         {
             // No field in hard cutoff region
             Ef = 0.0;
+            field_vector_multiplication = false;
         }
         else if (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
         {
@@ -825,10 +827,13 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         }
 
         Ef *= au_to_si_field;
-        for (int d = 0 ; d < 3 ; d++)
+        if (field_vector_multiplication)
         {
-            unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-            E[d]  += unit_dr[d] * Ef;
+            for (int d = 0 ; d < 3 ; d++)
+            {
+                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
+                E[d]  += unit_dr[d] * Ef;
+            }
         }
     }
 }
