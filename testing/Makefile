@@ -25,6 +25,11 @@ LANGUAGE         = CPP
 # Include the generic rules
 include makefiles/Makefile.rules
 
+.PHONY: s show
+s: show
+show:
+	./plot.py
+
 #################################################################
 # Project specific options
 CFLAGS          +=
