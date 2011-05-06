@@ -744,6 +744,9 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
         phi12 *= Eh_to_eV;
     }
 
+    if (p2 != NULL)
+        phi12 /= double(std::max(1,Get_Charge_State(p2)));
+
     return phi12;
 }
 
