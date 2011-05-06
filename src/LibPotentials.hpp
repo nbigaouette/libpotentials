@@ -26,6 +26,8 @@ void Set_LibPotentials_as_initialized(void);
 
 void Print_Particles(void *list, const int &N);
 
+bool Is_HS_used();
+
 fdouble erf_over_x(fdouble x);
 fdouble erf_over_x3_minus_exp_over_x2(fdouble x);
 

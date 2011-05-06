@@ -12,6 +12,12 @@ extern void Initialize_SuperGaussian(const int &m);
 extern void Initialize_HS(const int &input_sg_m, const fdouble &base_potential);
 
 // **************************************************************
+bool Is_HS_used()
+{
+    return USING_HS;
+}
+
+// **************************************************************
 void Potentials_Initialize(const std::string potential_shape,
                            const fdouble base_potential_depth,
                            const fdouble input_s_rmin,
@@ -28,6 +34,8 @@ void Potentials_Initialize(const std::string potential_shape,
     is_libpotentials_initialized = true;
 
     libpotentials_private::base_pot_well_depth = base_potential_depth;
+
+    USING_HS = false;
 
     Potentials_Set_Parameters = NULL;
     Calculate_Potential       = NULL;
@@ -102,6 +110,8 @@ void Potentials_Initialize(const std::string potential_shape,
         libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, 4.5*std::sqrt(2.0), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
         Initialize_HS(input_sg_m, base_potential_depth);
+
+        USING_HS = true;
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_HS_SuperGaussian;
         Calculate_Potential       = &Calculate_Potential_Cutoff_HS_SuperGaussian;

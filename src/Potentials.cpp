@@ -23,6 +23,7 @@
 using namespace libpotentials;
 
 bool is_libpotentials_initialized = false;
+bool USING_HS;
 
 // **************************************************************
 // ********** Global variable (to this cpp file) ****************

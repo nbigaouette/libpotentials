@@ -5,6 +5,8 @@
 
 #include "Structure_Potentials.hpp"
 
+extern bool USING_HS;
+
 
 extern bool is_libpotentials_initialized;
 
