@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 
                 // Save potential and field
                 f_poten << r * libpotentials::m_to_bohr << ", " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
-                f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
+                f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0]      * libpotentials::si_to_au_field << "\n";
             }
 
             f_poten.close();
