@@ -830,6 +830,9 @@ void Set_Field_Cutoff_HS_SuperGaussian(
             abort();
         }
 
+        if (p2 != NULL)
+            Ef /= double(std::max(1,Get_Charge_State(p2)));
+
         Ef *= au_to_si_field;
         if (field_vector_multiplication)
         {
