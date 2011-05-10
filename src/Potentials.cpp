@@ -744,6 +744,9 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
         phi12 *= Eh_to_eV;
     }
 
+    if (p2 != NULL)
+        phi12 /= double(std::max(1,Get_Charge_State(p2)));
+
     return phi12;
 }
 
@@ -826,6 +829,9 @@ void Set_Field_Cutoff_HS_SuperGaussian(
             printf("CAN'T BE HERE!!!\n");
             abort();
         }
+
+        if (p2 != NULL)
+            Ef /= double(std::max(1,Get_Charge_State(p2)));
 
         Ef *= au_to_si_field;
         if (field_vector_multiplication)

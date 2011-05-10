@@ -135,11 +135,16 @@ int main(int argc, char *argv[])
                 // Set parameters, calculate potential and field
                 Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
                 potential_at_p0_from_p1 = Calculate_Potential((void *) &p0, (void *) &p1, potparams);
+                if (potential_shape == "HermanSkillman")
+                    potential_at_p0_from_p1 *= std::abs(Get_Charge_State((void *) &p1));
                 Set_Field((void *) &p0, (void *) &p1, potparams, potential_at_p0_from_p1, E_at_p0_from_p1);
+
+                if (potential_shape == "HermanSkillman")
+                    E_at_p0_from_p1[0] *= cs;
 
                 // Save potential and field
                 f_poten << r * libpotentials::m_to_bohr << ", " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
-                f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
+                f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0]      * libpotentials::si_to_au_field << "\n";
             }
 
             f_poten.close();
