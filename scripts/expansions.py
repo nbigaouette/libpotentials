@@ -135,15 +135,15 @@ def lut_potential_log_expanded(x):
 
 x = np.linspace(0.0, 6.0, 1000)
 
-fig = on_key.figure()
-ax1 = plt.subplot(111)
-#plt.plot(x, lut_potential_log_expanded(np.log(x)))
-a = np.log(x)
-plt.plot(x, special.erf(np.exp(a))/np.exp(a))
-plt.plot(x, lut_potential_log_expanded(x))
-ax1.set_ylim((0.0, 1.2))
-plt.show()
-sys.exit(0)
+#fig = on_key.figure()
+#ax1 = plt.subplot(111)
+##plt.plot(x, lut_potential_log_expanded(np.log(x)))
+#a = np.log(x)
+#plt.plot(x, special.erf(np.exp(a))/np.exp(a))
+#plt.plot(x, lut_potential_log_expanded(x))
+#ax1.set_ylim((0.0, 1.2))
+#plt.show()
+#sys.exit(0)
 
 # ************************************************************************************************************************************
 fig = on_key.figure()
