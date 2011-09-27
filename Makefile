@@ -20,12 +20,13 @@ include makefiles/Makefile.rules
 
 ### Floats type: Use single precision or double precision?
 ### By default, it's double precision.
-#CFLAGS          += -DFLOATTYPE_SINGLE
+CFLAGS          += -DFLOATTYPE_SINGLE
 
 #################################################################
 # Project specific options
 
 $(eval $(call Flags_template,stdcout,StdCout.hpp,ssh://optimusprime.selfip.net/git/nicolas/stdcout.git))
+$(eval $(call Flags_template,memory,Memory.hpp,ssh://optimusprime.selfip.net/git/nicolas/memory.git))
 
 # Project is a library. Include the makefile for build and install.
 include makefiles/Makefile.library
