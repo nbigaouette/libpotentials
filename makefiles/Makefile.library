@@ -3,7 +3,7 @@ LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $
 ### Just build "full" and install
 .PHONY: f full
 f: full
-full: shared static install force
+full: install_shared install_static force
 
 .PHONY: shared lib_shared
 shared: lib_shared
