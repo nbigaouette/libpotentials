@@ -28,6 +28,7 @@ namespace libpotentials_double
     // **************************************************************
 
     const double zero                   = 0.0;
+    const double half                   = 0.5;
     const double one                    = 1.0;
     const double two                    = 2.0;
     const double three                  = 3.0;
@@ -206,6 +207,7 @@ namespace libpotentials
     const int strcmp_success = 0;
 
     const fdouble zero                  = fdouble(libpotentials_double::zero                   );
+    const fdouble half                  = fdouble(libpotentials_double::half                   );
     const fdouble one                   = fdouble(libpotentials_double::one                    );
     const fdouble two                   = fdouble(libpotentials_double::two                    );
     const fdouble three                 = fdouble(libpotentials_double::three                  );

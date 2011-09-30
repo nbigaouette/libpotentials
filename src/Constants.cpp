@@ -44,6 +44,7 @@ void Print_Constants()
     Print(Pi);
     Print(zero);
     Print(one);
+    Print(half);
     Print(two);
     Print(three);
     Print(four);
