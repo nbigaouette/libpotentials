@@ -47,7 +47,7 @@ fdouble Gamma_NaturalLogarithm(fdouble xx)
     x = xx;
     y = x;
     tmp = x + 5.5;
-    tmp = (x+0.5)*log(tmp) - tmp;
+    tmp = (x+fhalf)*std::log(tmp) - tmp;
 
     ser = 1.000000000190015;
 
@@ -57,7 +57,7 @@ fdouble Gamma_NaturalLogarithm(fdouble xx)
         ser += cof[i]/y;
     }
 
-    return (tmp + log(stp*ser/x) );
+    return (tmp + std::log(stp*ser/x) );
 }
 
 // **************************************************************
@@ -67,7 +67,7 @@ fdouble Gamma(fdouble xx)
  * See "Numerical Recipes in C", 2nd edition, page 214
  */
 {
-    return exp( Gamma_NaturalLogarithm(xx) );
+    return std::exp( Gamma_NaturalLogarithm(xx) );
 }
 
 // **************************************************************
@@ -92,11 +92,11 @@ fdouble gammln(fdouble xx)
     int j;
     y = x = xx;
     tmp = x + 5.5;
-    tmp -= (x + 0.5) * log(tmp);
     ser = 1.000000000190015;
+    tmp -= (x + fhalf) * std::log(tmp);
     for (j = 0 ; j <= 5 ; j++) ser += cof[j] / ++y;
 
-    return -tmp + log(2.5066282746310005 * ser / x);
+    return -tmp + std::log(fdouble(2.5066282746310005) * ser / x);
 }
 
 // **************************************************************
@@ -160,9 +160,9 @@ void gser(fdouble *gamser, fdouble a, fdouble x, fdouble *gln)
             ++ap;
             del *= x / ap;
             sum += del;
-            if (fabs(del) < fabs(sum)*EPS)
+            if (std::abs(del) < std::abs(sum)*EPS)
             {
-                *gamser = sum * exp(-x + a * log(x) - (*gln));
+                *gamser = sum * std::exp(-x + a * std::log(x) - (*gln));
                 return;
             }
         }
@@ -202,13 +202,13 @@ void gcf(fdouble *gammcf, fdouble a, fdouble x, fdouble *gln)
         an = -i*(i-a);
         b += 2.0;
         d = an * d + b;
-        if (fabs(d) < FPMIN) d = FPMIN;
+        if (std::abs(d) < FPMIN) d = FPMIN;
         c = b + an / c;
-        if (fabs(c) < FPMIN) c = FPMIN;
+        if (std::abs(c) < FPMIN) c = FPMIN;
         d = 1.0 / d;
         del = d * c;
         h *= del;
-        if (fabs(del-1.0) < EPS) break;
+        if (std::abs(del-fone) < EPS) break;
     }
     if (i > ITMAX)
     {
@@ -217,7 +217,7 @@ void gcf(fdouble *gammcf, fdouble a, fdouble x, fdouble *gln)
     }
 
     // Put factors in front.
-    *gammcf = exp(-x + a * log(x) - (*gln)) * h;
+    *gammcf = std::exp(-x + a * std::log(x) - (*gln)) * h;
 }
 
 // **************************************************************
@@ -241,14 +241,14 @@ fdouble int_erf(fdouble x)
     fdouble I,h;
     h=(fdouble)x/(n-1);
     I=0;
-    I+=3.0/8.0  *h;
-    I+=7.0/6.0  *h*exp(-h*h);
-    I+=23.0/24.0*h*exp(-4.0*h*h);
-    for (loop=3;loop<n-3;loop++) I+=h*exp(-(fdouble)loop*loop*h*h);
-    I+=23.0/24.0*h*exp(-(fdouble)loop*loop*h*h);   loop++;
-    I+=7.0/6.0*h*exp(-(fdouble)loop*loop*h*h);   loop++;
-    I+=3.0/8.0*h*exp(-(fdouble)loop*loop*h*h);
-    I*=2.0/sqrt(libpotentials::Pi);
+    I+=fdouble(3.0/8.0)  *h;
+    I+=fdouble(7.0/6.0)  *h*std::exp(-h*h);
+    I+=fdouble(23.0/24.0)*h*std::exp(-fdouble(4.0)*h*h);
+    for (loop=3;loop<n-3;loop++) I+=h*std::exp(-fdouble(loop*loop)*h*h);
+    I+=fdouble(23.0/24.0)*h*std::exp(-fdouble(loop*loop)*h*h);   loop++;
+    I+=fdouble(7.0/6.0)*h*std::exp(-fdouble(loop*loop)*h*h);   loop++;
+    I+=fdouble(3.0/8.0)*h*std::exp(-fdouble(loop*loop)*h*h);
+    I*=fdouble(2.0)/std::sqrt(libpotentials::Pi);
     return(I);
 }
 
@@ -269,11 +269,11 @@ fdouble python_erf(fdouble x)
     // Save the sign of x
     fdouble sign = 1.0;
     if (x < 0.0) sign = -1.0;
-    const fdouble absx = fabs(x);
+    const fdouble absx = std::abs(x);
 
     // A & S 7.1.26
     const fdouble t = 1.0 / (1.0 + p * absx);
-    const fdouble y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t * exp(-absx*absx);
+    const fdouble y = fone - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t * std::exp(-absx*absx);
 
     return sign*y;
 }

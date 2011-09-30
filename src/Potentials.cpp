@@ -152,8 +152,8 @@ void Initialize_SuperGaussian(const int &m)
     if (sg_m >= 1)
     {
         sg_one_over_two_m         = 1.0 / fdouble(sg_two_m);
-        sg_m_pow_one_over_two_m   = pow(sg_m, sg_one_over_two_m);
-        sg_exp_one_over_two_m     = exp(sg_one_over_two_m);
+        sg_m_pow_one_over_two_m   = std::pow(sg_m, sg_one_over_two_m);
+        sg_exp_one_over_two_m     = std::exp(sg_one_over_two_m);
     }
     else
     {
@@ -562,9 +562,9 @@ void Potentials_Set_Parameters_SuperGaussian(
             potparams.sg_sigma = potparams.kQ2_over_B
                                     * sg_m_pow_one_over_two_m
                                     * sg_exp_one_over_two_m;
-            potparams.sg_r_over_sigma_two_m = pow(potparams.r/potparams.sg_sigma, sg_two_m);
+            potparams.sg_r_over_sigma_two_m = std::pow(potparams.r/potparams.sg_sigma, sg_two_m);
             potparams.sg_exp_half_r_over_sigma_two_m =
-                    exp( -0.5 * potparams.sg_r_over_sigma_two_m );
+                    std::exp( -0.5 * potparams.sg_r_over_sigma_two_m );
         }
     }
     else
@@ -715,7 +715,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             {
                 // Potential outside the electron cloud goes to 0
                 // exponentially using f(x)=h*exp(-v*x+k)
-                phi12 = 1.93775072943628 * exp(-0.533297816151*distance_au -0.7486357665822807);
+                phi12 = 1.93775072943628 * std::exp(-0.533297816151*distance_au -0.7486357665822807);
             }
             else
             {
@@ -801,7 +801,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
                              (-1.93775072943628)
                         *    (-0.533297816151)
                         *    (-0.533297816151*distance_au - 0.7486357665822807)
-                        * exp(-0.533297816151*distance_au - 0.7486357665822807)
+                        * std::exp(-0.533297816151*distance_au - 0.7486357665822807)
                     );
             }
             else
@@ -1191,7 +1191,7 @@ void Set_Field_Cutoff_ScreenedCoulomb(
 {
     Check_if_LibPotentials_is_initialized();
 
-    const fdouble Eabs = potparams.kQ2 / pow(potparams.r + sc_alpha,3);
+    const fdouble Eabs = potparams.kQ2 / std::pow(potparams.r + sc_alpha,3);
     for (int d = 0 ; d < 3 ; d++)
         E[d] += potparams.dr[d] * Eabs;
 }
@@ -1217,10 +1217,10 @@ fdouble Calculate_Potential_PseudoParticles(
     Check_if_LibPotentials_is_initialized();
 
     fdouble phi = - potparams.kQ2 * (
-          ( ps_A2 / ( 2.0 * ps_A_minus_B * pow(ps_A + potparams.r, 2) ) )
+          ( ps_A2 / ( 2.0 * ps_A_minus_B * std::pow(ps_A + potparams.r, 2) ) )
         - ( ps_A_A_minus2B / ( ps_A_minus_B2 * (ps_A + potparams.r) ) )
-        - ( ps_B2 * log( (ps_A+potparams.r)/(ps_B+potparams.r) ) / ps_A_minus_B3 )
-        - ( ps_C / ( 2.0 * ( pow(potparams.r, 2) + ps_D) ) )
+        - ( ps_B2 * std::log( (ps_A+potparams.r)/(ps_B+potparams.r) ) / ps_A_minus_B3 )
+        - ( ps_C / ( 2.0 * ( std::pow(potparams.r, 2) + ps_D) ) )
     );
     return phi;
 }
@@ -1234,8 +1234,8 @@ void Set_Field_PseudoParticles(
     Check_if_LibPotentials_is_initialized();
 
     const fdouble Eabs = potparams.kQ2 * (
-          ( potparams.r / ( pow(potparams.r + ps_A, 3) * (potparams.r + ps_B) ) )
-        + ( ps_C / pow( pow(potparams.r, 2) + ps_D, 2) )
+          ( potparams.r / ( std::pow(potparams.r + ps_A, 3) * (potparams.r + ps_B) ) )
+        + ( ps_C / std::pow( std::pow(potparams.r, 2) + ps_D, 2) )
     );
     for (int d = 0 ; d < 3 ; d++)
         E[d] += potparams.dr[d] * Eabs;
