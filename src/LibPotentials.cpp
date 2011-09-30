@@ -91,8 +91,8 @@ void Potentials_Initialize(const std::string potential_shape,
         std_cout << "### Using a gaussian charge distribution                           ###\n";
         std_cout << "### potential for close range interaction                          ###\n";
         std_cout << "### Initializing the lookup tables...                              ###\n" << std::flush;
-        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, 4.5*std::sqrt(2.0), 10000, "Potential LookUpTable");
-        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, 4.5*std::sqrt(2.0), 10000, "Field LookUpTable");
+        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
+        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_GaussianDistribution;
@@ -106,8 +106,8 @@ void Potentials_Initialize(const std::string potential_shape,
         std_cout << "### and Super-Gaussian for electrons and 8+                        ###\n";
         std_cout << "### and up ions (m = " << input_sg_m << ")                                           ###\n";
         std_cout << "### Initializing the lookup tables...                              ###\n" << std::flush;
-        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, 4.5*std::sqrt(2.0), 10000, "Potential LookUpTable");
-        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, 4.5*std::sqrt(2.0), 10000, "Field LookUpTable");
+        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
+        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
         Initialize_HS(input_sg_m, base_potential_depth);
 
@@ -122,8 +122,8 @@ void Potentials_Initialize(const std::string potential_shape,
         std_cout << "### Using the symmetric two charge                                 ###\n";
         std_cout << "### distribution interaction                                       ###\n";
         std_cout << "### Initializing the lookup tables...                              ###\n" << std::flush;
-        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, 4.5*std::sqrt(2.0), 10000, "Potential LookUpTable");
-        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, 4.5*std::sqrt(2.0), 10000, "Field LookUpTable");
+        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
+        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
         std_cout <<                                            "Done!...                ###\n";
 
@@ -189,7 +189,7 @@ void Print_Particles(void *list, const int &N)
         std_cout << " " << 0.5 * Get_Mass(pv) * (
             Get_Velocity(pv)[0]*Get_Velocity(pv)[0] + Get_Velocity(pv)[1]*Get_Velocity(pv)[1] + Get_Velocity(pv)[2]*Get_Velocity(pv)[2]
         ) * libpotentials::J_to_eV;
-        std_cout << " " << Get_Charge_State(pv) * Get_Potential(pv);
+        std_cout << " " << fdouble(Get_Charge_State(pv)) * Get_Potential(pv);
         //std_cout << " " << Get_Mass(pv) * (1000.0 * Na);
         std_cout << " " << Get_Mass(pv) * libpotentials::si_to_au_mass;
         std_cout << " ("<<Get_E(pv)[0]<<","<<Get_E(pv)[1]<<","<<Get_E(pv)[2]<<")";
@@ -213,37 +213,37 @@ fdouble erf_over_x(fdouble x)
 {
     fdouble value;
 
-    if (x < 1.0)
+    if (x < libpotentials::one)
     {
         value = (
-               2.0
-            - (2.0 * x*x)                                                                               / 3.0
-            +        x*x*x*x                                                                            / 5.0
-            -        x*x*x*x*x*x                                                                        / 21.0
-            +        x*x*x*x*x*x*x*x                                                                    / 108.0
-            -        x*x*x*x*x*x*x*x*x*x                                                                / 660.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x                                                            / 4680.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / 37800.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / 342720.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / 3447360.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / 38102400.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / 459043200.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / 5987520000.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / 84064780800.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / 1264085222400.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / 20268952704000.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / 345226033152000.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / 6224529991680000.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / 118443913555968000.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / 2372079457972224000.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / 49874491167621120000.0
+               libpotentials::two
+            - (libpotentials::two * x*x)                                                                / fdouble(3.0)
+            +        x*x*x*x                                                                            / fdouble(5.0)
+            -        x*x*x*x*x*x                                                                        / fdouble(21.0)
+            +        x*x*x*x*x*x*x*x                                                                    / fdouble(108.0)
+            -        x*x*x*x*x*x*x*x*x*x                                                                / fdouble(660.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x                                                            / fdouble(4680.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / fdouble(37800.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / fdouble(342720.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / fdouble(3447360.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / fdouble(38102400.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / fdouble(459043200.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / fdouble(5987520000.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / fdouble(84064780800.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / fdouble(1264085222400.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / fdouble(20268952704000.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / fdouble(345226033152000.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / fdouble(6224529991680000.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / fdouble(118443913555968000.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / fdouble(2372079457972224000.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / fdouble(49874491167621120000.0)
             //   +O(x^41)
         );
         value /= libpotentials::sqrt_Pi;
     }
     else
     {
-        value = erf(x) / x;
+        value = fdouble(erf(x)) / x;
     }
 
     return value;
@@ -269,35 +269,35 @@ fdouble erf_over_x3_minus_exp_over_x2(fdouble x)
     {
         // http://www.wolframalpha.com/input/?i=expansion+erf%28x%29%2F%282*x**3%29-1%2Fsqrt%28pi%29*exp%28-x**2%29%2F%28x**2%29
         value = (
-               2.0                                                                                              / 3.0
-            - (2.0 * x*x)                                                                                       / 5.0
-            +        x*x*x*x                                                                                    / 7.0
-            -        x*x*x*x*x*x                                                                                / 27.0
-            +        x*x*x*x*x*x*x*x                                                                            / 132.0
-            -        x*x*x*x*x*x*x*x*x*x                                                                        / 780.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x                                                                    / 5400.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                                / 42840.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                            / 383040.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / 3810240.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / 41731200.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / 498960000.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / 6466521600.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / 90291801600.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / 1351263513600.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / 21576627072000.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / 366148823040000.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / 6580217419776000.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / 124846287261696000.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / 2493724558381056000.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / 52307393175797760000.0
-            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / 1149546198863462400000.0
-            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / 26414017102773780480000.0
+               libpotentials::two                                                                               / fdouble(3.0)
+            - (libpotentials::two * x*x)                                                                        / fdouble(5.0)
+            +        x*x*x*x                                                                                    / fdouble(7.0)
+            -        x*x*x*x*x*x                                                                                / fdouble(27.0)
+            +        x*x*x*x*x*x*x*x                                                                            / fdouble(132.0)
+            -        x*x*x*x*x*x*x*x*x*x                                                                        / fdouble(780.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x                                                                    / fdouble(5400.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                                / fdouble(42840.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                            / fdouble(383040.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                        / fdouble(3810240.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                    / fdouble(41731200.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                                / fdouble(498960000.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                            / fdouble(6466521600.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                        / fdouble(90291801600.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                    / fdouble(1351263513600.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                                / fdouble(21576627072000.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                            / fdouble(366148823040000.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                        / fdouble(6580217419776000.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                    / fdouble(124846287261696000.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x                / fdouble(2493724558381056000.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x            / fdouble(52307393175797760000.0)
+            -        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x        / fdouble(1149546198863462400000.0)
+            +        x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x    / fdouble(26414017102773780480000.0)
             // +O(x^45)
         ) / libpotentials::sqrt_Pi;
     }
     else
     {
-        value = erf(x)/(2.0*x*x*x) - 1.0/libpotentials::sqrt_Pi*std::exp(-x*x)/(x*x);
+        value = fdouble(erf(x))/(libpotentials::two*x*x*x) - libpotentials::one/libpotentials::sqrt_Pi*std::exp(-x*x)/(x*x);
     }
 
     return value;
