@@ -43,14 +43,14 @@ fdouble sg_exp_one_over_two_m;
 std::vector<fdouble> hs_min_rad;
 const int max_hs_cs = 7;
 
-const fdouble ps_A = 0.1   * angstrom_to_m;
-const fdouble ps_B = 0.45  * angstrom_to_m;
-const fdouble ps_C = 0.358 * angstrom_to_m;
-const fdouble ps_D = 0.01  * angstrom_to_m*angstrom_to_m;
+const fdouble ps_A = fdouble(0.1)   * angstrom_to_m;
+const fdouble ps_B = fdouble(0.45)  * angstrom_to_m;
+const fdouble ps_C = fdouble(0.358) * angstrom_to_m;
+const fdouble ps_D = fdouble(0.01)  * angstrom_to_m*angstrom_to_m;
 
 const fdouble ps_A2          = ps_A * ps_A;
 const fdouble ps_B2          = ps_B * ps_B;
-const fdouble ps_A_A_minus2B = ps_A * (ps_A - 2.0*ps_B);
+const fdouble ps_A_A_minus2B = ps_A * (ps_A - fdouble(2.0)*ps_B);
 const fdouble ps_A_minus_B   = ps_A - ps_B;
 const fdouble ps_A_minus_B2  = ps_A_minus_B*ps_A_minus_B;
 const fdouble ps_A_minus_B3  = ps_A_minus_B*ps_A_minus_B*ps_A_minus_B;
@@ -61,38 +61,38 @@ const fdouble ps_A_minus_B3  = ps_A_minus_B*ps_A_minus_B*ps_A_minus_B;
 // array for each radial distance, where the cutoff radial
 // distance is the last element of the array.
 const fdouble fit_lt_R1[max_hs_cs+1][9] = {
-/*                                                                                          r_min   r_max */
-    {-39.3117,  -0.23822,       1137.15,    1093.87,    0.926033,   1.35102,    -0.902534,  0.073,  1.0},
-    {-50.9699,  -0.249349,      1190.93,    1137.92,    0.934615,   1.26191,    -0.915538,  0.073,  1.0},
-    {-103318.0, -0.0025085,     109884.0,   6808.38,    0.452195,   0.453217,   -0.452051,  0.073,  0.6},
-    {-103309.0, -0.00222854,    109893.0,   6799.44,    0.462727,   0.46361,    -0.462679,  0.073,  0.75},
-    {-106539.0, -0.00253429,    106375.0,   90.6738,    0.576876,   0.577581,   -1.31088,   0.073,  0.75},
-    {-106552.0, -0.00285323,    106363.0,   97.8488,    0.555262,   0.556083,   -1.26473,   0.073,  0.75},
-    {-106572.0, -0.00333483,    106342.0,   106.134,    0.523154,   0.524146,   -1.19394,   0.073,  0.75},
-    {-156137.0, -9.52875,       16279.0,    -30.664,    0.00362412, 4.27026,    -1.32769,   0.073,  0.35}
+/*                                                                                                                                                  r_min               r_max */
+    {fdouble(-39.3117),  fdouble(-0.23822),       fdouble(1137.15),    fdouble(1093.87),    fdouble(0.926033),   fdouble(1.35102),    fdouble(-0.902534),  fdouble(0.073),  fdouble(1.0)},
+    {fdouble(-50.9699),  fdouble(-0.249349),      fdouble(1190.93),    fdouble(1137.92),    fdouble(0.934615),   fdouble(1.26191),    fdouble(-0.915538),  fdouble(0.073),  fdouble(1.0)},
+    {fdouble(-103318.0), fdouble(-0.0025085),     fdouble(109884.0),   fdouble(6808.38),    fdouble(0.452195),   fdouble(0.453217),   fdouble(-0.452051),  fdouble(0.073),  fdouble(0.6)},
+    {fdouble(-103309.0), fdouble(-0.00222854),    fdouble(109893.0),   fdouble(6799.44),    fdouble(0.462727),   fdouble(0.46361),    fdouble(-0.462679),  fdouble(0.073),  fdouble(0.75)},
+    {fdouble(-106539.0), fdouble(-0.00253429),    fdouble(106375.0),   fdouble(90.6738),    fdouble(0.576876),   fdouble(0.577581),   fdouble(-1.31088),   fdouble(0.073),  fdouble(0.75)},
+    {fdouble(-106552.0), fdouble(-0.00285323),    fdouble(106363.0),   fdouble(97.8488),    fdouble(0.555262),   fdouble(0.556083),   fdouble(-1.26473),   fdouble(0.073),  fdouble(0.75)},
+    {fdouble(-106572.0), fdouble(-0.00333483),    fdouble(106342.0),   fdouble(106.134),    fdouble(0.523154),   fdouble(0.524146),   fdouble(-1.19394),   fdouble(0.073),  fdouble(0.75)},
+    {fdouble(-156137.0), fdouble(-9.52875),       fdouble(16279.0),    fdouble(-30.664),    fdouble(0.00362412), fdouble(4.27026),    fdouble(-1.32769),   fdouble(0.073),  fdouble(0.35)}
 };
 const fdouble fit_lt_R2[max_hs_cs+1][9] = {
-/*                                                                                                                                                  r_min   r_max */
-    {-106456.523613218, -0.00434541093317553,   106457.47661029,    449.688681389621,   1.05645523648719,   1.05644674944298,   -2.10055725950707,  1.0,    3.0},
-    {-103240.467920728, -0.000208924735834372,  109961.532079643,   6730.47792027321,   0.935905881633714,  0.935947358356231,  -0.93589486453368,  1.0,    5.0},
-    {-7.43911046752643, -7.49680170563087,      83544.7086195816,   83531.3679985203,   2.4477467508823,    6.7666148229704,    -2.44780121116816,  0.6,    2.0},
-    {-106458.718251124, -0.000545743677370998,  106455.682016356,   42.3237633727421,   1.00559843304636,   1.00563829185779,   -1.95708048412661,  0.75,   4.6},
-    {-106453.495071328, -0.00399495917548577,   106460.925622402,   418.039392846222,   2.49073456323941,   2.4909137590075,    -4.9738722919108,   0.75,   1.49},
-    {-106455.157115451, -0.00456229507833856,   106460.145184005,   475.327392665337,   2.27725233310332,   2.27744553473598,   -4.5488537847976,   0.75,   1.5},
-    {-106452.180354907, -0.00278122155186969,   106461.721043604,   291.588888724572,   3.59580873362151,   3.59615037646864,   -7.17813960396325,  0.75,   1.1},
-    {-156436.219173519, -13.360177523064,       10907.4536590735,   -0.0178811573295934,0.0295757482829108, 0.398808602998421,  -5.49402342863045,  0.35,   0.96}
+/*                                                                                                                                                                                                              r_min           r_max */
+    {fdouble(-106456.523613218), fdouble(-0.00434541093317553),   fdouble(106457.47661029),    fdouble(449.688681389621),   fdouble(1.05645523648719),   fdouble(1.05644674944298),   fdouble(-2.10055725950707),  fdouble(1.0),    fdouble(3.0)},
+    {fdouble(-103240.467920728), fdouble(-0.000208924735834372),  fdouble(109961.532079643),   fdouble(6730.47792027321),   fdouble(0.935905881633714),  fdouble(0.935947358356231),  fdouble(-0.93589486453368),  fdouble(1.0),    fdouble(5.0)},
+    {fdouble(-7.43911046752643), fdouble(-7.49680170563087),      fdouble(83544.7086195816),   fdouble(83531.3679985203),   fdouble(2.4477467508823),    fdouble(6.7666148229704),    fdouble(-2.44780121116816),  fdouble(0.6),    fdouble(2.0)},
+    {fdouble(-106458.718251124), fdouble(-0.000545743677370998),  fdouble(106455.682016356),   fdouble(42.3237633727421),   fdouble(1.00559843304636),   fdouble(1.00563829185779),   fdouble(-1.95708048412661),  fdouble(0.75),   fdouble(4.6)},
+    {fdouble(-106453.495071328), fdouble(-0.00399495917548577),   fdouble(106460.925622402),   fdouble(418.039392846222),   fdouble(2.49073456323941),   fdouble(2.4909137590075),    fdouble(-4.9738722919108),   fdouble(0.75),   fdouble(1.49)},
+    {fdouble(-106455.157115451), fdouble(-0.00456229507833856),   fdouble(106460.145184005),   fdouble(475.327392665337),   fdouble(2.27725233310332),   fdouble(2.27744553473598),   fdouble(-4.5488537847976),   fdouble(0.75),   fdouble(1.5)},
+    {fdouble(-106452.180354907), fdouble(-0.00278122155186969),   fdouble(106461.721043604),   fdouble(291.588888724572),   fdouble(3.59580873362151),   fdouble(3.59615037646864),   fdouble(-7.17813960396325),  fdouble(0.75),   fdouble(1.1)},
+    {fdouble(-156436.219173519), fdouble(-13.360177523064),       fdouble(10907.4536590735),   fdouble(-0.0178811573295934),fdouble(0.0295757482829108), fdouble(0.398808602998421),  fdouble(-5.49402342863045),  fdouble(0.35),   fdouble(0.96)}
 };
 
 const fdouble fit_lt_R3[max_hs_cs+1][9] = {
-/*                                                                                                                                                  r_min   r_max */
-    {-106344.499357271, -0.0870404156519758,    106379.969770542,   8916.02780769541,   2.34571347967461,   2.34558512875328,   -4.64724093315347,  3.0,    6.0},
-    {-103237.178865962, -6.19966863330973e-05,  109964.821133342,   6727.38883676891,   0.990416309150688,  0.990415990770504,  -0.990490798848876, 5.0,    12.0},
-    {-106453.321357016, -0.0233720244005975,    106447.424341854,   2423.61663166259,   1.69020647850117,   1.69030805063035,   -3.36829845029172,  2.0,    6.0},
-    {-106457.189833221, -0.000453936408454839,  106457.21043453,    42.3245989284602,   0.499881464943715,  0.499881437435555,  -0.999349099198404, 4.6,    12.0},
-    {-106478.807529316, -0.00470475292274558,   106435.613140363,   443.194839747241,   0.192492936878364,  0.1932366392085,    -0.192465568481317, 1.49,   2.0},
-    {-106455.157115451, -0.00456229507833856,   106460.145184005,   475.327392665337,   2.27725233310332,   2.27744553473598,   -4.5488537847976,   1.49,   1.49},
-    {-106452.180354907, -0.00278122155186969,   106461.721043604,   291.588888724572,   3.59580873362151,   3.59615037646864,   -7.17813960396325,  1.1,    1.1},
-    {-156436.219173519, -13.360177523064,       10907.4536590735,   -0.0178811573295934,0.0295757482829108, 0.398808602998421,  -5.49402342863045,  0.96,   0.96}
+/*                                                                                                                                                                                                          r_min           r_max */
+    {fdouble(-106344.499357271), fdouble(-0.0870404156519758),    fdouble(106379.969770542),   fdouble(8916.02780769541),   fdouble(2.34571347967461),   fdouble(2.34558512875328),   fdouble(-4.64724093315347),  fdouble(3.0),    fdouble(6.0)},
+    {fdouble(-103237.178865962), fdouble(-6.19966863330973e-05),  fdouble(109964.821133342),   fdouble(6727.38883676891),   fdouble(0.990416309150688),  fdouble(0.990415990770504),  fdouble(-0.990490798848876), fdouble(5.0),    fdouble(12.0)},
+    {fdouble(-106453.321357016), fdouble(-0.0233720244005975),    fdouble(106447.424341854),   fdouble(2423.61663166259),   fdouble(1.69020647850117),   fdouble(1.69030805063035),   fdouble(-3.36829845029172),  fdouble(2.0),    fdouble(6.0)},
+    {fdouble(-106457.189833221), fdouble(-0.000453936408454839),  fdouble(106457.21043453),    fdouble(42.3245989284602),   fdouble(0.499881464943715),  fdouble(0.499881437435555),  fdouble(-0.999349099198404), fdouble(4.6),    fdouble(12.0)},
+    {fdouble(-106478.807529316), fdouble(-0.00470475292274558),   fdouble(106435.613140363),   fdouble(443.194839747241),   fdouble(0.192492936878364),  fdouble(0.1932366392085),    fdouble(-0.192465568481317), fdouble(1.49),   fdouble(2.0)},
+    {fdouble(-106455.157115451), fdouble(-0.00456229507833856),   fdouble(106460.145184005),   fdouble(475.327392665337),   fdouble(2.27725233310332),   fdouble(2.27744553473598),   fdouble(-4.5488537847976),   fdouble(1.49),   fdouble(1.49)},
+    {fdouble(-106452.180354907), fdouble(-0.00278122155186969),   fdouble(106461.721043604),   fdouble(291.588888724572),   fdouble(3.59580873362151),   fdouble(3.59615037646864),   fdouble(-7.17813960396325),  fdouble(1.1),    fdouble(1.1)},
+    {fdouble(-156436.219173519), fdouble(-13.360177523064),       fdouble(10907.4536590735),   fdouble(-0.0178811573295934),fdouble(0.0295757482829108), fdouble(0.398808602998421),  fdouble(-5.49402342863045),  fdouble(0.96),   fdouble(0.96)}
 };
 
 // **************************************************************
@@ -147,11 +147,11 @@ void Initialize_SuperGaussian(const int &m)
  * @param   m       Order of the Super-Gaussian (m=1 is a simple gaussian) [-]
  */
 {
-    sg_m = m;
-    sg_two_m = 2 * m;
+    sg_m = fdouble(m);
+    sg_two_m = fdouble(2 * m);
     if (sg_m >= 1)
     {
-        sg_one_over_two_m         = 1.0 / fdouble(sg_two_m);
+        sg_one_over_two_m         = libpotentials::one / fdouble(sg_two_m);
         sg_m_pow_one_over_two_m   = std::pow(sg_m, sg_one_over_two_m);
         sg_exp_one_over_two_m     = std::exp(sg_one_over_two_m);
     }
@@ -176,27 +176,27 @@ void Initialize_HS(const int &m, const fdouble &base_potential)
 
     // Find the radius where the HS potential is equal to "base_potential"
     // by doing a bisection, for all supported charge states.
-    double r_left, r_right, found_r, pot; // [Bohr]
+    fdouble r_left, r_right, found_r, pot; // [Bohr]
     for (int cs = 0 ; cs <= max_hs_cs ; cs++)
     {
         // Initial conditions
         hs_min_rad[cs] = fit_lt_R1[cs][7];
         r_left  = fit_lt_R1[cs][7]; // Minimum radius of fit
-        r_right = 10.0;             // At 10 bohr, it should be coulombic
+        r_right = fdouble(10.0);             // At 10 bohr, it should be coulombic
 
         // Start bisection!
         // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
-        found_r = r_right + (r_left - r_right) / 2.0;
+        found_r = r_right + (r_left - r_right) / libpotentials::two;
 
         potparams.hs_cs2 = cs;
-        potparams.kQ2 = cs * e0;
+        potparams.kQ2 = fdouble(cs) * e0;
 
         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
         {
             potparams.r = found_r * bohr_to_m;
             pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
             //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
-            if (pot <= std::max(1,cs)*base_potential)
+            if (pot <= fdouble(std::max(1,cs))*base_potential)
             {
                 r_right = found_r;
             }
@@ -204,7 +204,7 @@ void Initialize_HS(const int &m, const fdouble &base_potential)
             {
                 r_left = found_r;
             }
-            found_r = r_right + (r_left - r_right) / 2.0;
+            found_r = r_right + (r_left - r_right) /libpotentials::two;
         }
         std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
 
@@ -269,10 +269,10 @@ void Set_Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3],
 fdouble deriv_genericHSfit(const fdouble *par, fdouble x){
     // The 1/2 factor is becuase HS outputs the
     // potential as 2V(x) and that's how they were fit
-    return 0.5*(
-              par[0]*par[5]*pow(x,par[5]-1)/(pow(x,par[5])-par[1])/(pow(x,par[5])-par[1])
-            + par[2]*par[4]/pow(x,par[4]+1)
-            + par[6]*par[3]*pow(x,par[6]-1)
+    return libpotentials::half*(
+              par[0]*par[5]*std::pow(x,par[5]-1)/(std::pow(x,par[5])-par[1])/(std::pow(x,par[5])-par[1])
+            + par[2]*par[4]/std::pow(x,par[4]+1)
+            + par[6]*par[3]*std::pow(x,par[6]-1)
         );
 }
 
@@ -280,10 +280,10 @@ fdouble deriv_genericHSfit(const fdouble *par, fdouble x){
 // f(x) = -a/(x^n-b)-b/x^m +d*x^o where the parameters are passed alphabetically
 fdouble genericHSfit(const fdouble *par, fdouble x){
     //the 1/2 factor is becuase HS outputs the potential as 2V and that's how they were fit
-    return -0.5*(
-            - par[0]/(pow(x,par[5])-par[1])
-            - par[2]/pow(x,par[4])
-            + par[3]*pow(x,par[6])
+    return -libpotentials::half*(
+            - par[0]/(std::pow(x,par[5])-par[1])
+            - par[2]/std::pow(x,par[4])
+            + par[3]*std::pow(x,par[6])
         );
 }
 
@@ -292,7 +292,7 @@ fdouble LibPotentialErf(fdouble x)
 {
     fdouble erf_value = 0.0;
     //erf_value = nr::int_erf(x);
-    erf_value = erf(x);
+    erf_value = fdouble(erf(x));
     //erf_value = nr::erff(x);
     //erf_value = nr::python_erf(x);
     //erf_value = gsl_sf_erf (x);
@@ -417,7 +417,7 @@ void Potentials_Set_Parameters_Harmonic(
         // by 1.0, which is not done.
         if (Q2 > std::numeric_limits<fdouble>::min())
         {   // Positive charge (ion), positive potential
-            potparams.B = libpotentials_private::base_pot_well_depth*charge_state2;
+            potparams.B = libpotentials_private::base_pot_well_depth*fdouble(charge_state2);
             //potparams.B *= eV_to_J * (1.0 / e0); // *= 1.0
         }
         else
@@ -487,7 +487,7 @@ void Set_Field_Cutoff_Harmonic(
     else
     {
         // The derivative of a -Ar^2+B w.r. to r is:
-        const fdouble diff_x2 = -2.0*potparams.h_A*potparams.r;
+        const fdouble diff_x2 = -libpotentials::two*potparams.h_A*potparams.r;
 
         // We have the norm of the gradient of the potential (diff_x2),
         // we need to multiply this by the unit vector, to get
@@ -538,7 +538,7 @@ void Potentials_Set_Parameters_SuperGaussian(
         // by 1.0, which is not done.
         if (Q2 > std::numeric_limits<fdouble>::min())
         {   // Positive charge (ion), positive potential
-            potparams.B = libpotentials_private::base_pot_well_depth*charge_state2;
+            potparams.B = libpotentials_private::base_pot_well_depth*fdouble(charge_state2);
             //potparams.B *= eV_to_J * (1.0 / e0); // *= 1.0
         }
         else
@@ -564,7 +564,7 @@ void Potentials_Set_Parameters_SuperGaussian(
                                     * sg_exp_one_over_two_m;
             potparams.sg_r_over_sigma_two_m = std::pow(potparams.r/potparams.sg_sigma, sg_two_m);
             potparams.sg_exp_half_r_over_sigma_two_m =
-                    std::exp( -0.5 * potparams.sg_r_over_sigma_two_m );
+                    std::exp( -libpotentials::half * potparams.sg_r_over_sigma_two_m );
         }
     }
     else
@@ -705,7 +705,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     {
         // Make sure that for distances less then the hard cutoff, we
         // use that cutoff;
-        assert(cs < hs_min_rad.size());
+        assert(cs < int(hs_min_rad.size()));
         if (distance_au < hs_min_rad[cs])
             distance_au = hs_min_rad[cs];
 
@@ -715,7 +715,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             {
                 // Potential outside the electron cloud goes to 0
                 // exponentially using f(x)=h*exp(-v*x+k)
-                phi12 = 1.93775072943628 * std::exp(-0.533297816151*distance_au -0.7486357665822807);
+                phi12 = fdouble(1.93775072943628) * std::exp(fdouble(-0.533297816151)*distance_au -fdouble(0.7486357665822807));
             }
             else
             {
@@ -745,7 +745,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
     }
 
     if (p2 != NULL)
-        phi12 /= double(std::max(1,Get_Charge_State(p2)));
+        phi12 /= fdouble(std::max(1,Get_Charge_State(p2)));
 
     return phi12;
 }
@@ -797,11 +797,11 @@ void Set_Field_Cutoff_HS_SuperGaussian(
             {
                 // Potential outside the electron cloud goes to 0
                 // exponentially using f(x)=h*exp(-v*x+k)
-                Ef = -0.272 * (
-                             (-1.93775072943628)
-                        *    (-0.533297816151)
-                        *    (-0.533297816151*distance_au - 0.7486357665822807)
-                        * std::exp(-0.533297816151*distance_au - 0.7486357665822807)
+                Ef = fdouble(-0.272) * (
+                             (fdouble(-1.93775072943628))
+                        *    (fdouble(-0.533297816151))
+                        *    (fdouble(-0.533297816151)*distance_au - fdouble(0.7486357665822807))
+                        * std::exp(fdouble(-0.533297816151)*distance_au - fdouble(0.7486357665822807))
                     );
             }
             else
@@ -831,7 +831,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
         }
 
         if (p2 != NULL)
-            Ef /= double(std::max(1,Get_Charge_State(p2)));
+            Ef /= fdouble(std::max(1,Get_Charge_State(p2)));
 
         Ef *= au_to_si_field;
         if (field_vector_multiplication)
@@ -890,7 +890,7 @@ void Potentials_Set_Parameters_GaussianDistribution(
     }
     else if( charge_state2 != 0 )
     {
-      //fdouble Ip =element.IpsLowest[abs(charge_state2)];
+      //fdouble Ip =element.IpsLowest[std::abs(charge_state2)];
       fdouble Ip = libpotentials_private::base_pot_well_depth;
       //charges are not equal
       //take the higher charge as the distribution
@@ -907,12 +907,12 @@ void Potentials_Set_Parameters_GaussianDistribution(
           //save the charge states so kQ2 = KQ1 * charge_state2/charge_state1
           //which gives the correct scale. Needed for ion-ion
           distribution1_charge_state = charge_state1;
-          distribution2_charge_state = abs(charge_state2);
+          distribution2_charge_state = std::abs(charge_state2);
           factor = charge_state1;
         }
         //Make the Ip linearly deeper for ions.
         //not used for e- e-
-        Ip*=(factor);
+        Ip*=fdouble(factor);
 
         // B is the electrostatic potential right on top of particle 2
         // Its units are Volts (since its a potential, not to be
@@ -953,10 +953,10 @@ void Potentials_Set_Parameters_GaussianDistribution(
 /*        std_cout << "Id(p1)="<<Get_Id(p1)<<"  B="<<potparams.B<<"  Cs(p1)="<<Get_Charge_State(p1)<<" Cs(p2)="<<Get_Charge_State(p2)<<" kQ2_over_B="<<potparams.kQ2_over_B<<" well="<<libpotentials_private::base_pot_well_depth<<"\n";*/
         // Radius where the Coulomb potential and its first derivative are
         // equal to a the gaussian charge distribution potential.
-        potparams.cutoff_radius = 8.0 * potparams.gd_sigma;
+        potparams.cutoff_radius = libpotentials::eight* potparams.gd_sigma;
 //         potparams.cutoff_radius = 4.0 * potparams.gd_sigma;
 //         potparams.cutoff_radius = 2.5 * potparams.gd_sigma;
-        //potparams.cutoff_radius = 2.0 * potparams.gd_sigma;
+        //potparams.cutoff_radius = libpotentials::two * potparams.gd_sigma;
 
     }
     else
@@ -1054,7 +1054,7 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
     {
         potparams.kQ2 = one_over_4Pieps0 * fdouble(potparams.sym_cs2) * e0;
         potparams.gd_sigma = one_over_4Pieps0 * e0 / (libpotentials_private::base_pot_well_depth * sqrt_Pi);
-        potparams.cutoff_radius = 8.0 * potparams.gd_sigma;
+        potparams.cutoff_radius = libpotentials::eight* potparams.gd_sigma;
     }
     else
     {
@@ -1179,8 +1179,8 @@ fdouble Calculate_Potential_Cutoff_ScreenedCoulomb(
 {
     Check_if_LibPotentials_is_initialized();
 
-    const fdouble one_over_r_plus_alpha = 1.0 / (potparams.r + sc_alpha);
-    const fdouble phi = potparams.kQ2 * (2.0 * potparams.r + sc_alpha) * one_over_r_plus_alpha * one_over_r_plus_alpha * 0.5;
+    const fdouble one_over_r_plus_alpha = libpotentials::one / (potparams.r + sc_alpha);
+    const fdouble phi = potparams.kQ2 * (libpotentials::two * potparams.r + sc_alpha) * one_over_r_plus_alpha * one_over_r_plus_alpha * libpotentials::half;
     return phi;
 }
 
@@ -1218,10 +1218,10 @@ fdouble Calculate_Potential_PseudoParticles(
     Check_if_LibPotentials_is_initialized();
 
     fdouble phi = - potparams.kQ2 * (
-          ( ps_A2 / ( 2.0 * ps_A_minus_B * std::pow(ps_A + potparams.r, 2) ) )
+          ( ps_A2 / ( libpotentials::two * ps_A_minus_B * std::pow(ps_A + potparams.r, 2) ) )
         - ( ps_A_A_minus2B / ( ps_A_minus_B2 * (ps_A + potparams.r) ) )
         - ( ps_B2 * std::log( (ps_A+potparams.r)/(ps_B+potparams.r) ) / ps_A_minus_B3 )
-        - ( ps_C / ( 2.0 * ( std::pow(potparams.r, 2) + ps_D) ) )
+        - ( ps_C / ( libpotentials::two * ( std::pow(potparams.r, 2) + ps_D) ) )
     );
     return phi;
 }
@@ -1251,7 +1251,7 @@ fdouble tmp_get_shieldr(const int chg_st, const char *message)
         abort();
     }
 
-    return (s_cutoff_radius_from_input_file + 0.5 * (abs(chg_st)-1)*one_over_seven * a0);
+    return (s_cutoff_radius_from_input_file + libpotentials::half * fdouble(std::abs(chg_st)-1)*one_over_seven * a0);
 //    return(shieldr);
 }
 
@@ -1264,8 +1264,8 @@ fdouble tmp_get_shieldr_2(const int chg_st_1, const int chg_st_2)
         abort();
     }
 
-    int abs_chg_st_1 = abs(chg_st_1);
-    int abs_chg_st_2 = abs(chg_st_2);
+    int abs_chg_st_1 = std::abs(chg_st_1);
+    int abs_chg_st_2 = std::abs(chg_st_2);
     int max_chg_st = (abs_chg_st_1 > abs_chg_st_2 ) ? abs_chg_st_1 : abs_chg_st_2;
 
     return tmp_get_shieldr(max_chg_st,"gecutoff_radius_2");
