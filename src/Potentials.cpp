@@ -157,7 +157,7 @@ void Initialize_SuperGaussian(const int &m)
     }
     else
     {
-        sg_one_over_two_m         = DBL_MAX;
+        sg_one_over_two_m         = std::numeric_limits<fdouble>::max();
         sg_m_pow_one_over_two_m   = 0.0;
         sg_exp_one_over_two_m     = 0.0;
     }
@@ -239,10 +239,10 @@ fdouble Coulomb_Potential(const fdouble kQ, const fdouble r)
  * @return  Coulombic potential [V]
  */
 {
-    if (r > DBL_MIN)
+    if (r > std::numeric_limits<fdouble>::min())
         return kQ / r;
     else
-        return DBL_MAX;
+        return std::numeric_limits<fdouble>::max();
 }
 
 // **************************************************************
@@ -256,7 +256,7 @@ void Set_Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3],
  * @param   r2      Input:  Length squared of vector from position 2 to position 1 [m^2]
  */
 {
-    if (r2 > DBL_MIN)
+    if (r2 > std::numeric_limits<fdouble>::min())
     {
         // E = r[:] . (V / |r[:]|^2)
         const fdouble phi12_over_dr2 = phi12 / r2;
@@ -415,7 +415,7 @@ void Potentials_Set_Parameters_Harmonic(
         // by "e0" (the charge of the point charge) to get the potential
         // from the potential energy. This result in multipling
         // by 1.0, which is not done.
-        if (Q2 > DBL_MIN)
+        if (Q2 > std::numeric_limits<fdouble>::min())
         {   // Positive charge (ion), positive potential
             potparams.B = libpotentials_private::base_pot_well_depth*charge_state2;
             //potparams.B *= eV_to_J * (1.0 / e0); // *= 1.0
@@ -536,7 +536,7 @@ void Potentials_Set_Parameters_SuperGaussian(
         // by "e0" (the charge of the point charge) to get the potential
         // from the potential energy. This result in multipling
         // by 1.0, which is not done.
-        if (Q2 > DBL_MIN)
+        if (Q2 > std::numeric_limits<fdouble>::min())
         {   // Positive charge (ion), positive potential
             potparams.B = libpotentials_private::base_pot_well_depth*charge_state2;
             //potparams.B *= eV_to_J * (1.0 / e0); // *= 1.0

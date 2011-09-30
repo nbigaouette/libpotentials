@@ -1,7 +1,7 @@
 #ifndef INC_FLOATTYPE_hpp
 #define INC_FLOATTYPE_hpp
 
-#include <cfloat>  // DBL_MIN, DBL_MAX
+#include <limits>  // http://www.cplusplus.com/reference/std/limits/numeric_limits/
 
 #ifdef FLOATTYPE_SINGLE
 typedef float  fdouble;
