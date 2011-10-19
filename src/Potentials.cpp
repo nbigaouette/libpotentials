@@ -707,7 +707,9 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
         // use that cutoff;
         assert(cs < int(hs_min_rad.size()));
         if (distance_au < hs_min_rad[cs])
+        {
             distance_au = hs_min_rad[cs];
+        }
 
         if          (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
         {
