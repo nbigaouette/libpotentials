@@ -321,6 +321,18 @@ void Initialize_HS(const fdouble &base_potential)
         hs_min_rad[cs_i] = found_r;
     }
 
+    // Now that the cutting radius is found for each charge states, change lookup tables values
+    for (int cs_i = 0 ; cs_i < max_hs_cs ; cs_i++)
+    {
+        for (int i = 0 ; i <= lut_n ; i++)
+        {
+            if (hs_lut_potential[cs_i].Table(i) < -base_potential*eV_to_Eh)
+                hs_lut_potential[cs_i].Set(i, -base_potential*eV_to_Eh);
+            if (hs_lut_potential[cs_i].Table(i) > base_potential*eV_to_Eh)
+                hs_lut_potential[cs_i].Set(i, base_potential*eV_to_Eh);
+        }
+    }
+
 //     /*
     // Print lookup table for verification
     const int max_lut = 7;
