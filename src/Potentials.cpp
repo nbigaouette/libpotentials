@@ -202,7 +202,7 @@ void Initialize_HS(const fdouble &base_potential)
             else
             {
                 // Find between which index of the vector "r" is.
-                // FIXME: Do it more intelligently
+                // FIXME: Do it more intelligently: bisection?
                 int index_up   = -1;
                 int index_down = -1;
                 for (size_t hsi = 0 ; hsi < hs_tmp_array.size() ; hsi++)
