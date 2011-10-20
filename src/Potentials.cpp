@@ -110,6 +110,19 @@ fdouble genericHSfit(const fdouble *par, fdouble x);
 fdouble tmp_get_shieldr_2(const int chg_st_1, const int chg_st_2);
 fdouble tmp_get_shieldr(const int chg_st, const char *message);
 
+template <class Integer>
+inline std::string IntToStr(const Integer integer, const int width = 0, const char fill = ' ')
+{
+    std::ostringstream MyStream;
+    if (width != 0)
+    {
+        MyStream << std::setw(width);
+        MyStream << std::setfill(fill);
+    }
+    MyStream << integer << std::flush;
+    return (MyStream.str());
+}
+
 // **************************************************************
 // ********** Accessible functions implementations **************
 // **************************************************************
@@ -250,22 +263,34 @@ void Initialize_HS(const fdouble &base_potential)
         }
     }
 
-    /*
+//     /*
     // Print lookup table for verification
-    const int max_lut = 4;
+    const int max_lut = 7;
     std::string filename("lut_hs.dat");
     std::string gnuplot_command("");
     gnuplot_command += "#set term wxt 3; plot ";
-    gnuplot_command += "\"" + filename + "\" using 1:2  title \"LUT(V(-1)) (HS)\" with lines lw 3, ";
-    gnuplot_command += "\"" + filename + "\" using 1:3  title \"LUT(V(0))  (HS)\" with lines lw 3, ";
-    gnuplot_command += "\"" + filename + "\" using 1:4  title \"LUT(V(1))  (HS)\" with lines lw 3, ";
-    gnuplot_command += "\"" + filename + "\" using 1:5  title \"LUT(V(2))  (HS)\" with lines lw 3\n";
+    int row = 2;
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        if (l == max_lut-1)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
     gnuplot_command += "#set term wxt 4; plot ";
-    gnuplot_command += "\"" + filename + "\" using 1:6  title \"cs*LUT(V(-1)) (HS)\" with lines lw 3, ";
-    gnuplot_command += "\"" + filename + "\" using 1:7  title \"cs*LUT(V(0))  (HS)\" with lines lw 3, ";
-    gnuplot_command += "\"" + filename + "\" using 1:8  title \"cs*LUT(V(1))  (HS)\" with lines lw 3, ";
-    gnuplot_command += "\"" + filename + "\" using 1:9  title \"cs*LUT(V(2))  (HS)\" with lines lw 3\n";
-    gnuplot_command += "1/x with lines lw 3\n";
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"cs*LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+    }
+    for (int l = 1 ; l <= max_lut-2 ; l++)
+    {
+        gnuplot_command += "-" + IntToStr(l) + "/x with dots";
+        if (l == max_lut-2)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
     fprintf(stderr, "%s", gnuplot_command.c_str());
     std::string::size_type pos = 0;
     std::string searchString("#");
@@ -292,7 +317,7 @@ void Initialize_HS(const fdouble &base_potential)
     }
     std_cout << std::flush;
     exit(0);
-    */
+//     */
 
     hs_min_rad.resize(max_hs_cs+2); // +2 for the electron and neutral.
     potential_paramaters potparams;
