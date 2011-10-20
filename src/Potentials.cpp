@@ -394,7 +394,15 @@ void Initialize_HS(const fdouble &base_potential)
         pos++;
     }
     std_cout << "\n" << gnuplot_command << "\n";
-    fprintf(stderr, "#  r (bohr)         V(-1)         V(0)         V(1)         V(2)      cs*V(-1)      cs*V(0)      cs*V(1)      cs*V(2)\n");
+    fprintf(stderr, "#  r (bohr) ");
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        fprintf(stderr, "%13s", std::string("V(" + IntToStr(l-1) + ")").c_str());
+    }
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        fprintf(stderr, "%13s", std::string("cs*V(" + IntToStr(l-1) + ")").c_str());
+    }
     for (int i = 0 ; i < lut_n ; i++)
     {
         const float distance = float(i)/hs_lut_potential[0].Get_inv_dx() + xmin;
