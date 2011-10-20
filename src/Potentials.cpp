@@ -838,7 +838,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 {
     Check_if_LibPotentials_is_initialized();
 
-    //fdouble phi12 = 0.0;   // Electrostatic potential
+    fdouble phi12 = 0.0;   // Electrostatic potential
 
     // Fits are in atomic units
     fdouble distance_au = potparams.r * si_to_au_length;
@@ -847,9 +847,15 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 
     // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
 
-    const int lut_i = cs + 1;
+    const unsigned int lut_i = cs + 1;
 
-    return hs_lut_potential[lut_i].read(distance_au);
+    if (lut_i < hs_lut_potential.size())
+        phi12 = hs_lut_potential[lut_i].read(distance_au);
+    else
+        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
+
+    return phi12;
+
 
 /*
     // Ions are given a potential inside the electron cloud.
