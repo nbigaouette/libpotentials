@@ -711,7 +711,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             distance_au = hs_min_rad[cs];
         }
 
-        if          (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
+        if          (distance_au >= fit_lt_R3[cs][8])    // In Coulomb
         {
             if (cs == 0)
             {
@@ -725,21 +725,21 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
             }
         }
         else if (   (distance_au <  fit_lt_R3[cs][8]) &&
-                    (distance_au >= fit_lt_R3[cs][7]))   /* In R3 */
+                    (distance_au >= fit_lt_R3[cs][7]))   // In R3
         {
             phi12 = genericHSfit(&(fit_lt_R3[cs][0]),distance_au);
         }
         else if (   (distance_au <  fit_lt_R2[cs][8]) &&
-                    (distance_au >= fit_lt_R2[cs][7]))   /* In R2 */
+                    (distance_au >= fit_lt_R2[cs][7]))   // In R2
         {
             phi12 = genericHSfit(&(fit_lt_R2[cs][0]),distance_au);
         }
         else if (   (distance_au <  fit_lt_R1[cs][8]) &&
-                    (distance_au >= fit_lt_R1[cs][7]))   /* In R1 */
+                    (distance_au >= fit_lt_R1[cs][7]))   // In R1
         {
             phi12 = genericHSfit(&(fit_lt_R1[cs][0]),distance_au);
         }
-        else                                   /* In CP (constant potential) */
+        else                                   // In CP (constant potential)
         {
             phi12 = genericHSfit(&(fit_lt_R1[cs][0]),hs_min_rad[cs]);
         }
