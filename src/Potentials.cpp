@@ -385,6 +385,28 @@ void Initialize_HS(const fdouble &base_potential)
         else
             gnuplot_command += ", ";
     }
+    gnuplot_command += "#set term wxt 5; plot ";
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        if (l == max_lut-1)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
+    gnuplot_command += "#set term wxt 6; plot ";
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"r*cs*LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+    }
+    for (int l = 1 ; l <= max_lut-2 ; l++)
+    {
+        gnuplot_command += "-" + IntToStr(l) + "/x**2 with dots";
+        if (l == max_lut-2)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
     fprintf(stderr, "%s", gnuplot_command.c_str());
     std::string::size_type pos = 0;
     std::string searchString("#");
@@ -403,6 +425,16 @@ void Initialize_HS(const fdouble &base_potential)
     {
         fprintf(stderr, "%13s", std::string("cs*V(" + IntToStr(l-1) + ")").c_str());
     }
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        fprintf(stderr, "%13s", std::string("E/r(" + IntToStr(l-1) + ")").c_str());
+    }
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        fprintf(stderr, "%13s", std::string("cs*E(" + IntToStr(l-1) + ")").c_str());
+    }
+    fprintf(stderr, "\n");
+
     for (int i = 0 ; i < lut_n ; i++)
     {
         const float distance = float(i)/hs_lut_potential[0].Get_inv_dx() + xmin;
@@ -414,6 +446,14 @@ void Initialize_HS(const fdouble &base_potential)
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
             fprintf(stderr, "%10.4g   ", fdouble(lut_index-1)*hs_lut_potential[lut_index].read(distance));
+        }
+        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
+        {
+            fprintf(stderr, "%10.4g   ", hs_lut_field[lut_index].read(distance));
+        }
+        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
+        {
+            fprintf(stderr, "%10.4g   ", distance*fdouble(lut_index-1)*hs_lut_field[lut_index].read(distance));
         }
         fprintf(stderr, "\n");
     }
