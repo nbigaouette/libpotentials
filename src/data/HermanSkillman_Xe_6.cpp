@@ -1,464 +1,460 @@
 
 #include <cstring> // memcpy()
+#include <vector>
 
 #include <Memory.hpp>
 
 #include "data/HermanSkillman.hpp"
 
 // **************************************************************
-fdouble * Load_HermanSkillman_Xe_6()
+std::vector<std::pair<fdouble,fdouble> > Load_HermanSkillman_Xe_6()
 {
     const int N = 440;
-    fdouble * HS_Xe_6 = (fdouble *) calloc_and_check(2*N, sizeof(fdouble));
+    std::vector<std::pair<fdouble,fdouble> > HS_Xe_6(N);
 
-    // Data is on the stack
-    const fdouble stack_HS_Xe_6[2*N] = {
-        5.8557995E-04, -184432.5,
-        1.1711599E-03, -91949.24,
-        1.7567398E-03, -61120.57,
-        2.3423198E-03, -45705.63,
-        2.9278998E-03, -36456.44,
-        3.5134798E-03, -30290.12,
-        4.0990598E-03, -25885.62,
-        4.6846396E-03, -22582.31,
-        5.2702194E-03, -20013.19,
-        5.8557992E-03, -17958.00,
-        6.4413790E-03, -16276.65,
-        7.0269587E-03, -14875.71,
-        7.6125385E-03, -13690.48,
-        8.1981188E-03, -12674.75,
-        8.7836990E-03, -11794.63,
-        9.3692793E-03, -11024.72,
-        9.9548595E-03, -10345.56,
-        1.0540440E-02, -9742.045,
-        1.1126020E-02, -9202.226,
-        1.1711600E-02, -8716.553,
-        1.2297180E-02, -8277.295,
-        1.2882761E-02, -7878.118,
-        1.3468341E-02, -7513.803,
-        1.4053921E-02, -7179.988,
-        1.4639501E-02, -6873.018,
-        1.5225082E-02, -6589.792,
-        1.5810661E-02, -6327.673,
-        1.6396241E-02, -6084.392,
-        1.6981822E-02, -5858.002,
-        1.7567402E-02, -5646.813,
-        1.8152982E-02, -5449.353,
-        1.8738562E-02, -5264.332,
-        1.9324142E-02, -5090.620,
-        1.9909723E-02, -4927.217,
-        2.0495303E-02, -4773.239,
-        2.1080883E-02, -4627.897,
-        2.1666463E-02, -4490.493,
-        2.2252044E-02, -4360.397,
-        2.2837624E-02, -4237.047,
-        2.3423204E-02, -4119.933,
-        2.4594365E-02, -3913.156,
-        2.5765525E-02, -3715.256,
-        2.6936686E-02, -3534.794,
-        2.8107846E-02, -3369.584,
-        2.9279007E-02, -3217.792,
-        3.0450167E-02, -3077.870,
-        3.1621326E-02, -2948.489,
-        3.2792486E-02, -2828.518,
-        3.3963647E-02, -2716.981,
-        3.5134807E-02, -2613.033,
-        3.6305968E-02, -2515.935,
-        3.7477128E-02, -2425.042,
-        3.8648289E-02, -2339.788,
-        3.9819449E-02, -2259.677,
-        4.0990610E-02, -2184.260,
-        4.2161770E-02, -2113.145,
-        4.3332931E-02, -2045.981,
-        4.4504091E-02, -1982.456,
-        4.5675252E-02, -1922.284,
-        4.6846412E-02, -1865.213,
-        4.8017573E-02, -1811.014,
-        4.9188733E-02, -1759.481,
-        5.0359894E-02, -1710.423,
-        5.1531054E-02, -1663.672,
-        5.2702215E-02, -1619.070,
-        5.3873375E-02, -1576.478,
-        5.5044536E-02, -1535.764,
-        5.6215696E-02, -1496.810,
-        5.7386857E-02, -1459.507,
-        5.8558017E-02, -1423.756,
-        5.9729178E-02, -1389.463,
-        6.0900338E-02, -1356.542,
-        6.2071498E-02, -1324.916,
-        6.3242659E-02, -1294.512,
-        6.4413816E-02, -1265.262,
-        6.5584973E-02, -1237.104,
-        6.6756129E-02, -1209.980,
-        6.7927286E-02, -1183.836,
-        6.9098443E-02, -1158.621,
-        7.0269600E-02, -1134.289,
-        7.2611921E-02, -1092.878,
-        7.4954242E-02, -1049.501,
-        7.7296562E-02, -1008.896,
-        7.9638883E-02, -970.8154,
-        8.1981204E-02, -935.0408,
-        8.4323525E-02, -901.3792,
-        8.6665846E-02, -869.6534,
-        8.9008167E-02, -839.7083,
-        9.1350488E-02, -811.4047,
-        9.3692809E-02, -784.6190,
-        9.6035130E-02, -759.2350,
-        9.8377451E-02, -735.1509,
-        0.1007198, -712.2737,
-        0.1030621, -690.5210,
-        0.1054044, -669.8135,
-        0.1077467, -650.0814,
-        0.1100891, -631.2610,
-        0.1124314, -613.2947,
-        0.1147737, -596.1272,
-        0.1171160, -579.7092,
-        0.1194583, -563.9954,
-        0.1218007, -548.9448,
-        0.1241430, -534.5176,
-        0.1264853, -520.6782,
-        0.1288276, -507.3936,
-        0.1311699, -494.6338,
-        0.1335122, -482.3694,
-        0.1358546, -470.5740,
-        0.1381969, -459.2231,
-        0.1405392, -448.2943,
-        0.1428815, -437.7653,
-        0.1452238, -427.6161,
-        0.1475661, -417.8282,
-        0.1499084, -408.3844,
-        0.1522508, -399.2675,
-        0.1545931, -390.4622,
-        0.1569354, -381.9539,
-        0.1592777, -373.7295,
-        0.1616200, -365.7754,
-        0.1639623, -358.0793,
-        0.1686470, -345.7602,
-        0.1733316, -331.8854,
-        0.1780162, -318.8460,
-        0.1827009, -306.5746,
-        0.1873855, -295.0104,
-        0.1920702, -284.1011,
-        0.1967548, -273.7940,
-        0.2014395, -264.0451,
-        0.2061241, -254.8139,
-        0.2108087, -246.0659,
-        0.2154934, -237.7653,
-        0.2201780, -229.8822,
-        0.2248627, -222.3889,
-        0.2295473, -215.2615,
-        0.2342319, -208.4748,
-        0.2389166, -202.0080,
-        0.2436012, -195.8411,
-        0.2482859, -189.9574,
-        0.2529705, -184.3381,
-        0.2576551, -178.9682,
-        0.2623398, -173.8328,
-        0.2670244, -168.9198,
-        0.2717090, -164.2151,
-        0.2763937, -159.7072,
-        0.2810783, -155.3852,
-        0.2857629, -151.2400,
-        0.2904475, -147.2606,
-        0.2951322, -143.4385,
-        0.2998168, -139.7651,
-        0.3045014, -136.2337,
-        0.3091860, -132.8356,
-        0.3138707, -129.5643,
-        0.3185553, -126.4132,
-        0.3232399, -123.3772,
-        0.3279245, -120.4495,
-        0.3326092, -117.6251,
-        0.3372938, -114.8987,
-        0.3419784, -112.2668,
-        0.3466631, -109.7236,
-        0.3513477, -107.2654,
-        0.3607170, -103.5259,
-        0.3700863, -99.09418,
-        0.3794555, -94.93665,
-        0.3888248, -91.03115,
-        0.3981941, -87.35753,
-        0.4075634, -83.89929,
-        0.4169327, -80.63837,
-        0.4263020, -77.56060,
-        0.4356712, -74.65287,
-        0.4450405, -71.90446,
-        0.4544098, -69.30284,
-        0.4637791, -66.83831,
-        0.4731484, -64.50154,
-        0.4825177, -62.28515,
-        0.4918869, -60.17956,
-        0.5012562, -58.17768,
-        0.5106255, -56.27262,
-        0.5199947, -54.45906,
-        0.5293640, -52.72986,
-        0.5387332, -51.07993,
-        0.5481025, -49.50426,
-        0.5574718, -47.99900,
-        0.5668410, -46.55921,
-        0.5762103, -45.18127,
-        0.5855795, -43.86164,
-        0.5949488, -42.59752,
-        0.6043180, -41.38545,
-        0.6136873, -40.22287,
-        0.6230565, -39.10716,
-        0.6324258, -38.03632,
-        0.6417950, -37.00775,
-        0.6511643, -36.01957,
-        0.6605335, -35.06979,
-        0.6699028, -34.15685,
-        0.6792721, -33.27880,
-        0.6886413, -32.43421,
-        0.6980106, -31.62148,
-        0.7073798, -30.83950,
-        0.7167491, -30.08654,
-        0.7261183, -29.36145,
-        0.7448569, -28.30241,
-        0.7635955, -27.00648,
-        0.7823340, -25.80151,
-        0.8010726, -24.67999,
-        0.8198112, -23.63534,
-        0.8385497, -22.66183,
-        0.8572883, -21.75291,
-        0.8760269, -20.90337,
-        0.8947654, -20.10867,
-        0.9135040, -19.36481,
-        0.9322426, -18.66726,
-        0.9509811, -18.01232,
-        0.9697197, -17.39683,
-        0.9884583, -16.81827,
-        1.007197, -16.27319,
-        1.025935, -15.75910,
-        1.044674, -15.27382,
-        1.063412, -14.81566,
-        1.082151, -14.38216,
-        1.100889, -13.97158,
-        1.119628, -13.58244,
-        1.138366, -13.21349,
-        1.157105, -12.86309,
-        1.175843, -12.52997,
-        1.194582, -12.21310,
-        1.213320, -11.91161,
-        1.232059, -11.62430,
-        1.250797, -11.35024,
-        1.269536, -11.08872,
-        1.288274, -10.83904,
-        1.307013, -10.60041,
-        1.325751, -10.37210,
-        1.344490, -10.15362,
-        1.363228, -9.944441,
-        1.381967, -9.743946,
-        1.400705, -9.551569,
-        1.419444, -9.366958,
-        1.438182, -9.189715,
-        1.456921, -9.019356,
-        1.475659, -8.855418,
-        1.513137, -8.589969,
-        1.550614, -8.298093,
-        1.588091, -8.026409,
-        1.625568, -7.772912,
-        1.663045, -7.535923,
-        1.700522, -7.313825,
-        1.737999, -7.105182,
-        1.775477, -6.908848,
-        1.812954, -6.723544,
-        1.850431, -6.548394,
-        1.887908, -6.382513,
-        1.925385, -6.232519,
-        1.962862, -6.113521,
-        2.000339, -5.998982,
-        2.037816, -5.888657,
-        2.075293, -5.782315,
-        2.112770, -5.679747,
-        2.150247, -5.580753,
-        2.187724, -5.485152,
-        2.225201, -5.392770,
-        2.262678, -5.303449,
-        2.300155, -5.217039,
-        2.337632, -5.133399,
-        2.375109, -5.052399,
-        2.412586, -4.973915,
-        2.450063, -4.897832,
-        2.487540, -4.824042,
-        2.525017, -4.752442,
-        2.562495, -4.682937,
-        2.599972, -4.615435,
-        2.637449, -4.549852,
-        2.674926, -4.486106,
-        2.712403, -4.424122,
-        2.749880, -4.363827,
-        2.787357, -4.305154,
-        2.824834, -4.248038,
-        2.862311, -4.192417,
-        2.899788, -4.138234,
-        2.937265, -4.085433,
-        2.974742, -4.033964,
-        3.049696, -3.934819,
-        3.124650, -3.840430,
-        3.199605, -3.750463,
-        3.274559, -3.664616,
-        3.349513, -3.582610,
-        3.424467, -3.504195,
-        3.499422, -3.429138,
-        3.574376, -3.357229,
-        3.649330, -3.288275,
-        3.724284, -3.222095,
-        3.799239, -3.158528,
-        3.874193, -3.097419,
-        3.949147, -3.038631,
-        4.024101, -2.982032,
-        4.099055, -2.927504,
-        4.174009, -2.874934,
-        4.248963, -2.824218,
-        4.323917, -2.775261,
-        4.398871, -2.727973,
-        4.473825, -2.682268,
-        4.548779, -2.638070,
-        4.623734, -2.595305,
-        4.698688, -2.553905,
-        4.773642, -2.513804,
-        4.848596, -2.474943,
-        4.923550, -2.437266,
-        4.998504, -2.400718,
-        5.073458, -2.365251,
-        5.148412, -2.330816,
-        5.223366, -2.297369,
-        5.298320, -2.264869,
-        5.373274, -2.233275,
-        5.448228, -2.202551,
-        5.523182, -2.172661,
-        5.598136, -2.143571,
-        5.673090, -2.115249,
-        5.748044, -2.087667,
-        5.822998, -2.060794,
-        5.897952, -2.034605,
-        5.972906, -2.009072,
-        6.122815, -1.959883,
-        6.272723, -1.913045,
-        6.422632, -1.868393,
-        6.572540, -1.825778,
-        6.722449, -1.785064,
-        6.872357, -1.746126,
-        7.022266, -1.708850,
-        7.172174, -1.673133,
-        7.322083, -1.638878,
-        7.471992, -1.605998,
-        7.621900, -1.574411,
-        7.771809, -1.544042,
-        7.921717, -1.514823,
-        8.071626, -1.486689,
-        8.221534, -1.459582,
-        8.371442, -1.433445,
-        8.521350, -1.408228,
-        8.671258, -1.383882,
-        8.821166, -1.360364,
-        8.971074, -1.337632,
-        9.120982, -1.315648,
-        9.270890, -1.294374,
-        9.420798, -1.273777,
-        9.570706, -1.253826,
-        9.720614, -1.234490,
-        9.870522, -1.215741,
-        10.02043, -1.197553,
-        10.17034, -1.179902,
-        10.32025, -1.162763,
-        10.47015, -1.146115,
-        10.62006, -1.129937,
-        10.76997, -1.114209,
-        10.91988, -1.098913,
-        11.06979, -1.084032,
-        11.21970, -1.069548,
-        11.36960, -1.055446,
-        11.51951, -1.041711,
-        11.66942, -1.028329,
-        11.81933, -1.015286,
-        11.96924, -1.002570,
-        12.26905, -0.9780706,
-        12.56887, -0.9547398,
-        12.86869, -0.9324961,
-        13.16850, -0.9112653,
-        13.46832, -0.8909796,
-        13.76814, -0.8715776,
-        14.06796, -0.8530024,
-        14.36777, -0.8352026,
-        14.66759, -0.8181304,
-        14.96741, -0.8017421,
-        15.26722, -0.7859976,
-        15.56704, -0.7708594,
-        15.86686, -0.7562934,
-        16.16667, -0.7422677,
-        16.46649, -0.7287528,
-        16.76631, -0.7157212,
-        17.06612, -0.7031474,
-        17.36594, -0.6910079,
-        17.66575, -0.6792803,
-        17.96557, -0.6679443,
-        18.26539, -0.6569803,
-        18.56520, -0.6463705,
-        18.86502, -0.6360980,
-        19.16483, -0.6261468,
-        19.46465, -0.6165022,
-        19.76447, -0.6071502,
-        20.06428, -0.5980777,
-        20.36410, -0.5892723,
-        20.66392, -0.5807225,
-        20.96373, -0.5724171,
-        21.26355, -0.5643461,
-        21.56336, -0.5564994,
-        21.86318, -0.5488680,
-        22.16300, -0.5414430,
-        22.46281, -0.5342163,
-        22.76263, -0.5271799,
-        23.06244, -0.5203264,
-        23.36226, -0.5136489,
-        23.66208, -0.5071406,
-        23.96189, -0.5007952,
-        24.56153, -0.4885690,
-        25.16116, -0.4769255,
-        25.76080, -0.4658241,
-        26.36043, -0.4552278,
-        26.96006, -0.4451028,
-        27.55970, -0.4354184,
-        28.15933, -0.4261465,
-        28.75897, -0.4172612,
-        29.35860, -0.4087388,
-        29.95823, -0.4005576,
-        30.55787, -0.3926975,
-        31.15750, -0.3851400,
-        31.75714, -0.3778678,
-        32.35677, -0.3708652,
-        32.95640, -0.3641174,
-        33.55603, -0.3576108,
-        34.15567, -0.3513326,
-        34.75530, -0.3452711,
-        35.35493, -0.3394152,
-        35.95456, -0.3337546,
-        36.55420, -0.3282797,
-        37.15383, -0.3229815,
-        37.75346, -0.3178517,
-        38.35309, -0.3128822,
-        38.95272, -0.3080657,
-        39.55236, -0.3033953,
-        40.15199, -0.2988644,
-        40.75162, -0.2944668,
-        41.35125, -0.2901968,
-        41.95089, -0.2860488,
-        42.55052, -0.2820177,
-        43.15015, -0.2780987,
-        43.74978, -0.2742871,
-        44.34941, -0.2705785,
-        44.94905, -0.2669690,
-        45.54868, -0.2634544,
-        46.14831, -0.2600312,
-        46.74794, -0.2566958,
-        47.34758, -0.2534449,
-        47.94721, -0.2502753
-    };
-
-    // Copy to heap
-    memcpy(HS_Xe_6, stack_HS_Xe_6, 2*N*sizeof(fdouble));
+    HS_Xe_6[   0] = std::pair<fdouble, fdouble>(fdouble(    0.0005856), fdouble(    -184432.5));
+    HS_Xe_6[   1] = std::pair<fdouble, fdouble>(fdouble(    0.0011712), fdouble(    -91949.24));
+    HS_Xe_6[   2] = std::pair<fdouble, fdouble>(fdouble(    0.0017567), fdouble(    -61120.57));
+    HS_Xe_6[   3] = std::pair<fdouble, fdouble>(fdouble(    0.0023423), fdouble(    -45705.63));
+    HS_Xe_6[   4] = std::pair<fdouble, fdouble>(fdouble(    0.0029279), fdouble(    -36456.44));
+    HS_Xe_6[   5] = std::pair<fdouble, fdouble>(fdouble(    0.0035135), fdouble(    -30290.12));
+    HS_Xe_6[   6] = std::pair<fdouble, fdouble>(fdouble(    0.0040991), fdouble(    -25885.62));
+    HS_Xe_6[   7] = std::pair<fdouble, fdouble>(fdouble(    0.0046846), fdouble(    -22582.31));
+    HS_Xe_6[   8] = std::pair<fdouble, fdouble>(fdouble(    0.0052702), fdouble(    -20013.19));
+    HS_Xe_6[   9] = std::pair<fdouble, fdouble>(fdouble(    0.0058558), fdouble(       -17958));
+    HS_Xe_6[  10] = std::pair<fdouble, fdouble>(fdouble(    0.0064414), fdouble(    -16276.65));
+    HS_Xe_6[  11] = std::pair<fdouble, fdouble>(fdouble(    0.0070270), fdouble(    -14875.71));
+    HS_Xe_6[  12] = std::pair<fdouble, fdouble>(fdouble(    0.0076125), fdouble(    -13690.48));
+    HS_Xe_6[  13] = std::pair<fdouble, fdouble>(fdouble(    0.0081981), fdouble(    -12674.75));
+    HS_Xe_6[  14] = std::pair<fdouble, fdouble>(fdouble(    0.0087837), fdouble(    -11794.63));
+    HS_Xe_6[  15] = std::pair<fdouble, fdouble>(fdouble(    0.0093693), fdouble(    -11024.72));
+    HS_Xe_6[  16] = std::pair<fdouble, fdouble>(fdouble(    0.0099549), fdouble(    -10345.56));
+    HS_Xe_6[  17] = std::pair<fdouble, fdouble>(fdouble(    0.0105404), fdouble(    -9742.045));
+    HS_Xe_6[  18] = std::pair<fdouble, fdouble>(fdouble(    0.0111260), fdouble(    -9202.226));
+    HS_Xe_6[  19] = std::pair<fdouble, fdouble>(fdouble(    0.0117116), fdouble(    -8716.553));
+    HS_Xe_6[  20] = std::pair<fdouble, fdouble>(fdouble(    0.0122972), fdouble(    -8277.295));
+    HS_Xe_6[  21] = std::pair<fdouble, fdouble>(fdouble(    0.0128828), fdouble(    -7878.118));
+    HS_Xe_6[  22] = std::pair<fdouble, fdouble>(fdouble(    0.0134683), fdouble(    -7513.803));
+    HS_Xe_6[  23] = std::pair<fdouble, fdouble>(fdouble(    0.0140539), fdouble(    -7179.988));
+    HS_Xe_6[  24] = std::pair<fdouble, fdouble>(fdouble(    0.0146395), fdouble(    -6873.018));
+    HS_Xe_6[  25] = std::pair<fdouble, fdouble>(fdouble(    0.0152251), fdouble(    -6589.792));
+    HS_Xe_6[  26] = std::pair<fdouble, fdouble>(fdouble(    0.0158107), fdouble(    -6327.673));
+    HS_Xe_6[  27] = std::pair<fdouble, fdouble>(fdouble(    0.0163962), fdouble(    -6084.392));
+    HS_Xe_6[  28] = std::pair<fdouble, fdouble>(fdouble(    0.0169818), fdouble(    -5858.002));
+    HS_Xe_6[  29] = std::pair<fdouble, fdouble>(fdouble(    0.0175674), fdouble(    -5646.813));
+    HS_Xe_6[  30] = std::pair<fdouble, fdouble>(fdouble(    0.0181530), fdouble(    -5449.353));
+    HS_Xe_6[  31] = std::pair<fdouble, fdouble>(fdouble(    0.0187386), fdouble(    -5264.332));
+    HS_Xe_6[  32] = std::pair<fdouble, fdouble>(fdouble(    0.0193241), fdouble(     -5090.62));
+    HS_Xe_6[  33] = std::pair<fdouble, fdouble>(fdouble(    0.0199097), fdouble(    -4927.217));
+    HS_Xe_6[  34] = std::pair<fdouble, fdouble>(fdouble(    0.0204953), fdouble(    -4773.239));
+    HS_Xe_6[  35] = std::pair<fdouble, fdouble>(fdouble(    0.0210809), fdouble(    -4627.897));
+    HS_Xe_6[  36] = std::pair<fdouble, fdouble>(fdouble(    0.0216665), fdouble(    -4490.493));
+    HS_Xe_6[  37] = std::pair<fdouble, fdouble>(fdouble(    0.0222520), fdouble(    -4360.397));
+    HS_Xe_6[  38] = std::pair<fdouble, fdouble>(fdouble(    0.0228376), fdouble(    -4237.047));
+    HS_Xe_6[  39] = std::pair<fdouble, fdouble>(fdouble(    0.0234232), fdouble(    -4119.933));
+    HS_Xe_6[  40] = std::pair<fdouble, fdouble>(fdouble(    0.0245944), fdouble(    -3913.156));
+    HS_Xe_6[  41] = std::pair<fdouble, fdouble>(fdouble(    0.0257655), fdouble(    -3715.256));
+    HS_Xe_6[  42] = std::pair<fdouble, fdouble>(fdouble(    0.0269367), fdouble(    -3534.794));
+    HS_Xe_6[  43] = std::pair<fdouble, fdouble>(fdouble(    0.0281078), fdouble(    -3369.584));
+    HS_Xe_6[  44] = std::pair<fdouble, fdouble>(fdouble(    0.0292790), fdouble(    -3217.792));
+    HS_Xe_6[  45] = std::pair<fdouble, fdouble>(fdouble(    0.0304502), fdouble(     -3077.87));
+    HS_Xe_6[  46] = std::pair<fdouble, fdouble>(fdouble(    0.0316213), fdouble(    -2948.489));
+    HS_Xe_6[  47] = std::pair<fdouble, fdouble>(fdouble(    0.0327925), fdouble(    -2828.518));
+    HS_Xe_6[  48] = std::pair<fdouble, fdouble>(fdouble(    0.0339636), fdouble(    -2716.981));
+    HS_Xe_6[  49] = std::pair<fdouble, fdouble>(fdouble(    0.0351348), fdouble(    -2613.033));
+    HS_Xe_6[  50] = std::pair<fdouble, fdouble>(fdouble(    0.0363060), fdouble(    -2515.935));
+    HS_Xe_6[  51] = std::pair<fdouble, fdouble>(fdouble(    0.0374771), fdouble(    -2425.042));
+    HS_Xe_6[  52] = std::pair<fdouble, fdouble>(fdouble(    0.0386483), fdouble(    -2339.788));
+    HS_Xe_6[  53] = std::pair<fdouble, fdouble>(fdouble(    0.0398194), fdouble(    -2259.677));
+    HS_Xe_6[  54] = std::pair<fdouble, fdouble>(fdouble(    0.0409906), fdouble(     -2184.26));
+    HS_Xe_6[  55] = std::pair<fdouble, fdouble>(fdouble(    0.0421618), fdouble(    -2113.145));
+    HS_Xe_6[  56] = std::pair<fdouble, fdouble>(fdouble(    0.0433329), fdouble(    -2045.981));
+    HS_Xe_6[  57] = std::pair<fdouble, fdouble>(fdouble(    0.0445041), fdouble(    -1982.456));
+    HS_Xe_6[  58] = std::pair<fdouble, fdouble>(fdouble(    0.0456753), fdouble(    -1922.284));
+    HS_Xe_6[  59] = std::pair<fdouble, fdouble>(fdouble(    0.0468464), fdouble(    -1865.213));
+    HS_Xe_6[  60] = std::pair<fdouble, fdouble>(fdouble(    0.0480176), fdouble(    -1811.014));
+    HS_Xe_6[  61] = std::pair<fdouble, fdouble>(fdouble(    0.0491887), fdouble(    -1759.481));
+    HS_Xe_6[  62] = std::pair<fdouble, fdouble>(fdouble(    0.0503599), fdouble(    -1710.423));
+    HS_Xe_6[  63] = std::pair<fdouble, fdouble>(fdouble(    0.0515311), fdouble(    -1663.672));
+    HS_Xe_6[  64] = std::pair<fdouble, fdouble>(fdouble(    0.0527022), fdouble(     -1619.07));
+    HS_Xe_6[  65] = std::pair<fdouble, fdouble>(fdouble(    0.0538734), fdouble(    -1576.478));
+    HS_Xe_6[  66] = std::pair<fdouble, fdouble>(fdouble(    0.0550445), fdouble(    -1535.764));
+    HS_Xe_6[  67] = std::pair<fdouble, fdouble>(fdouble(    0.0562157), fdouble(     -1496.81));
+    HS_Xe_6[  68] = std::pair<fdouble, fdouble>(fdouble(    0.0573869), fdouble(    -1459.507));
+    HS_Xe_6[  69] = std::pair<fdouble, fdouble>(fdouble(    0.0585580), fdouble(    -1423.756));
+    HS_Xe_6[  70] = std::pair<fdouble, fdouble>(fdouble(    0.0597292), fdouble(    -1389.463));
+    HS_Xe_6[  71] = std::pair<fdouble, fdouble>(fdouble(    0.0609003), fdouble(    -1356.542));
+    HS_Xe_6[  72] = std::pair<fdouble, fdouble>(fdouble(    0.0620715), fdouble(    -1324.916));
+    HS_Xe_6[  73] = std::pair<fdouble, fdouble>(fdouble(    0.0632427), fdouble(    -1294.512));
+    HS_Xe_6[  74] = std::pair<fdouble, fdouble>(fdouble(    0.0644138), fdouble(    -1265.262));
+    HS_Xe_6[  75] = std::pair<fdouble, fdouble>(fdouble(    0.0655850), fdouble(    -1237.104));
+    HS_Xe_6[  76] = std::pair<fdouble, fdouble>(fdouble(    0.0667561), fdouble(     -1209.98));
+    HS_Xe_6[  77] = std::pair<fdouble, fdouble>(fdouble(    0.0679273), fdouble(    -1183.836));
+    HS_Xe_6[  78] = std::pair<fdouble, fdouble>(fdouble(    0.0690984), fdouble(    -1158.621));
+    HS_Xe_6[  79] = std::pair<fdouble, fdouble>(fdouble(    0.0702696), fdouble(    -1134.289));
+    HS_Xe_6[  80] = std::pair<fdouble, fdouble>(fdouble(    0.0726119), fdouble(    -1092.878));
+    HS_Xe_6[  81] = std::pair<fdouble, fdouble>(fdouble(    0.0749542), fdouble(    -1049.501));
+    HS_Xe_6[  82] = std::pair<fdouble, fdouble>(fdouble(    0.0772966), fdouble(    -1008.896));
+    HS_Xe_6[  83] = std::pair<fdouble, fdouble>(fdouble(    0.0796389), fdouble(    -970.8154));
+    HS_Xe_6[  84] = std::pair<fdouble, fdouble>(fdouble(    0.0819812), fdouble(    -935.0408));
+    HS_Xe_6[  85] = std::pair<fdouble, fdouble>(fdouble(    0.0843235), fdouble(    -901.3792));
+    HS_Xe_6[  86] = std::pair<fdouble, fdouble>(fdouble(    0.0866658), fdouble(    -869.6534));
+    HS_Xe_6[  87] = std::pair<fdouble, fdouble>(fdouble(    0.0890082), fdouble(    -839.7083));
+    HS_Xe_6[  88] = std::pair<fdouble, fdouble>(fdouble(    0.0913505), fdouble(    -811.4047));
+    HS_Xe_6[  89] = std::pair<fdouble, fdouble>(fdouble(    0.0936928), fdouble(     -784.619));
+    HS_Xe_6[  90] = std::pair<fdouble, fdouble>(fdouble(    0.0960351), fdouble(     -759.235));
+    HS_Xe_6[  91] = std::pair<fdouble, fdouble>(fdouble(    0.0983775), fdouble(    -735.1509));
+    HS_Xe_6[  92] = std::pair<fdouble, fdouble>(fdouble(    0.1007198), fdouble(    -712.2737));
+    HS_Xe_6[  93] = std::pair<fdouble, fdouble>(fdouble(    0.1030621), fdouble(     -690.521));
+    HS_Xe_6[  94] = std::pair<fdouble, fdouble>(fdouble(    0.1054044), fdouble(    -669.8135));
+    HS_Xe_6[  95] = std::pair<fdouble, fdouble>(fdouble(    0.1077467), fdouble(    -650.0814));
+    HS_Xe_6[  96] = std::pair<fdouble, fdouble>(fdouble(    0.1100891), fdouble(     -631.261));
+    HS_Xe_6[  97] = std::pair<fdouble, fdouble>(fdouble(    0.1124314), fdouble(    -613.2947));
+    HS_Xe_6[  98] = std::pair<fdouble, fdouble>(fdouble(    0.1147737), fdouble(    -596.1272));
+    HS_Xe_6[  99] = std::pair<fdouble, fdouble>(fdouble(    0.1171160), fdouble(    -579.7092));
+    HS_Xe_6[ 100] = std::pair<fdouble, fdouble>(fdouble(    0.1194583), fdouble(    -563.9954));
+    HS_Xe_6[ 101] = std::pair<fdouble, fdouble>(fdouble(    0.1218007), fdouble(    -548.9448));
+    HS_Xe_6[ 102] = std::pair<fdouble, fdouble>(fdouble(    0.1241430), fdouble(    -534.5176));
+    HS_Xe_6[ 103] = std::pair<fdouble, fdouble>(fdouble(    0.1264853), fdouble(    -520.6782));
+    HS_Xe_6[ 104] = std::pair<fdouble, fdouble>(fdouble(    0.1288276), fdouble(    -507.3936));
+    HS_Xe_6[ 105] = std::pair<fdouble, fdouble>(fdouble(    0.1311699), fdouble(    -494.6338));
+    HS_Xe_6[ 106] = std::pair<fdouble, fdouble>(fdouble(    0.1335122), fdouble(    -482.3694));
+    HS_Xe_6[ 107] = std::pair<fdouble, fdouble>(fdouble(    0.1358546), fdouble(     -470.574));
+    HS_Xe_6[ 108] = std::pair<fdouble, fdouble>(fdouble(    0.1381969), fdouble(    -459.2231));
+    HS_Xe_6[ 109] = std::pair<fdouble, fdouble>(fdouble(    0.1405392), fdouble(    -448.2943));
+    HS_Xe_6[ 110] = std::pair<fdouble, fdouble>(fdouble(    0.1428815), fdouble(    -437.7653));
+    HS_Xe_6[ 111] = std::pair<fdouble, fdouble>(fdouble(    0.1452238), fdouble(    -427.6161));
+    HS_Xe_6[ 112] = std::pair<fdouble, fdouble>(fdouble(    0.1475661), fdouble(    -417.8282));
+    HS_Xe_6[ 113] = std::pair<fdouble, fdouble>(fdouble(    0.1499084), fdouble(    -408.3844));
+    HS_Xe_6[ 114] = std::pair<fdouble, fdouble>(fdouble(    0.1522508), fdouble(    -399.2675));
+    HS_Xe_6[ 115] = std::pair<fdouble, fdouble>(fdouble(    0.1545931), fdouble(    -390.4622));
+    HS_Xe_6[ 116] = std::pair<fdouble, fdouble>(fdouble(    0.1569354), fdouble(    -381.9539));
+    HS_Xe_6[ 117] = std::pair<fdouble, fdouble>(fdouble(    0.1592777), fdouble(    -373.7295));
+    HS_Xe_6[ 118] = std::pair<fdouble, fdouble>(fdouble(    0.1616200), fdouble(    -365.7754));
+    HS_Xe_6[ 119] = std::pair<fdouble, fdouble>(fdouble(    0.1639623), fdouble(    -358.0793));
+    HS_Xe_6[ 120] = std::pair<fdouble, fdouble>(fdouble(    0.1686470), fdouble(    -345.7602));
+    HS_Xe_6[ 121] = std::pair<fdouble, fdouble>(fdouble(    0.1733316), fdouble(    -331.8854));
+    HS_Xe_6[ 122] = std::pair<fdouble, fdouble>(fdouble(    0.1780162), fdouble(     -318.846));
+    HS_Xe_6[ 123] = std::pair<fdouble, fdouble>(fdouble(    0.1827009), fdouble(    -306.5746));
+    HS_Xe_6[ 124] = std::pair<fdouble, fdouble>(fdouble(    0.1873855), fdouble(    -295.0104));
+    HS_Xe_6[ 125] = std::pair<fdouble, fdouble>(fdouble(    0.1920702), fdouble(    -284.1011));
+    HS_Xe_6[ 126] = std::pair<fdouble, fdouble>(fdouble(    0.1967548), fdouble(     -273.794));
+    HS_Xe_6[ 127] = std::pair<fdouble, fdouble>(fdouble(    0.2014395), fdouble(    -264.0451));
+    HS_Xe_6[ 128] = std::pair<fdouble, fdouble>(fdouble(    0.2061241), fdouble(    -254.8139));
+    HS_Xe_6[ 129] = std::pair<fdouble, fdouble>(fdouble(    0.2108087), fdouble(    -246.0659));
+    HS_Xe_6[ 130] = std::pair<fdouble, fdouble>(fdouble(    0.2154934), fdouble(    -237.7653));
+    HS_Xe_6[ 131] = std::pair<fdouble, fdouble>(fdouble(    0.2201780), fdouble(    -229.8822));
+    HS_Xe_6[ 132] = std::pair<fdouble, fdouble>(fdouble(    0.2248627), fdouble(    -222.3889));
+    HS_Xe_6[ 133] = std::pair<fdouble, fdouble>(fdouble(    0.2295473), fdouble(    -215.2615));
+    HS_Xe_6[ 134] = std::pair<fdouble, fdouble>(fdouble(    0.2342319), fdouble(    -208.4748));
+    HS_Xe_6[ 135] = std::pair<fdouble, fdouble>(fdouble(    0.2389166), fdouble(     -202.008));
+    HS_Xe_6[ 136] = std::pair<fdouble, fdouble>(fdouble(    0.2436012), fdouble(    -195.8411));
+    HS_Xe_6[ 137] = std::pair<fdouble, fdouble>(fdouble(    0.2482859), fdouble(    -189.9574));
+    HS_Xe_6[ 138] = std::pair<fdouble, fdouble>(fdouble(    0.2529705), fdouble(    -184.3381));
+    HS_Xe_6[ 139] = std::pair<fdouble, fdouble>(fdouble(    0.2576551), fdouble(    -178.9682));
+    HS_Xe_6[ 140] = std::pair<fdouble, fdouble>(fdouble(    0.2623398), fdouble(    -173.8328));
+    HS_Xe_6[ 141] = std::pair<fdouble, fdouble>(fdouble(    0.2670244), fdouble(    -168.9198));
+    HS_Xe_6[ 142] = std::pair<fdouble, fdouble>(fdouble(    0.2717090), fdouble(    -164.2151));
+    HS_Xe_6[ 143] = std::pair<fdouble, fdouble>(fdouble(    0.2763937), fdouble(    -159.7072));
+    HS_Xe_6[ 144] = std::pair<fdouble, fdouble>(fdouble(    0.2810783), fdouble(    -155.3852));
+    HS_Xe_6[ 145] = std::pair<fdouble, fdouble>(fdouble(    0.2857629), fdouble(      -151.24));
+    HS_Xe_6[ 146] = std::pair<fdouble, fdouble>(fdouble(    0.2904475), fdouble(    -147.2606));
+    HS_Xe_6[ 147] = std::pair<fdouble, fdouble>(fdouble(    0.2951322), fdouble(    -143.4385));
+    HS_Xe_6[ 148] = std::pair<fdouble, fdouble>(fdouble(    0.2998168), fdouble(    -139.7651));
+    HS_Xe_6[ 149] = std::pair<fdouble, fdouble>(fdouble(    0.3045014), fdouble(    -136.2337));
+    HS_Xe_6[ 150] = std::pair<fdouble, fdouble>(fdouble(    0.3091860), fdouble(    -132.8356));
+    HS_Xe_6[ 151] = std::pair<fdouble, fdouble>(fdouble(    0.3138707), fdouble(    -129.5643));
+    HS_Xe_6[ 152] = std::pair<fdouble, fdouble>(fdouble(    0.3185553), fdouble(    -126.4132));
+    HS_Xe_6[ 153] = std::pair<fdouble, fdouble>(fdouble(    0.3232399), fdouble(    -123.3772));
+    HS_Xe_6[ 154] = std::pair<fdouble, fdouble>(fdouble(    0.3279245), fdouble(    -120.4495));
+    HS_Xe_6[ 155] = std::pair<fdouble, fdouble>(fdouble(    0.3326092), fdouble(    -117.6251));
+    HS_Xe_6[ 156] = std::pair<fdouble, fdouble>(fdouble(    0.3372938), fdouble(    -114.8987));
+    HS_Xe_6[ 157] = std::pair<fdouble, fdouble>(fdouble(    0.3419784), fdouble(    -112.2668));
+    HS_Xe_6[ 158] = std::pair<fdouble, fdouble>(fdouble(    0.3466631), fdouble(    -109.7236));
+    HS_Xe_6[ 159] = std::pair<fdouble, fdouble>(fdouble(    0.3513477), fdouble(    -107.2654));
+    HS_Xe_6[ 160] = std::pair<fdouble, fdouble>(fdouble(    0.3607170), fdouble(    -103.5259));
+    HS_Xe_6[ 161] = std::pair<fdouble, fdouble>(fdouble(    0.3700863), fdouble(    -99.09418));
+    HS_Xe_6[ 162] = std::pair<fdouble, fdouble>(fdouble(    0.3794555), fdouble(    -94.93665));
+    HS_Xe_6[ 163] = std::pair<fdouble, fdouble>(fdouble(    0.3888248), fdouble(    -91.03115));
+    HS_Xe_6[ 164] = std::pair<fdouble, fdouble>(fdouble(    0.3981941), fdouble(    -87.35753));
+    HS_Xe_6[ 165] = std::pair<fdouble, fdouble>(fdouble(    0.4075634), fdouble(    -83.89929));
+    HS_Xe_6[ 166] = std::pair<fdouble, fdouble>(fdouble(    0.4169327), fdouble(    -80.63837));
+    HS_Xe_6[ 167] = std::pair<fdouble, fdouble>(fdouble(    0.4263020), fdouble(     -77.5606));
+    HS_Xe_6[ 168] = std::pair<fdouble, fdouble>(fdouble(    0.4356712), fdouble(    -74.65287));
+    HS_Xe_6[ 169] = std::pair<fdouble, fdouble>(fdouble(    0.4450405), fdouble(    -71.90446));
+    HS_Xe_6[ 170] = std::pair<fdouble, fdouble>(fdouble(    0.4544098), fdouble(    -69.30284));
+    HS_Xe_6[ 171] = std::pair<fdouble, fdouble>(fdouble(    0.4637791), fdouble(    -66.83831));
+    HS_Xe_6[ 172] = std::pair<fdouble, fdouble>(fdouble(    0.4731484), fdouble(    -64.50154));
+    HS_Xe_6[ 173] = std::pair<fdouble, fdouble>(fdouble(    0.4825177), fdouble(    -62.28515));
+    HS_Xe_6[ 174] = std::pair<fdouble, fdouble>(fdouble(    0.4918869), fdouble(    -60.17956));
+    HS_Xe_6[ 175] = std::pair<fdouble, fdouble>(fdouble(    0.5012562), fdouble(    -58.17768));
+    HS_Xe_6[ 176] = std::pair<fdouble, fdouble>(fdouble(    0.5106255), fdouble(    -56.27262));
+    HS_Xe_6[ 177] = std::pair<fdouble, fdouble>(fdouble(    0.5199947), fdouble(    -54.45906));
+    HS_Xe_6[ 178] = std::pair<fdouble, fdouble>(fdouble(    0.5293640), fdouble(    -52.72986));
+    HS_Xe_6[ 179] = std::pair<fdouble, fdouble>(fdouble(    0.5387332), fdouble(    -51.07993));
+    HS_Xe_6[ 180] = std::pair<fdouble, fdouble>(fdouble(    0.5481025), fdouble(    -49.50426));
+    HS_Xe_6[ 181] = std::pair<fdouble, fdouble>(fdouble(    0.5574718), fdouble(      -47.999));
+    HS_Xe_6[ 182] = std::pair<fdouble, fdouble>(fdouble(    0.5668410), fdouble(    -46.55921));
+    HS_Xe_6[ 183] = std::pair<fdouble, fdouble>(fdouble(    0.5762103), fdouble(    -45.18127));
+    HS_Xe_6[ 184] = std::pair<fdouble, fdouble>(fdouble(    0.5855795), fdouble(    -43.86164));
+    HS_Xe_6[ 185] = std::pair<fdouble, fdouble>(fdouble(    0.5949488), fdouble(    -42.59752));
+    HS_Xe_6[ 186] = std::pair<fdouble, fdouble>(fdouble(    0.6043180), fdouble(    -41.38545));
+    HS_Xe_6[ 187] = std::pair<fdouble, fdouble>(fdouble(    0.6136873), fdouble(    -40.22287));
+    HS_Xe_6[ 188] = std::pair<fdouble, fdouble>(fdouble(    0.6230565), fdouble(    -39.10716));
+    HS_Xe_6[ 189] = std::pair<fdouble, fdouble>(fdouble(    0.6324258), fdouble(    -38.03632));
+    HS_Xe_6[ 190] = std::pair<fdouble, fdouble>(fdouble(    0.6417950), fdouble(    -37.00775));
+    HS_Xe_6[ 191] = std::pair<fdouble, fdouble>(fdouble(    0.6511643), fdouble(    -36.01957));
+    HS_Xe_6[ 192] = std::pair<fdouble, fdouble>(fdouble(    0.6605335), fdouble(    -35.06979));
+    HS_Xe_6[ 193] = std::pair<fdouble, fdouble>(fdouble(    0.6699028), fdouble(    -34.15685));
+    HS_Xe_6[ 194] = std::pair<fdouble, fdouble>(fdouble(    0.6792721), fdouble(     -33.2788));
+    HS_Xe_6[ 195] = std::pair<fdouble, fdouble>(fdouble(    0.6886413), fdouble(    -32.43421));
+    HS_Xe_6[ 196] = std::pair<fdouble, fdouble>(fdouble(    0.6980106), fdouble(    -31.62148));
+    HS_Xe_6[ 197] = std::pair<fdouble, fdouble>(fdouble(    0.7073798), fdouble(     -30.8395));
+    HS_Xe_6[ 198] = std::pair<fdouble, fdouble>(fdouble(    0.7167491), fdouble(    -30.08654));
+    HS_Xe_6[ 199] = std::pair<fdouble, fdouble>(fdouble(    0.7261183), fdouble(    -29.36145));
+    HS_Xe_6[ 200] = std::pair<fdouble, fdouble>(fdouble(    0.7448569), fdouble(    -28.30241));
+    HS_Xe_6[ 201] = std::pair<fdouble, fdouble>(fdouble(    0.7635955), fdouble(    -27.00648));
+    HS_Xe_6[ 202] = std::pair<fdouble, fdouble>(fdouble(    0.7823340), fdouble(    -25.80151));
+    HS_Xe_6[ 203] = std::pair<fdouble, fdouble>(fdouble(    0.8010726), fdouble(    -24.67999));
+    HS_Xe_6[ 204] = std::pair<fdouble, fdouble>(fdouble(    0.8198112), fdouble(    -23.63534));
+    HS_Xe_6[ 205] = std::pair<fdouble, fdouble>(fdouble(    0.8385497), fdouble(    -22.66183));
+    HS_Xe_6[ 206] = std::pair<fdouble, fdouble>(fdouble(    0.8572883), fdouble(    -21.75291));
+    HS_Xe_6[ 207] = std::pair<fdouble, fdouble>(fdouble(    0.8760269), fdouble(    -20.90337));
+    HS_Xe_6[ 208] = std::pair<fdouble, fdouble>(fdouble(    0.8947654), fdouble(    -20.10867));
+    HS_Xe_6[ 209] = std::pair<fdouble, fdouble>(fdouble(    0.9135040), fdouble(    -19.36481));
+    HS_Xe_6[ 210] = std::pair<fdouble, fdouble>(fdouble(    0.9322426), fdouble(    -18.66726));
+    HS_Xe_6[ 211] = std::pair<fdouble, fdouble>(fdouble(    0.9509811), fdouble(    -18.01232));
+    HS_Xe_6[ 212] = std::pair<fdouble, fdouble>(fdouble(    0.9697197), fdouble(    -17.39683));
+    HS_Xe_6[ 213] = std::pair<fdouble, fdouble>(fdouble(    0.9884583), fdouble(    -16.81827));
+    HS_Xe_6[ 214] = std::pair<fdouble, fdouble>(fdouble(    1.0071970), fdouble(    -16.27319));
+    HS_Xe_6[ 215] = std::pair<fdouble, fdouble>(fdouble(    1.0259350), fdouble(     -15.7591));
+    HS_Xe_6[ 216] = std::pair<fdouble, fdouble>(fdouble(    1.0446740), fdouble(    -15.27382));
+    HS_Xe_6[ 217] = std::pair<fdouble, fdouble>(fdouble(    1.0634120), fdouble(    -14.81566));
+    HS_Xe_6[ 218] = std::pair<fdouble, fdouble>(fdouble(    1.0821510), fdouble(    -14.38216));
+    HS_Xe_6[ 219] = std::pair<fdouble, fdouble>(fdouble(    1.1008890), fdouble(    -13.97158));
+    HS_Xe_6[ 220] = std::pair<fdouble, fdouble>(fdouble(    1.1196280), fdouble(    -13.58244));
+    HS_Xe_6[ 221] = std::pair<fdouble, fdouble>(fdouble(    1.1383660), fdouble(    -13.21349));
+    HS_Xe_6[ 222] = std::pair<fdouble, fdouble>(fdouble(    1.1571050), fdouble(    -12.86309));
+    HS_Xe_6[ 223] = std::pair<fdouble, fdouble>(fdouble(    1.1758430), fdouble(    -12.52997));
+    HS_Xe_6[ 224] = std::pair<fdouble, fdouble>(fdouble(    1.1945820), fdouble(     -12.2131));
+    HS_Xe_6[ 225] = std::pair<fdouble, fdouble>(fdouble(    1.2133200), fdouble(    -11.91161));
+    HS_Xe_6[ 226] = std::pair<fdouble, fdouble>(fdouble(    1.2320590), fdouble(     -11.6243));
+    HS_Xe_6[ 227] = std::pair<fdouble, fdouble>(fdouble(    1.2507970), fdouble(    -11.35024));
+    HS_Xe_6[ 228] = std::pair<fdouble, fdouble>(fdouble(    1.2695360), fdouble(    -11.08872));
+    HS_Xe_6[ 229] = std::pair<fdouble, fdouble>(fdouble(    1.2882740), fdouble(    -10.83904));
+    HS_Xe_6[ 230] = std::pair<fdouble, fdouble>(fdouble(    1.3070130), fdouble(    -10.60041));
+    HS_Xe_6[ 231] = std::pair<fdouble, fdouble>(fdouble(    1.3257510), fdouble(     -10.3721));
+    HS_Xe_6[ 232] = std::pair<fdouble, fdouble>(fdouble(    1.3444900), fdouble(    -10.15362));
+    HS_Xe_6[ 233] = std::pair<fdouble, fdouble>(fdouble(    1.3632280), fdouble(    -9.944441));
+    HS_Xe_6[ 234] = std::pair<fdouble, fdouble>(fdouble(    1.3819670), fdouble(    -9.743946));
+    HS_Xe_6[ 235] = std::pair<fdouble, fdouble>(fdouble(    1.4007050), fdouble(    -9.551569));
+    HS_Xe_6[ 236] = std::pair<fdouble, fdouble>(fdouble(    1.4194440), fdouble(    -9.366958));
+    HS_Xe_6[ 237] = std::pair<fdouble, fdouble>(fdouble(    1.4381820), fdouble(    -9.189715));
+    HS_Xe_6[ 238] = std::pair<fdouble, fdouble>(fdouble(    1.4569210), fdouble(    -9.019356));
+    HS_Xe_6[ 239] = std::pair<fdouble, fdouble>(fdouble(    1.4756590), fdouble(    -8.855418));
+    HS_Xe_6[ 240] = std::pair<fdouble, fdouble>(fdouble(    1.5131370), fdouble(    -8.589969));
+    HS_Xe_6[ 241] = std::pair<fdouble, fdouble>(fdouble(    1.5506140), fdouble(    -8.298093));
+    HS_Xe_6[ 242] = std::pair<fdouble, fdouble>(fdouble(    1.5880910), fdouble(    -8.026409));
+    HS_Xe_6[ 243] = std::pair<fdouble, fdouble>(fdouble(    1.6255680), fdouble(    -7.772912));
+    HS_Xe_6[ 244] = std::pair<fdouble, fdouble>(fdouble(    1.6630450), fdouble(    -7.535923));
+    HS_Xe_6[ 245] = std::pair<fdouble, fdouble>(fdouble(    1.7005220), fdouble(    -7.313825));
+    HS_Xe_6[ 246] = std::pair<fdouble, fdouble>(fdouble(    1.7379990), fdouble(    -7.105182));
+    HS_Xe_6[ 247] = std::pair<fdouble, fdouble>(fdouble(    1.7754770), fdouble(    -6.908848));
+    HS_Xe_6[ 248] = std::pair<fdouble, fdouble>(fdouble(    1.8129540), fdouble(    -6.723544));
+    HS_Xe_6[ 249] = std::pair<fdouble, fdouble>(fdouble(    1.8504310), fdouble(    -6.548394));
+    HS_Xe_6[ 250] = std::pair<fdouble, fdouble>(fdouble(    1.8879080), fdouble(    -6.382513));
+    HS_Xe_6[ 251] = std::pair<fdouble, fdouble>(fdouble(    1.9253850), fdouble(    -6.232519));
+    HS_Xe_6[ 252] = std::pair<fdouble, fdouble>(fdouble(    1.9628620), fdouble(    -6.113521));
+    HS_Xe_6[ 253] = std::pair<fdouble, fdouble>(fdouble(    2.0003390), fdouble(    -5.998982));
+    HS_Xe_6[ 254] = std::pair<fdouble, fdouble>(fdouble(    2.0378160), fdouble(    -5.888657));
+    HS_Xe_6[ 255] = std::pair<fdouble, fdouble>(fdouble(    2.0752930), fdouble(    -5.782315));
+    HS_Xe_6[ 256] = std::pair<fdouble, fdouble>(fdouble(    2.1127700), fdouble(    -5.679747));
+    HS_Xe_6[ 257] = std::pair<fdouble, fdouble>(fdouble(    2.1502470), fdouble(    -5.580753));
+    HS_Xe_6[ 258] = std::pair<fdouble, fdouble>(fdouble(    2.1877240), fdouble(    -5.485152));
+    HS_Xe_6[ 259] = std::pair<fdouble, fdouble>(fdouble(    2.2252010), fdouble(     -5.39277));
+    HS_Xe_6[ 260] = std::pair<fdouble, fdouble>(fdouble(    2.2626780), fdouble(    -5.303449));
+    HS_Xe_6[ 261] = std::pair<fdouble, fdouble>(fdouble(    2.3001550), fdouble(    -5.217039));
+    HS_Xe_6[ 262] = std::pair<fdouble, fdouble>(fdouble(    2.3376320), fdouble(    -5.133399));
+    HS_Xe_6[ 263] = std::pair<fdouble, fdouble>(fdouble(    2.3751090), fdouble(    -5.052399));
+    HS_Xe_6[ 264] = std::pair<fdouble, fdouble>(fdouble(    2.4125860), fdouble(    -4.973915));
+    HS_Xe_6[ 265] = std::pair<fdouble, fdouble>(fdouble(    2.4500630), fdouble(    -4.897832));
+    HS_Xe_6[ 266] = std::pair<fdouble, fdouble>(fdouble(    2.4875400), fdouble(    -4.824042));
+    HS_Xe_6[ 267] = std::pair<fdouble, fdouble>(fdouble(    2.5250170), fdouble(    -4.752442));
+    HS_Xe_6[ 268] = std::pair<fdouble, fdouble>(fdouble(    2.5624950), fdouble(    -4.682937));
+    HS_Xe_6[ 269] = std::pair<fdouble, fdouble>(fdouble(    2.5999720), fdouble(    -4.615435));
+    HS_Xe_6[ 270] = std::pair<fdouble, fdouble>(fdouble(    2.6374490), fdouble(    -4.549852));
+    HS_Xe_6[ 271] = std::pair<fdouble, fdouble>(fdouble(    2.6749260), fdouble(    -4.486106));
+    HS_Xe_6[ 272] = std::pair<fdouble, fdouble>(fdouble(    2.7124030), fdouble(    -4.424122));
+    HS_Xe_6[ 273] = std::pair<fdouble, fdouble>(fdouble(    2.7498800), fdouble(    -4.363827));
+    HS_Xe_6[ 274] = std::pair<fdouble, fdouble>(fdouble(    2.7873570), fdouble(    -4.305154));
+    HS_Xe_6[ 275] = std::pair<fdouble, fdouble>(fdouble(    2.8248340), fdouble(    -4.248038));
+    HS_Xe_6[ 276] = std::pair<fdouble, fdouble>(fdouble(    2.8623110), fdouble(    -4.192417));
+    HS_Xe_6[ 277] = std::pair<fdouble, fdouble>(fdouble(    2.8997880), fdouble(    -4.138234));
+    HS_Xe_6[ 278] = std::pair<fdouble, fdouble>(fdouble(    2.9372650), fdouble(    -4.085433));
+    HS_Xe_6[ 279] = std::pair<fdouble, fdouble>(fdouble(    2.9747420), fdouble(    -4.033964));
+    HS_Xe_6[ 280] = std::pair<fdouble, fdouble>(fdouble(    3.0496960), fdouble(    -3.934819));
+    HS_Xe_6[ 281] = std::pair<fdouble, fdouble>(fdouble(    3.1246500), fdouble(     -3.84043));
+    HS_Xe_6[ 282] = std::pair<fdouble, fdouble>(fdouble(    3.1996050), fdouble(    -3.750463));
+    HS_Xe_6[ 283] = std::pair<fdouble, fdouble>(fdouble(    3.2745590), fdouble(    -3.664616));
+    HS_Xe_6[ 284] = std::pair<fdouble, fdouble>(fdouble(    3.3495130), fdouble(     -3.58261));
+    HS_Xe_6[ 285] = std::pair<fdouble, fdouble>(fdouble(    3.4244670), fdouble(    -3.504195));
+    HS_Xe_6[ 286] = std::pair<fdouble, fdouble>(fdouble(    3.4994220), fdouble(    -3.429138));
+    HS_Xe_6[ 287] = std::pair<fdouble, fdouble>(fdouble(    3.5743760), fdouble(    -3.357229));
+    HS_Xe_6[ 288] = std::pair<fdouble, fdouble>(fdouble(    3.6493300), fdouble(    -3.288275));
+    HS_Xe_6[ 289] = std::pair<fdouble, fdouble>(fdouble(    3.7242840), fdouble(    -3.222095));
+    HS_Xe_6[ 290] = std::pair<fdouble, fdouble>(fdouble(    3.7992390), fdouble(    -3.158528));
+    HS_Xe_6[ 291] = std::pair<fdouble, fdouble>(fdouble(    3.8741930), fdouble(    -3.097419));
+    HS_Xe_6[ 292] = std::pair<fdouble, fdouble>(fdouble(    3.9491470), fdouble(    -3.038631));
+    HS_Xe_6[ 293] = std::pair<fdouble, fdouble>(fdouble(    4.0241010), fdouble(    -2.982032));
+    HS_Xe_6[ 294] = std::pair<fdouble, fdouble>(fdouble(    4.0990550), fdouble(    -2.927504));
+    HS_Xe_6[ 295] = std::pair<fdouble, fdouble>(fdouble(    4.1740090), fdouble(    -2.874934));
+    HS_Xe_6[ 296] = std::pair<fdouble, fdouble>(fdouble(    4.2489630), fdouble(    -2.824218));
+    HS_Xe_6[ 297] = std::pair<fdouble, fdouble>(fdouble(    4.3239170), fdouble(    -2.775261));
+    HS_Xe_6[ 298] = std::pair<fdouble, fdouble>(fdouble(    4.3988710), fdouble(    -2.727973));
+    HS_Xe_6[ 299] = std::pair<fdouble, fdouble>(fdouble(    4.4738250), fdouble(    -2.682268));
+    HS_Xe_6[ 300] = std::pair<fdouble, fdouble>(fdouble(    4.5487790), fdouble(     -2.63807));
+    HS_Xe_6[ 301] = std::pair<fdouble, fdouble>(fdouble(    4.6237340), fdouble(    -2.595305));
+    HS_Xe_6[ 302] = std::pair<fdouble, fdouble>(fdouble(    4.6986880), fdouble(    -2.553905));
+    HS_Xe_6[ 303] = std::pair<fdouble, fdouble>(fdouble(    4.7736420), fdouble(    -2.513804));
+    HS_Xe_6[ 304] = std::pair<fdouble, fdouble>(fdouble(    4.8485960), fdouble(    -2.474943));
+    HS_Xe_6[ 305] = std::pair<fdouble, fdouble>(fdouble(    4.9235500), fdouble(    -2.437266));
+    HS_Xe_6[ 306] = std::pair<fdouble, fdouble>(fdouble(    4.9985040), fdouble(    -2.400718));
+    HS_Xe_6[ 307] = std::pair<fdouble, fdouble>(fdouble(    5.0734580), fdouble(    -2.365251));
+    HS_Xe_6[ 308] = std::pair<fdouble, fdouble>(fdouble(    5.1484120), fdouble(    -2.330816));
+    HS_Xe_6[ 309] = std::pair<fdouble, fdouble>(fdouble(    5.2233660), fdouble(    -2.297369));
+    HS_Xe_6[ 310] = std::pair<fdouble, fdouble>(fdouble(    5.2983200), fdouble(    -2.264869));
+    HS_Xe_6[ 311] = std::pair<fdouble, fdouble>(fdouble(    5.3732740), fdouble(    -2.233275));
+    HS_Xe_6[ 312] = std::pair<fdouble, fdouble>(fdouble(    5.4482280), fdouble(    -2.202551));
+    HS_Xe_6[ 313] = std::pair<fdouble, fdouble>(fdouble(    5.5231820), fdouble(    -2.172661));
+    HS_Xe_6[ 314] = std::pair<fdouble, fdouble>(fdouble(    5.5981360), fdouble(    -2.143571));
+    HS_Xe_6[ 315] = std::pair<fdouble, fdouble>(fdouble(    5.6730900), fdouble(    -2.115249));
+    HS_Xe_6[ 316] = std::pair<fdouble, fdouble>(fdouble(    5.7480440), fdouble(    -2.087667));
+    HS_Xe_6[ 317] = std::pair<fdouble, fdouble>(fdouble(    5.8229980), fdouble(    -2.060794));
+    HS_Xe_6[ 318] = std::pair<fdouble, fdouble>(fdouble(    5.8979520), fdouble(    -2.034605));
+    HS_Xe_6[ 319] = std::pair<fdouble, fdouble>(fdouble(    5.9729060), fdouble(    -2.009072));
+    HS_Xe_6[ 320] = std::pair<fdouble, fdouble>(fdouble(    6.1228150), fdouble(    -1.959883));
+    HS_Xe_6[ 321] = std::pair<fdouble, fdouble>(fdouble(    6.2727230), fdouble(    -1.913045));
+    HS_Xe_6[ 322] = std::pair<fdouble, fdouble>(fdouble(    6.4226320), fdouble(    -1.868393));
+    HS_Xe_6[ 323] = std::pair<fdouble, fdouble>(fdouble(    6.5725400), fdouble(    -1.825778));
+    HS_Xe_6[ 324] = std::pair<fdouble, fdouble>(fdouble(    6.7224490), fdouble(    -1.785064));
+    HS_Xe_6[ 325] = std::pair<fdouble, fdouble>(fdouble(    6.8723570), fdouble(    -1.746126));
+    HS_Xe_6[ 326] = std::pair<fdouble, fdouble>(fdouble(    7.0222660), fdouble(     -1.70885));
+    HS_Xe_6[ 327] = std::pair<fdouble, fdouble>(fdouble(    7.1721740), fdouble(    -1.673133));
+    HS_Xe_6[ 328] = std::pair<fdouble, fdouble>(fdouble(    7.3220830), fdouble(    -1.638878));
+    HS_Xe_6[ 329] = std::pair<fdouble, fdouble>(fdouble(    7.4719920), fdouble(    -1.605998));
+    HS_Xe_6[ 330] = std::pair<fdouble, fdouble>(fdouble(    7.6219000), fdouble(    -1.574411));
+    HS_Xe_6[ 331] = std::pair<fdouble, fdouble>(fdouble(    7.7718090), fdouble(    -1.544042));
+    HS_Xe_6[ 332] = std::pair<fdouble, fdouble>(fdouble(    7.9217170), fdouble(    -1.514823));
+    HS_Xe_6[ 333] = std::pair<fdouble, fdouble>(fdouble(    8.0716260), fdouble(    -1.486689));
+    HS_Xe_6[ 334] = std::pair<fdouble, fdouble>(fdouble(    8.2215340), fdouble(    -1.459582));
+    HS_Xe_6[ 335] = std::pair<fdouble, fdouble>(fdouble(    8.3714420), fdouble(    -1.433445));
+    HS_Xe_6[ 336] = std::pair<fdouble, fdouble>(fdouble(    8.5213500), fdouble(    -1.408228));
+    HS_Xe_6[ 337] = std::pair<fdouble, fdouble>(fdouble(    8.6712580), fdouble(    -1.383882));
+    HS_Xe_6[ 338] = std::pair<fdouble, fdouble>(fdouble(    8.8211660), fdouble(    -1.360364));
+    HS_Xe_6[ 339] = std::pair<fdouble, fdouble>(fdouble(    8.9710740), fdouble(    -1.337632));
+    HS_Xe_6[ 340] = std::pair<fdouble, fdouble>(fdouble(    9.1209820), fdouble(    -1.315648));
+    HS_Xe_6[ 341] = std::pair<fdouble, fdouble>(fdouble(    9.2708900), fdouble(    -1.294374));
+    HS_Xe_6[ 342] = std::pair<fdouble, fdouble>(fdouble(    9.4207980), fdouble(    -1.273777));
+    HS_Xe_6[ 343] = std::pair<fdouble, fdouble>(fdouble(    9.5707060), fdouble(    -1.253826));
+    HS_Xe_6[ 344] = std::pair<fdouble, fdouble>(fdouble(    9.7206140), fdouble(     -1.23449));
+    HS_Xe_6[ 345] = std::pair<fdouble, fdouble>(fdouble(    9.8705220), fdouble(    -1.215741));
+    HS_Xe_6[ 346] = std::pair<fdouble, fdouble>(fdouble(   10.0204300), fdouble(    -1.197553));
+    HS_Xe_6[ 347] = std::pair<fdouble, fdouble>(fdouble(   10.1703400), fdouble(    -1.179902));
+    HS_Xe_6[ 348] = std::pair<fdouble, fdouble>(fdouble(   10.3202500), fdouble(    -1.162763));
+    HS_Xe_6[ 349] = std::pair<fdouble, fdouble>(fdouble(   10.4701500), fdouble(    -1.146115));
+    HS_Xe_6[ 350] = std::pair<fdouble, fdouble>(fdouble(   10.6200600), fdouble(    -1.129937));
+    HS_Xe_6[ 351] = std::pair<fdouble, fdouble>(fdouble(   10.7699700), fdouble(    -1.114209));
+    HS_Xe_6[ 352] = std::pair<fdouble, fdouble>(fdouble(   10.9198800), fdouble(    -1.098913));
+    HS_Xe_6[ 353] = std::pair<fdouble, fdouble>(fdouble(   11.0697900), fdouble(    -1.084032));
+    HS_Xe_6[ 354] = std::pair<fdouble, fdouble>(fdouble(   11.2197000), fdouble(    -1.069548));
+    HS_Xe_6[ 355] = std::pair<fdouble, fdouble>(fdouble(   11.3696000), fdouble(    -1.055446));
+    HS_Xe_6[ 356] = std::pair<fdouble, fdouble>(fdouble(   11.5195100), fdouble(    -1.041711));
+    HS_Xe_6[ 357] = std::pair<fdouble, fdouble>(fdouble(   11.6694200), fdouble(    -1.028329));
+    HS_Xe_6[ 358] = std::pair<fdouble, fdouble>(fdouble(   11.8193300), fdouble(    -1.015286));
+    HS_Xe_6[ 359] = std::pair<fdouble, fdouble>(fdouble(   11.9692400), fdouble(     -1.00257));
+    HS_Xe_6[ 360] = std::pair<fdouble, fdouble>(fdouble(   12.2690500), fdouble(   -0.9780706));
+    HS_Xe_6[ 361] = std::pair<fdouble, fdouble>(fdouble(   12.5688700), fdouble(   -0.9547398));
+    HS_Xe_6[ 362] = std::pair<fdouble, fdouble>(fdouble(   12.8686900), fdouble(   -0.9324961));
+    HS_Xe_6[ 363] = std::pair<fdouble, fdouble>(fdouble(   13.1685000), fdouble(   -0.9112653));
+    HS_Xe_6[ 364] = std::pair<fdouble, fdouble>(fdouble(   13.4683200), fdouble(   -0.8909796));
+    HS_Xe_6[ 365] = std::pair<fdouble, fdouble>(fdouble(   13.7681400), fdouble(   -0.8715776));
+    HS_Xe_6[ 366] = std::pair<fdouble, fdouble>(fdouble(   14.0679600), fdouble(   -0.8530024));
+    HS_Xe_6[ 367] = std::pair<fdouble, fdouble>(fdouble(   14.3677700), fdouble(   -0.8352026));
+    HS_Xe_6[ 368] = std::pair<fdouble, fdouble>(fdouble(   14.6675900), fdouble(   -0.8181304));
+    HS_Xe_6[ 369] = std::pair<fdouble, fdouble>(fdouble(   14.9674100), fdouble(   -0.8017421));
+    HS_Xe_6[ 370] = std::pair<fdouble, fdouble>(fdouble(   15.2672200), fdouble(   -0.7859976));
+    HS_Xe_6[ 371] = std::pair<fdouble, fdouble>(fdouble(   15.5670400), fdouble(   -0.7708594));
+    HS_Xe_6[ 372] = std::pair<fdouble, fdouble>(fdouble(   15.8668600), fdouble(   -0.7562934));
+    HS_Xe_6[ 373] = std::pair<fdouble, fdouble>(fdouble(   16.1666700), fdouble(   -0.7422677));
+    HS_Xe_6[ 374] = std::pair<fdouble, fdouble>(fdouble(   16.4664900), fdouble(   -0.7287528));
+    HS_Xe_6[ 375] = std::pair<fdouble, fdouble>(fdouble(   16.7663100), fdouble(   -0.7157212));
+    HS_Xe_6[ 376] = std::pair<fdouble, fdouble>(fdouble(   17.0661200), fdouble(   -0.7031474));
+    HS_Xe_6[ 377] = std::pair<fdouble, fdouble>(fdouble(   17.3659400), fdouble(   -0.6910079));
+    HS_Xe_6[ 378] = std::pair<fdouble, fdouble>(fdouble(   17.6657500), fdouble(   -0.6792803));
+    HS_Xe_6[ 379] = std::pair<fdouble, fdouble>(fdouble(   17.9655700), fdouble(   -0.6679443));
+    HS_Xe_6[ 380] = std::pair<fdouble, fdouble>(fdouble(   18.2653900), fdouble(   -0.6569803));
+    HS_Xe_6[ 381] = std::pair<fdouble, fdouble>(fdouble(   18.5652000), fdouble(   -0.6463705));
+    HS_Xe_6[ 382] = std::pair<fdouble, fdouble>(fdouble(   18.8650200), fdouble(    -0.636098));
+    HS_Xe_6[ 383] = std::pair<fdouble, fdouble>(fdouble(   19.1648300), fdouble(   -0.6261468));
+    HS_Xe_6[ 384] = std::pair<fdouble, fdouble>(fdouble(   19.4646500), fdouble(   -0.6165022));
+    HS_Xe_6[ 385] = std::pair<fdouble, fdouble>(fdouble(   19.7644700), fdouble(   -0.6071502));
+    HS_Xe_6[ 386] = std::pair<fdouble, fdouble>(fdouble(   20.0642800), fdouble(   -0.5980777));
+    HS_Xe_6[ 387] = std::pair<fdouble, fdouble>(fdouble(   20.3641000), fdouble(   -0.5892723));
+    HS_Xe_6[ 388] = std::pair<fdouble, fdouble>(fdouble(   20.6639200), fdouble(   -0.5807225));
+    HS_Xe_6[ 389] = std::pair<fdouble, fdouble>(fdouble(   20.9637300), fdouble(   -0.5724171));
+    HS_Xe_6[ 390] = std::pair<fdouble, fdouble>(fdouble(   21.2635500), fdouble(   -0.5643461));
+    HS_Xe_6[ 391] = std::pair<fdouble, fdouble>(fdouble(   21.5633600), fdouble(   -0.5564994));
+    HS_Xe_6[ 392] = std::pair<fdouble, fdouble>(fdouble(   21.8631800), fdouble(    -0.548868));
+    HS_Xe_6[ 393] = std::pair<fdouble, fdouble>(fdouble(   22.1630000), fdouble(    -0.541443));
+    HS_Xe_6[ 394] = std::pair<fdouble, fdouble>(fdouble(   22.4628100), fdouble(   -0.5342163));
+    HS_Xe_6[ 395] = std::pair<fdouble, fdouble>(fdouble(   22.7626300), fdouble(   -0.5271799));
+    HS_Xe_6[ 396] = std::pair<fdouble, fdouble>(fdouble(   23.0624400), fdouble(   -0.5203264));
+    HS_Xe_6[ 397] = std::pair<fdouble, fdouble>(fdouble(   23.3622600), fdouble(   -0.5136489));
+    HS_Xe_6[ 398] = std::pair<fdouble, fdouble>(fdouble(   23.6620800), fdouble(   -0.5071406));
+    HS_Xe_6[ 399] = std::pair<fdouble, fdouble>(fdouble(   23.9618900), fdouble(   -0.5007952));
+    HS_Xe_6[ 400] = std::pair<fdouble, fdouble>(fdouble(   24.5615300), fdouble(    -0.488569));
+    HS_Xe_6[ 401] = std::pair<fdouble, fdouble>(fdouble(   25.1611600), fdouble(   -0.4769255));
+    HS_Xe_6[ 402] = std::pair<fdouble, fdouble>(fdouble(   25.7608000), fdouble(   -0.4658241));
+    HS_Xe_6[ 403] = std::pair<fdouble, fdouble>(fdouble(   26.3604300), fdouble(   -0.4552278));
+    HS_Xe_6[ 404] = std::pair<fdouble, fdouble>(fdouble(   26.9600600), fdouble(   -0.4451028));
+    HS_Xe_6[ 405] = std::pair<fdouble, fdouble>(fdouble(   27.5597000), fdouble(   -0.4354184));
+    HS_Xe_6[ 406] = std::pair<fdouble, fdouble>(fdouble(   28.1593300), fdouble(   -0.4261465));
+    HS_Xe_6[ 407] = std::pair<fdouble, fdouble>(fdouble(   28.7589700), fdouble(   -0.4172612));
+    HS_Xe_6[ 408] = std::pair<fdouble, fdouble>(fdouble(   29.3586000), fdouble(   -0.4087388));
+    HS_Xe_6[ 409] = std::pair<fdouble, fdouble>(fdouble(   29.9582300), fdouble(   -0.4005576));
+    HS_Xe_6[ 410] = std::pair<fdouble, fdouble>(fdouble(   30.5578700), fdouble(   -0.3926975));
+    HS_Xe_6[ 411] = std::pair<fdouble, fdouble>(fdouble(   31.1575000), fdouble(     -0.38514));
+    HS_Xe_6[ 412] = std::pair<fdouble, fdouble>(fdouble(   31.7571400), fdouble(   -0.3778678));
+    HS_Xe_6[ 413] = std::pair<fdouble, fdouble>(fdouble(   32.3567700), fdouble(   -0.3708652));
+    HS_Xe_6[ 414] = std::pair<fdouble, fdouble>(fdouble(   32.9564000), fdouble(   -0.3641174));
+    HS_Xe_6[ 415] = std::pair<fdouble, fdouble>(fdouble(   33.5560300), fdouble(   -0.3576108));
+    HS_Xe_6[ 416] = std::pair<fdouble, fdouble>(fdouble(   34.1556700), fdouble(   -0.3513326));
+    HS_Xe_6[ 417] = std::pair<fdouble, fdouble>(fdouble(   34.7553000), fdouble(   -0.3452711));
+    HS_Xe_6[ 418] = std::pair<fdouble, fdouble>(fdouble(   35.3549300), fdouble(   -0.3394152));
+    HS_Xe_6[ 419] = std::pair<fdouble, fdouble>(fdouble(   35.9545600), fdouble(   -0.3337546));
+    HS_Xe_6[ 420] = std::pair<fdouble, fdouble>(fdouble(   36.5542000), fdouble(   -0.3282797));
+    HS_Xe_6[ 421] = std::pair<fdouble, fdouble>(fdouble(   37.1538300), fdouble(   -0.3229815));
+    HS_Xe_6[ 422] = std::pair<fdouble, fdouble>(fdouble(   37.7534600), fdouble(   -0.3178517));
+    HS_Xe_6[ 423] = std::pair<fdouble, fdouble>(fdouble(   38.3530900), fdouble(   -0.3128822));
+    HS_Xe_6[ 424] = std::pair<fdouble, fdouble>(fdouble(   38.9527200), fdouble(   -0.3080657));
+    HS_Xe_6[ 425] = std::pair<fdouble, fdouble>(fdouble(   39.5523600), fdouble(   -0.3033953));
+    HS_Xe_6[ 426] = std::pair<fdouble, fdouble>(fdouble(   40.1519900), fdouble(   -0.2988644));
+    HS_Xe_6[ 427] = std::pair<fdouble, fdouble>(fdouble(   40.7516200), fdouble(   -0.2944668));
+    HS_Xe_6[ 428] = std::pair<fdouble, fdouble>(fdouble(   41.3512500), fdouble(   -0.2901968));
+    HS_Xe_6[ 429] = std::pair<fdouble, fdouble>(fdouble(   41.9508900), fdouble(   -0.2860488));
+    HS_Xe_6[ 430] = std::pair<fdouble, fdouble>(fdouble(   42.5505200), fdouble(   -0.2820177));
+    HS_Xe_6[ 431] = std::pair<fdouble, fdouble>(fdouble(   43.1501500), fdouble(   -0.2780987));
+    HS_Xe_6[ 432] = std::pair<fdouble, fdouble>(fdouble(   43.7497800), fdouble(   -0.2742871));
+    HS_Xe_6[ 433] = std::pair<fdouble, fdouble>(fdouble(   44.3494100), fdouble(   -0.2705785));
+    HS_Xe_6[ 434] = std::pair<fdouble, fdouble>(fdouble(   44.9490500), fdouble(    -0.266969));
+    HS_Xe_6[ 435] = std::pair<fdouble, fdouble>(fdouble(   45.5486800), fdouble(   -0.2634544));
+    HS_Xe_6[ 436] = std::pair<fdouble, fdouble>(fdouble(   46.1483100), fdouble(   -0.2600312));
+    HS_Xe_6[ 437] = std::pair<fdouble, fdouble>(fdouble(   46.7479400), fdouble(   -0.2566958));
+    HS_Xe_6[ 438] = std::pair<fdouble, fdouble>(fdouble(   47.3475800), fdouble(   -0.2534449));
+    HS_Xe_6[ 439] = std::pair<fdouble, fdouble>(fdouble(   47.9472100), fdouble(   -0.2502753));
 
     return HS_Xe_6;
 }
 
 // ********** End of file ***************************************
+
