@@ -266,6 +266,7 @@ void Initialize_HS(const fdouble &base_potential)
     hs_min_rad.resize(max_hs_cs+2); // +2 for the electron and neutral.
     potential_paramaters potparams;
 
+    // FIXME: Useless!
     // Find the radius where the HS potential is equal to "base_potential"
     // by doing a bisection, for all supported charge states.
     fdouble r_left, r_right, found_r, pot; // [Bohr]
