@@ -3,6 +3,7 @@
 
 #include "FloatType.hpp"
 
+std::vector<std::pair<fdouble,fdouble> > Load_HermanSkillman_Xe_0();
 std::vector<std::pair<fdouble,fdouble> > Load_HermanSkillman_Xe_1();
 std::vector<std::pair<fdouble,fdouble> > Load_HermanSkillman_Xe_2();
 std::vector<std::pair<fdouble,fdouble> > Load_HermanSkillman_Xe_3();
@@ -14,7 +15,7 @@ inline std::vector<std::pair<fdouble,fdouble> >Load_HermanSkillman_Xe(const int 
     if      (cs == -1)
         return Load_HermanSkillman_Xe_1();
     else if (cs == 0)
-        return Load_HermanSkillman_Xe_1();
+        return Load_HermanSkillman_Xe_0();
     else if (cs == 1)
         return Load_HermanSkillman_Xe_1();
     else if (cs == 2)
