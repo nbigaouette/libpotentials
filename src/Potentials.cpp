@@ -307,18 +307,18 @@ void Initialize_HS(const fdouble &base_potential)
         assert(found_r > 0.0);
         //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
 
-        if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs])
+        if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs_i])
         {
             std_cout << "##############################################\n";
             DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
             std_cout << "The value found " << found_r * si_to_au_length << " Bohr (" << found_r << " m)\n";
-            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs] << " Bohr (" << hs_min_rad[cs] * au_to_si_length<<" m)\n";
+            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs_i] << " Bohr (" << hs_min_rad[cs_i] * au_to_si_length<<" m)\n";
             std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*eV_to_Eh << " Eh)\n";
             std_cout << "Exiting\n";
             abort();
         }
 
-        hs_min_rad[cs] = found_r;
+        hs_min_rad[cs_i] = found_r;
     }
 
 //     /*
