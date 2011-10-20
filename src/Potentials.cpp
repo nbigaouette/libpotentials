@@ -294,18 +294,19 @@ void Initialize_HS(const fdouble &base_potential)
     exit(0);
     */
 
-    hs_min_rad.resize(max_hs_cs+1); // +1 for the neutral.
+    hs_min_rad.resize(max_hs_cs+2); // +2 for the electron and neutral.
     potential_paramaters potparams;
 
     // Find the radius where the HS potential is equal to "base_potential"
     // by doing a bisection, for all supported charge states.
     fdouble r_left, r_right, found_r, pot; // [Bohr]
-    for (int cs = 0 ; cs <= max_hs_cs ; cs++)
+    for (int cs_i = 0 ; cs_i < max_hs_cs ; cs_i++)
     {
+        const int cs = cs_i - 1;
         // Initial conditions
-        hs_min_rad[cs] = fit_lt_R1[cs][7];
-        r_left  = fit_lt_R1[cs][7]; // Minimum radius of fit
-        r_right = fdouble(10.0);             // At 10 bohr, it should be coulombic
+        hs_min_rad[cs_i] = hs_lut_potential[cs_i].Get_x_from_i(0);
+        r_left  = hs_min_rad[cs_i];     // Minimum radius of fit
+        r_right = fdouble(10.0);        // At 10 bohr, it should be coulombic
 
         // Start bisection!
         // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
