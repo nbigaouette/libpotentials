@@ -9,7 +9,7 @@
 
 extern void Initialize_Simple(const fdouble &minr);
 extern void Initialize_SuperGaussian(const int &m);
-extern void Initialize_HS(const int &input_sg_m, const fdouble &base_potential);
+extern void Initialize_HS(const fdouble &base_potential);
 
 // **************************************************************
 bool Is_HS_used()
@@ -103,13 +103,11 @@ void Potentials_Initialize(const std::string potential_shape,
     {
         std_cout << "### Using the Herman-Skillman (HS) potential                        ##\n";
         std_cout << "### for close range interaction                                    ###\n";
-        std_cout << "### and Super-Gaussian for electrons and 8+                        ###\n";
-        std_cout << "### and up ions (m = " << input_sg_m << ")                                           ###\n";
         std_cout << "### Initializing the lookup tables...                              ###\n" << std::flush;
         libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
         libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
-        Initialize_HS(input_sg_m, base_potential_depth);
+        Initialize_HS(base_potential_depth);
 
         USING_HS = true;
 

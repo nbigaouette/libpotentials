@@ -165,10 +165,9 @@ void Initialize_SuperGaussian(const int &m)
 }
 
 // **************************************************************
-void Initialize_HS(const int &m, const fdouble &base_potential)
+void Initialize_HS(const fdouble &base_potential)
 /**
- * Initialize super-gaussian like potential
- * @param   m               Order of the Super-Gaussian (m=1 is a simple gaussian) [-]
+ * Initialize Herman-Skillman potential
  * @param   base_potential  Potential depth wanted [eV]
  */
 {
@@ -227,8 +226,6 @@ void Initialize_HS(const int &m, const fdouble &base_potential)
 
         hs_min_rad[cs] = found_r;
     }
-
-    Initialize_SuperGaussian(m);
 }
 
 // **************************************************************
