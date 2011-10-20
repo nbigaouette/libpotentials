@@ -43,6 +43,7 @@ fdouble sg_exp_one_over_two_m;
 
 std::vector<fdouble> hs_min_rad;
 std::vector<LookUpTable<fdouble> > hs_lut_potential;
+std::vector<LookUpTable<fdouble> > hs_lut_field;
 const int max_hs_cs = 7;
 
 const fdouble ps_A = fdouble(0.1)   * angstrom_to_m;
@@ -332,6 +333,28 @@ void Initialize_HS(const fdouble &base_potential)
             if (hs_lut_potential[cs_i].Table(i) > base_potential*eV_to_Eh)
                 hs_lut_potential[cs_i].Set(i, base_potential*eV_to_Eh);
         }
+    }
+
+    // Set the field's lookup table. Do a second order finite difference
+    hs_lut_field.resize(max_hs_cs);
+    for (size_t cs_i = 0 ; cs_i < hs_lut_field.size() ; cs_i++)
+    {
+        const int cs = int(cs_i) - 1;
+        hs_lut_field[cs_i].Initialize(NULL, xmin, xmax, lut_n, "Initialize_HS() LookUpTable (hs_lut_field)" + IntToStr(cs));
+
+        fdouble field    = 0.0;
+        fdouble distance = 0.0;
+        hs_lut_field[cs_i].Set(0, 0.0); // Field at r == 0 should be 0
+        for (int i = 1 ; i < lut_n ; i++)
+        {
+            // FIXME: field should be in SI, not au
+            field    = (hs_lut_potential[cs_i].Table(i+1) - hs_lut_potential[cs_i].Table(i-1)) / two * hs_lut_potential[cs_i].Get_inv_dx();
+            distance = hs_lut_potential[cs_i].Get_x_from_i(i);
+            // We store E/r, not E
+            hs_lut_field[cs_i].Set(0, field / distance);
+        }
+        field = (hs_lut_potential[cs_i].Table(lut_n) - hs_lut_potential[cs_i].Table(lut_n-1)) * hs_lut_potential[cs_i].Get_inv_dx();
+        hs_lut_field[cs_i].Set(lut_n, field);
     }
 
 //     /*
