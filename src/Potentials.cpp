@@ -209,7 +209,7 @@ void Initialize_HS(const fdouble &base_potential)
                 {
                     // hs_tmp_array[hsi].first == r
                     // hs_tmp_array[hsi].second == U
-                    if (hs_tmp_array[hsi].second > r)
+                    if (hs_tmp_array[hsi].first > r)
                     {
                         index_up   = int(hsi);
                         index_down = int(hsi) - 1;
