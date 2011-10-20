@@ -19,6 +19,7 @@
 #include "Code_Functions_Declarations.hpp"
 #include "Global.hpp"
 #include "Vectors.hpp"
+#include "HermanSkillman.hpp"
 
 using namespace libpotentials;
 
@@ -171,6 +172,64 @@ void Initialize_HS(const fdouble &base_potential)
  * @param   base_potential  Potential depth wanted [eV]
  */
 {
+    // We'll need one lookup table per charge state
+    std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
+    hs_lut_potential.resize(max_hs_cs);
+    const fdouble xmin = fdouble(0.0);  // Bohr
+    const fdouble xmax = fdouble(12.0); // Bohr
+    const int lut_n = 100;
+    for (size_t cs_i = 0 ; cs_i < hs_lut_potential.size() ; cs_i++)
+    {
+        const int cs = int(cs_i) - 1;
+        hs_lut_potential[cs_i].Initialize(NULL, xmin, xmax, lut_n, "Initialize_HS() LookUpTable");
+        // FIXME: Dynamically choose between atom types for HS
+        // Use the 1+ for the electron by taking the absolute value of the charge state.
+        // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
+        // on top of each other be seen by other particles as a neutral.
+        std::vector<std::pair<fdouble,fdouble> > hs_tmp_array = Load_HermanSkillman_Xe(std::abs(cs));
+
+        // Now populate the lookup table.
+        fdouble r;
+        for (int i = 0 ; i <= lut_n ; i++)
+        {
+            r = hs_lut_potential[cs_i].Get_x_from_i(i);
+
+            // FIXME: Potential of a neutral is 0. In HS, neutrals do have a potential.
+            if (cs == 0)
+            {
+                hs_lut_potential[cs_i].Set(i, 0.0);
+            }
+            else
+            {
+                // Find between which index of the vector "r" is.
+                // FIXME: Do it more intelligently
+                int index_up   = -1;
+                int index_down = -1;
+                for (size_t hsi = 0 ; hsi < hs_tmp_array.size() ; hsi++)
+                {
+                    // hs_tmp_array[hsi].first == r
+                    // hs_tmp_array[hsi].second == U
+                    if (hs_tmp_array[hsi].second > r)
+                    {
+                        index_up   = int(hsi);
+                        index_down = int(hsi) - 1;
+                        break;
+                    }
+                }
+                // Linear interpolation between the two points
+                const fdouble s = (hs_tmp_array[index_up].second - hs_tmp_array[index_down].second) / (hs_tmp_array[index_up].first - hs_tmp_array[index_down].first);
+                const fdouble b = hs_tmp_array[index_down].second - s * hs_tmp_array[index_down].first;
+                // Interpolate
+                fdouble HS_U_r = s*r + b;
+                // Scale with the charge state
+                HS_U_r /= fdouble(cs);
+                // Save it
+                hs_lut_potential[cs_i].Set(i, HS_U_r);
+            }
+        }
+    }
+
+
     hs_min_rad.resize(max_hs_cs+1); // +1 for the neutral.
     potential_paramaters potparams;
 
