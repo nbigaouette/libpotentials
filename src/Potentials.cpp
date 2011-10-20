@@ -263,62 +263,6 @@ void Initialize_HS(const fdouble &base_potential)
         }
     }
 
-//     /*
-    // Print lookup table for verification
-    const int max_lut = 7;
-    std::string filename("lut_hs.dat");
-    std::string gnuplot_command("");
-    gnuplot_command += "#set term wxt 3; plot ";
-    int row = 2;
-    for (int l = 0 ; l < max_lut ; l++)
-    {
-        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
-        if (l == max_lut-1)
-            gnuplot_command += "\n";
-        else
-            gnuplot_command += ", ";
-    }
-    gnuplot_command += "#set term wxt 4; plot ";
-    for (int l = 0 ; l < max_lut ; l++)
-    {
-        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"cs*LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
-    }
-    for (int l = 1 ; l <= max_lut-2 ; l++)
-    {
-        gnuplot_command += "-" + IntToStr(l) + "/x with dots";
-        if (l == max_lut-2)
-            gnuplot_command += "\n";
-        else
-            gnuplot_command += ", ";
-    }
-    fprintf(stderr, "%s", gnuplot_command.c_str());
-    std::string::size_type pos = 0;
-    std::string searchString("#");
-    while ((pos = gnuplot_command.find(searchString, pos)) != std::string::npos)
-    {
-        gnuplot_command.replace(pos, searchString.size(), "");
-        pos++;
-    }
-    std_cout << "\n" << gnuplot_command << "\n";
-    fprintf(stderr, "#  r (bohr)         V(-1)         V(0)         V(1)         V(2)      cs*V(-1)      cs*V(0)      cs*V(1)      cs*V(2)\n");
-    for (int i = 0 ; i < lut_n ; i++)
-    {
-        const float distance = float(i)/hs_lut_potential[0].Get_inv_dx() + xmin;
-        fprintf(stderr, "%11.6g   ", distance);
-        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
-        {
-            fprintf(stderr, "%10.4g   ", hs_lut_potential[lut_index].read(distance));
-        }
-        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
-        {
-            fprintf(stderr, "%10.4g   ", fdouble(lut_index-1)*hs_lut_potential[lut_index].read(distance));
-        }
-        fprintf(stderr, "\n");
-    }
-    std_cout << std::flush;
-    exit(0);
-//     */
-
     hs_min_rad.resize(max_hs_cs+2); // +2 for the electron and neutral.
     potential_paramaters potparams;
 
@@ -376,6 +320,62 @@ void Initialize_HS(const fdouble &base_potential)
 
         hs_min_rad[cs] = found_r;
     }
+
+//     /*
+    // Print lookup table for verification
+    const int max_lut = 7;
+    std::string filename("lut_hs.dat");
+    std::string gnuplot_command("");
+    gnuplot_command += "#set term wxt 3; plot ";
+    int row = 2;
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        if (l == max_lut-1)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
+    gnuplot_command += "#set term wxt 4; plot ";
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"cs*LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+    }
+    for (int l = 1 ; l <= max_lut-2 ; l++)
+    {
+        gnuplot_command += "-" + IntToStr(l) + "/x with dots";
+        if (l == max_lut-2)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
+    fprintf(stderr, "%s", gnuplot_command.c_str());
+    std::string::size_type pos = 0;
+    std::string searchString("#");
+    while ((pos = gnuplot_command.find(searchString, pos)) != std::string::npos)
+    {
+        gnuplot_command.replace(pos, searchString.size(), "");
+        pos++;
+    }
+    std_cout << "\n" << gnuplot_command << "\n";
+    fprintf(stderr, "#  r (bohr)         V(-1)         V(0)         V(1)         V(2)      cs*V(-1)      cs*V(0)      cs*V(1)      cs*V(2)\n");
+    for (int i = 0 ; i < lut_n ; i++)
+    {
+        const float distance = float(i)/hs_lut_potential[0].Get_inv_dx() + xmin;
+        fprintf(stderr, "%11.6g   ", distance);
+        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
+        {
+            fprintf(stderr, "%10.4g   ", hs_lut_potential[lut_index].read(distance));
+        }
+        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
+        {
+            fprintf(stderr, "%10.4g   ", fdouble(lut_index-1)*hs_lut_potential[lut_index].read(distance));
+        }
+        fprintf(stderr, "\n");
+    }
+    std_cout << std::flush;
+    exit(0);
+//     */
 }
 
 // **************************************************************
