@@ -319,6 +319,7 @@ void Initialize_HS(const fdouble &base_potential)
             potparams.r = found_r * bohr_to_m;
             pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
             //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
+            Assert_isinf_isnan(pot);
             if (pot <= fdouble(std::max(1,cs))*base_potential)
             {
                 r_right = found_r;
