@@ -734,13 +734,20 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 {
     Check_if_LibPotentials_is_initialized();
 
-    fdouble phi12 = 0.0;   // Electrostatic potential
+    //fdouble phi12 = 0.0;   // Electrostatic potential
 
     // Fits are in atomic units
     fdouble distance_au = potparams.r * si_to_au_length;
 
     const int cs = potparams.hs_cs2;
 
+    // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
+
+    const int lut_i = cs + 1;
+
+    return hs_lut_potential[lut_i].read(distance_au);
+
+/*
     // Ions are given a potential inside the electron cloud.
     // The last two fdoubles of the fit_lessthan_R array is the range
     // the fit is valid for below the smallest range we have a simple
@@ -807,6 +814,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
         phi12 /= fdouble(std::max(1,Get_Charge_State(p2)));
 
     return phi12;
+*/
 }
 
 // **************************************************************
