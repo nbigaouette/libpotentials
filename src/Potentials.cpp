@@ -191,7 +191,7 @@ void Initialize_HS(const fdouble &base_potential)
     hs_lut_potential.resize(max_hs_cs);
     const fdouble xmin = fdouble(0.0);  // Bohr
     const fdouble xmax = fdouble(12.0); // Bohr
-    const int lut_n = 100;
+    const int lut_n = 10000;
     for (size_t cs_i = 0 ; cs_i < hs_lut_potential.size() ; cs_i++)
     {
         const int cs = int(cs_i) - 1;
