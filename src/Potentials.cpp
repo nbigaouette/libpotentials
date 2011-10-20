@@ -194,7 +194,7 @@ void Initialize_HS(const fdouble &base_potential)
     for (size_t cs_i = 0 ; cs_i < hs_lut_potential.size() ; cs_i++)
     {
         const int cs = int(cs_i) - 1;
-        hs_lut_potential[cs_i].Initialize(NULL, xmin, xmax, lut_n, "Initialize_HS() LookUpTable");
+        hs_lut_potential[cs_i].Initialize(NULL, xmin, xmax, lut_n, "Initialize_HS() LookUpTable (hs_lut_potential)" + IntToStr(cs));
         // FIXME: Dynamically choose between atom types for HS
         // Use the 1+ for the electron by taking the absolute value of the charge state.
         // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
