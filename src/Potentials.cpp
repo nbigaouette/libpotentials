@@ -41,6 +41,7 @@ fdouble sg_m_pow_one_over_two_m;
 fdouble sg_exp_one_over_two_m;
 
 std::vector<fdouble> hs_min_rad;
+std::vector<LookUpTable<fdouble> > hs_lut_potential;
 const int max_hs_cs = 7;
 
 const fdouble ps_A = fdouble(0.1)   * angstrom_to_m;
