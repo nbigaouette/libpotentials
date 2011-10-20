@@ -216,13 +216,34 @@ void Initialize_HS(const fdouble &base_potential)
                         break;
                     }
                 }
-                // Linear interpolation between the two points
-                const fdouble s = (hs_tmp_array[index_up].second - hs_tmp_array[index_down].second) / (hs_tmp_array[index_up].first - hs_tmp_array[index_down].first);
-                const fdouble b = hs_tmp_array[index_down].second - s * hs_tmp_array[index_down].first;
-                // Interpolate
-                fdouble HS_U_r = s*r + b;
+                assert(index_up != -1);
+
+                fdouble HS_U_r = 0.0;
+                if (index_up == 0)
+                {
+                    // If index_up == 0, index_down == -1, breaking the linear interpolation.
+                    // In that case, just take the first value.
+                    HS_U_r = hs_tmp_array[0].second;
+                }
+                else
+                {
+                    // Linear interpolation between the two points
+                    const fdouble s = (hs_tmp_array[index_up].second - hs_tmp_array[index_down].second) / (hs_tmp_array[index_up].first - hs_tmp_array[index_down].first);
+                    const fdouble b = hs_tmp_array[index_down].second - s * hs_tmp_array[index_down].first;
+
+                    Assert_isinf_isnan(hs_tmp_array[index_down].first);
+                    Assert_isinf_isnan(hs_tmp_array[index_down].second);
+                    Assert_isinf_isnan(hs_tmp_array[index_up].first);
+                    Assert_isinf_isnan(hs_tmp_array[index_up].second);
+                    Assert_isinf_isnan(s);
+                    Assert_isinf_isnan(b);
+
+                    // Interpolate
+                    HS_U_r = s*r + b;
+                }
                 // Scale with the charge state
                 HS_U_r /= fdouble(cs);
+                Assert_isinf_isnan(HS_U_r);
                 // Save it
                 hs_lut_potential[cs_i].Set(i, HS_U_r);
             }
