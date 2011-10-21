@@ -94,13 +94,13 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         // FIXME: Dynamically choose between atom types for HS
 
         // Now populate the lookup tables.
-        fdouble r;
+        double r;
         for (int i = 0 ; i <= lut_n ; i++)
         {
             r = lut_pot[cs_i].Get_x_from_i(i);
 
-            fdouble HS_U_r = 0.0;
-            fdouble HS_E_r = 0.0;
+            double HS_U_r = 0.0;
+            double HS_E_r = 0.0;
             if (cs == 0)
             {
                 // FIXME: We set the potential of a neutral to be 0.
@@ -127,8 +127,8 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             Assert_isinf_isnan(HS_U_r);
 
             // Save it
-            lut_pot[cs_i].Set(  i, HS_U_r);
-            lut_field[cs_i].Set(i, HS_E_r);
+            lut_pot[cs_i].Set(  i, fdouble(HS_U_r));
+            lut_field[cs_i].Set(i, fdouble(HS_E_r));
         }
     }
 }
