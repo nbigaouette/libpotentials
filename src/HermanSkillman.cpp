@@ -123,20 +123,10 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             }
             else
             {
-//                 if (cs == 0)
-//                 {
-//                     // FIXME: We set the potential of a neutral to be 0.
-//                     //        In real HS, neutrals do have a potential.
-//                     HS_U_r = 0.0;
-//                     HS_E_r = 0.0;
-//                 }
-//                 else
-                {
-                    // Use the 1+ for the electron by taking the absolute value of the charge state.
-                    // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
-                    // on top of each other be seen by other particles as a neutral.
-                    HS_U_r = HS_Fitting_Function_Xe_Potential(r, cs_i);
-                }
+                // Use the 1+ for the electron by taking the absolute value of the charge state.
+                // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
+                // on top of each other be seen by other particles as a neutral.
+                HS_U_r = HS_Fitting_Function_Potential(r, cs_i);
             }
 
             // The fitting is performed on the potential, not the field. By doing the same test
@@ -145,10 +135,18 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             // be smooth. The fit will cross the Coulomb field at some point, a bit farther then
             // the HS_Xe_rmax distance. Detect that crossing by taking the minumum value between
             // the Coulomb field and the fit. This enforce a continuous field.
-            HS_E_r = std::min(
-                -double(std::abs(cs)) / (r*r),
-                HS_Fitting_Function_Xe_Field(r, cs_i)
-            );
+            if (cs == 0)
+            {
+                if (r < HS_Xe_rmax[cs_i])
+                    HS_E_r = HS_Fitting_Function_Field(r, cs_i);
+            }
+            else
+            {
+                HS_E_r = std::min(
+                    -double(std::abs(cs)) / (r*r),
+                    HS_Fitting_Function_Field(r, cs_i)
+                );
+            }
 
             // Scale with the charge state
             if (cs != 0)
@@ -156,6 +154,13 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
                 HS_U_r /= double(cs);
                 HS_E_r /= double(cs);
             }
+//             else
+//             {
+//                 // FIXME: We set the potential of a neutral to be 0.
+//                 //        In real HS, neutrals do have a potential.
+//                 HS_U_r = 0.0;
+//                 HS_E_r = 0.0;
+//             }
 
             // We store E/r, not E
             HS_E_r /= r;
