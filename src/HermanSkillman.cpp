@@ -88,8 +88,10 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
     for (unsigned int cs_i = 0 ; cs_i < lut_pot.size() ; cs_i++)
     {
         const int cs = int(cs_i) - 1;
-        lut_pot[cs_i].Initialize(NULL,   0.0, HS_Xe_rmax[cs_i], lut_n, "Initialize_HS() LookUpTable (lut_pot, cs=" + IntToStr(cs) + ")");
-        lut_field[cs_i].Initialize(NULL, 0.0, HS_Xe_rmax[cs_i], lut_n, "Initialize_HS() LookUpTable (lut_field, cs=" + IntToStr(cs) + ")");
+        const double xmin = 0.0;
+        const double xmax = 1.1 * HS_Xe_rmax[cs_i];
+        lut_pot[cs_i].Initialize(NULL,   fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_pot, cs=" + IntToStr(cs) + ")");
+        lut_field[cs_i].Initialize(NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_field, cs=" + IntToStr(cs) + ")");
 
         // FIXME: Dynamically choose between atom types for HS
 
@@ -101,20 +103,30 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 
             double HS_U_r = 0.0;
             double HS_E_r = 0.0;
-            if (cs == 0)
+
+            if (r >= HS_Xe_rmax[cs_i])
             {
-                // FIXME: We set the potential of a neutral to be 0.
-                //        In real HS, neutrals do have a potential.
-                HS_U_r = 0.0;
-                HS_E_r = 0.0;
+                // Use Coulomb
+                HS_U_r = -double(cs) / r;
+                HS_E_r = double(cs) / (r*r);
             }
             else
             {
-                // Use the 1+ for the electron by taking the absolute value of the charge state.
-                // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
-                // on top of each other be seen by other particles as a neutral.
-                HS_U_r = HS_Fitting_Function_Xe_Potential(r, std::abs(cs));
-                HS_E_r = HS_Fitting_Function_Xe_Field(    r, std::abs(cs));
+//                 if (cs == 0)
+//                 {
+//                     // FIXME: We set the potential of a neutral to be 0.
+//                     //        In real HS, neutrals do have a potential.
+//                     HS_U_r = 0.0;
+//                     HS_E_r = 0.0;
+//                 }
+//                 else
+                {
+                    // Use the 1+ for the electron by taking the absolute value of the charge state.
+                    // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
+                    // on top of each other be seen by other particles as a neutral.
+                    HS_U_r = HS_Fitting_Function_Xe_Potential(r, std::abs(cs));
+                    HS_E_r = HS_Fitting_Function_Xe_Field(    r, std::abs(cs));
+                }
             }
 
             // Scale with the charge state
