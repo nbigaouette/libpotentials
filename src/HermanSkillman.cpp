@@ -100,6 +100,12 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         lut_field[cs_i].Initialize(NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_field, cs=" + IntToStr(cs) + ")");
 
         // FIXME: Dynamically choose between atom types for HS
+        // Start: use function pointers
+        double (*HS_Fitting_Function_Potential)(const double r, const int cs);
+        double (*HS_Fitting_Function_Field)(const double r, const int cs);
+
+        HS_Fitting_Function_Potential = &HS_Fitting_Function_Xe_Potential;
+        HS_Fitting_Function_Field     = &HS_Fitting_Function_Xe_Field;
 
         // Populate the lookup tables.
         double r;
