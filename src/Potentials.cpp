@@ -263,7 +263,7 @@ void Initialize_HS(const fdouble &base_potential)
 
 //     /*
     // Print lookup table for verification
-    const int max_lut = 7;
+    const int max_lut = 8;
     std::string filename("lut_hs.dat");
     std::string gnuplot_command("");
     gnuplot_command += "#set term wxt 3; plot ";
