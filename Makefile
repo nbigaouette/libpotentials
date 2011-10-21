@@ -9,7 +9,7 @@
 
 # Project options
 LIB              = potentials
-SRCDIRS          = src src/data
+SRCDIRS          = src
 SRCEXT           = cpp
 HEADEXT          = hpp
 HEADERS          = $(wildcard $(addsuffix *.$(HEADEXT),$(addsuffix /, $(SRCDIRS)) ) )
