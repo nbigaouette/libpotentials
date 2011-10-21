@@ -746,13 +746,13 @@ void Set_Field_Cutoff_HS_SuperGaussian(
     }
     else
     {
-        if (distance_au < hs_min_rad[cs]) /* In CP (constant potential) */
+        if (distance_au < hs_min_rad[cs]) // In CP (constant potential)
         {
             // No field in hard cutoff region
             Ef = 0.0;
             field_vector_multiplication = false;
         }
-        else if (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
+        else if (distance_au >= fit_lt_R3[cs][8])    // In Coulomb
         {
             if (cs == 0)
             {
@@ -771,21 +771,21 @@ void Set_Field_Cutoff_HS_SuperGaussian(
             }
         }
         else if (   (distance_au <  fit_lt_R3[cs][8]) &&
-                    (distance_au >= fit_lt_R3[cs][7]))   /* In R3 */
+                    (distance_au >= fit_lt_R3[cs][7]))   // In R3
         {
             Ef = deriv_genericHSfit(&(fit_lt_R3[cs][0]),distance_au);
         }
         else if (   (distance_au <  fit_lt_R2[cs][8]) &&
-                    (distance_au >= fit_lt_R2[cs][7]))   /* In R2 */
+                    (distance_au >= fit_lt_R2[cs][7]))   // In R2
         {
             Ef = deriv_genericHSfit(&(fit_lt_R2[cs][0]),distance_au);
         }
         else if (   (distance_au <  fit_lt_R1[cs][8]) &&
-                    (distance_au >= fit_lt_R1[cs][7]))   /* In R1 */
+                    (distance_au >= fit_lt_R1[cs][7]))   // In R1
         {
             Ef = deriv_genericHSfit(&(fit_lt_R1[cs][0]),distance_au);
         }
-        else                                   /* In CP (constant potential) */
+        else                                   // In CP (constant potential)
         {
             printf("CAN'T BE HERE!!!\n");
             abort();
