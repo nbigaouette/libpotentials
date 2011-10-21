@@ -96,7 +96,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 
         // FIXME: Dynamically choose between atom types for HS
 
-        // Now populate the lookup tables.
+        // Populate the lookup tables.
         double r;
         for (int i = 0 ; i <= lut_n ; i++)
         {
