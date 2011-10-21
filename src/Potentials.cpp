@@ -362,7 +362,10 @@ void Initialize_HS(const fdouble &base_potential)
             const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
             const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
             fprintf(stderr, "%20.15g ", distance);
-            fprintf(stderr, "%20.15g ", fdouble(lut_index-1)*hs_lut_potential[lut_index].read(distance));
+            int cs = lut_index-1;
+            if (cs == 0)
+                cs = 1;
+            fprintf(stderr, "%20.15g ", fdouble(cs)*hs_lut_potential[lut_index].read(distance));
         }
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
@@ -375,8 +378,11 @@ void Initialize_HS(const fdouble &base_potential)
         {
             const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
             const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            int cs = lut_index-1;
+            if (cs == 0)
+                cs = 1;
             fprintf(stderr, "%20.15g ", distance);
-            fprintf(stderr, "%20.15g ", distance*fdouble(lut_index-1)*hs_lut_field[lut_index].read(distance));
+            fprintf(stderr, "%20.15g ", distance*fdouble(cs)*hs_lut_field[lut_index].read(distance));
         }
         fprintf(stderr, "\n");
     }
