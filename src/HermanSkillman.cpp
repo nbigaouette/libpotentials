@@ -4,6 +4,7 @@
 #include <Assert.hpp>
 
 #include "HermanSkillman.hpp"
+#include "Constants.hpp"
 
 std::vector<fdouble> hs_min_rad;
 std::vector<LookUpTable<fdouble> > hs_lut_potential;
@@ -175,5 +176,222 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             lut_field[cs_i].Set(i, fdouble(HS_E_r));
         }
     }
+}
+
+// **************************************************************
+void Initialize_HS(const fdouble &base_potential)
+/**
+ * Initialize Herman-Skillman potential
+ * @param   base_potential  Potential depth wanted [eV]
+ */
+{
+    // We'll need one lookup table per charge state
+    std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
+    Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
+
+    hs_min_rad.resize(hs_lut_potential.size());
+
+    // Find the radius where the HS potential is equal to "base_potential"
+    // by doing a bisection, for all supported charge states.
+    fdouble r_left, r_right, found_r, pot; // [Bohr]
+    for (int cs_i = 0 ; cs_i < int(hs_lut_potential.size()) ; cs_i++)
+    {
+        const int cs = cs_i - 1;
+
+        // Initial conditions
+        hs_min_rad[cs_i] = hs_lut_potential[cs_i].Get_x_from_i(0);
+        r_left  = hs_min_rad[cs_i];     // Minimum radius of fit
+        r_right = hs_lut_potential[cs_i].Get_XMax();
+
+        // Start bisection!
+        // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
+        found_r = r_right + (r_left - r_right) / fdouble(2.0);
+
+        while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
+        {
+            pot = hs_lut_potential[cs_i].read(found_r);
+            //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
+            Assert_isinf_isnan(pot);
+            if (pot <= fdouble(std::max(1,cs))*base_potential)
+            {
+                r_right = found_r;
+            }
+            else
+            {
+                r_left = found_r;
+            }
+            found_r = r_right + (r_left - r_right) / fdouble(2.0);
+        }
+        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
+
+        Assert_isinf_isnan(found_r);
+        Assert_isinf_isnan(pot);
+        assert(found_r > 0.0);
+        //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
+
+        if (found_r <= 0.99999*hs_min_rad[cs_i])
+        {
+            std_cout << "##############################################\n";
+            DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
+            std_cout << "The value found " << found_r << " Bohr\n";
+            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs_i] << " Bohr\n";
+            std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*libpotentials::eV_to_Eh << " Eh)\n";
+            std_cout << "Exiting\n";
+            abort();
+        }
+
+        hs_min_rad[cs_i] = found_r;
+    }
+
+    // Now that the cutting radius is found for each charge states, change lookup tables values
+    for (int cs_i = 0 ; cs_i < int(hs_lut_potential.size()) ; cs_i++)
+    {
+        const int lut_n = hs_lut_potential[cs_i].Get_n();
+        for (int i = 0 ; i <= lut_n ; i++)
+        {
+            if (hs_lut_potential[cs_i].Table(i) < -base_potential*libpotentials::eV_to_Eh)
+            {
+                hs_lut_potential[cs_i].Set(i, -base_potential*libpotentials::eV_to_Eh);
+                hs_lut_field[cs_i].Set(i, 0.0);
+            }
+            if (hs_lut_potential[cs_i].Table(i) > base_potential*libpotentials::eV_to_Eh)
+            {
+                hs_lut_potential[cs_i].Set(i, base_potential*libpotentials::eV_to_Eh);
+                hs_lut_field[cs_i].Set(i, 0.0);
+            }
+        }
+    }
+
+//     /*
+    // Print lookup table for verification
+    const int max_lut = 8;
+    std::string filename("lut_hs.dat");
+    std::string gnuplot_command("");
+    gnuplot_command += "#set term wxt 3; plot ";
+    int row = 1;
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
+        gnuplot_command += IntToStr(row++) + "  title \"LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        if (l == max_lut-1)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
+    gnuplot_command += "#set term wxt 4; plot ";
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
+        gnuplot_command += IntToStr(row++) + "  title \"cs*LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+    }
+    for (int l = 1 ; l <= max_lut-2 ; l++)
+    {
+        gnuplot_command += "-" + IntToStr(l) + "/x with points";
+        if (l == max_lut-2)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
+    gnuplot_command += "#set term wxt 5; plot ";
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
+        gnuplot_command += IntToStr(row++) + "  title \"LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        if (l == max_lut-1)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
+    gnuplot_command += "#set term wxt 6; plot ";
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
+        gnuplot_command += IntToStr(row++) + "  title \"r*cs*LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+    }
+    for (int l = 1 ; l <= max_lut-2 ; l++)
+    {
+        gnuplot_command += "-" + IntToStr(l) + "/x**2 with points";
+        if (l == max_lut-2)
+            gnuplot_command += "\n";
+        else
+            gnuplot_command += ", ";
+    }
+    fprintf(stderr, "%s", gnuplot_command.c_str());
+    std::string::size_type pos = 0;
+    std::string searchString("#");
+    while ((pos = gnuplot_command.find(searchString, pos)) != std::string::npos)
+    {
+        gnuplot_command.replace(pos, searchString.size(), "");
+        pos++;
+    }
+    std_cout << "\n" << gnuplot_command << "\n";
+    fprintf(stderr, "#");
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        fprintf(stderr, "%20s ", "r (bohr)");
+        fprintf(stderr, "%20s ", std::string("V(" + IntToStr(l-1) + ")").c_str());
+    }
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        fprintf(stderr, "%20s ", "r (bohr)");
+        fprintf(stderr, "%20s ", std::string("cs*V(" + IntToStr(l-1) + ")").c_str());
+    }
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        fprintf(stderr, "%20s ", "r (bohr)");
+        fprintf(stderr, "%20s ", std::string("E/r(" + IntToStr(l-1) + ")").c_str());
+    }
+    for (int l = 0 ; l < max_lut ; l++)
+    {
+        fprintf(stderr, "%20s ", "r (bohr)");
+        fprintf(stderr, "%20s ", std::string("cs*E(" + IntToStr(l-1) + ")").c_str());
+    }
+    fprintf(stderr, "\n");
+
+    const int lut_n      = hs_lut_potential[0].Get_n();
+    for (int i = 0 ; i < lut_n ; i++)
+    {
+        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
+        {
+            const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
+            const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            fprintf(stderr, "%20.15g ", distance);
+            fprintf(stderr, "%20.15g ", hs_lut_potential[lut_index].read(distance));
+        }
+        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
+        {
+            const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
+            const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            fprintf(stderr, "%20.15g ", distance);
+            int cs = lut_index-1;
+            if (cs == 0)
+                cs = 1;
+            fprintf(stderr, "%20.15g ", fdouble(cs)*hs_lut_potential[lut_index].read(distance));
+        }
+        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
+        {
+            const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
+            const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            fprintf(stderr, "%20.15g ", distance);
+            fprintf(stderr, "%20.15g ", hs_lut_field[lut_index].read(distance));
+        }
+        for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
+        {
+            const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
+            const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            int cs = lut_index-1;
+            if (cs == 0)
+                cs = 1;
+            fprintf(stderr, "%20.15g ", distance);
+            fprintf(stderr, "%20.15g ", distance*fdouble(cs)*hs_lut_field[lut_index].read(distance));
+        }
+        fprintf(stderr, "\n");
+    }
+    std_cout << std::flush;
+// */
+//     hs_lut_field[0].Print_Table();
+//     hs_lut_potential[0].Print_Table();
+    exit(0);
+//     */
 }
 
