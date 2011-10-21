@@ -111,9 +111,9 @@ void Potentials_Initialize(const std::string potential_shape,
 
         USING_HS = true;
 
-        Potentials_Set_Parameters = &Potentials_Set_Parameters_HS_SuperGaussian;
-        Calculate_Potential       = &Calculate_Potential_Cutoff_HS_SuperGaussian;
-        Set_Field                 = &Set_Field_Cutoff_HS_SuperGaussian;
+        Potentials_Set_Parameters = &Potentials_Set_Parameters_HS;
+        Calculate_Potential       = &Calculate_Potential_Cutoff_HS;
+        Set_Field                 = &Set_Field_Cutoff_HS;
     }
     else if (potential_shape == "Symmetric")
     {

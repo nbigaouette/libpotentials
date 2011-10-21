@@ -580,7 +580,7 @@ void Set_Field_Cutoff_SuperGaussian(
 
 // **************************************************************
 
-void Potentials_Set_Parameters_HS_SuperGaussian(
+void Potentials_Set_Parameters_HS(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
@@ -608,7 +608,7 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
 }
 
 // **************************************************************
-fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
+fdouble Calculate_Potential_Cutoff_HS(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
@@ -712,7 +712,7 @@ fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
 }
 
 // **************************************************************
-void Set_Field_Cutoff_HS_SuperGaussian(
+void Set_Field_Cutoff_HS(
     void *p1, void *p2,
     potential_paramaters &potparams,
     fdouble &phi, fdouble E[3])
