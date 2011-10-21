@@ -137,6 +137,9 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
                 HS_E_r /= double(cs);
             }
 
+            // We store E/r, not E
+            HS_E_r /= r;
+
             Assert_isinf_isnan(HS_U_r);
 
             // Save it
