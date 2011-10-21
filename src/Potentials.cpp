@@ -633,7 +633,7 @@ fdouble Calculate_Potential_Cutoff_HS(
 
     const unsigned int lut_i = cs + 1;
 
-    if (lut_i < hs_lut_potential.size())
+    if (lut_i < hs_lut_potential.size() and distance_au < hs_lut_potential[lut_i].Get_XMax())
         phi12 = hs_lut_potential[lut_i].read(distance_au);
     else
         phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
@@ -729,7 +729,7 @@ void Set_Field_Cutoff_HS(
     // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
     const unsigned int lut_i = cs + 1;
 
-    if (lut_i < hs_lut_field.size())
+    if (lut_i < hs_lut_potential.size() and distance_au < hs_lut_potential[lut_i].Get_XMax())
     {
         E_over_r = hs_lut_field[lut_i].read(distance_au);
 
