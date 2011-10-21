@@ -108,8 +108,8 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             if (r >= HS_Xe_rmax[std::abs(cs)])
             {
                 // Use Coulomb
-                HS_U_r = -double(cs) / r;
-                HS_E_r = double(cs) / (r*r);
+                HS_U_r = -double(std::abs(cs)) / r;
+                HS_E_r = -double(std::abs(cs)) / (r*r);
             }
             else
             {
