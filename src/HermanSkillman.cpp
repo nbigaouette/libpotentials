@@ -90,7 +90,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
     {
         const int cs = cs_i - 1;
         const double xmin = 0.0;
-        const double xmax = 2.0 * HS_Xe_rmax[cs_i];
+        const double xmax = 2.0 * HS_Xe_rmax[std::abs(cs)];
         lut_pot[cs_i].Initialize(  NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_pot, cs=" + IntToStr(cs) + ")");
         lut_field[cs_i].Initialize(NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_field, cs=" + IntToStr(cs) + ")");
 
