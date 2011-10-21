@@ -340,15 +340,14 @@ void Initialize_HS(const fdouble &base_potential)
 //     /*
     // Print lookup table for verification
     const int max_lut = 7;
-    const int lut_n = hs_lut_potential[0].Get_n();
-    const fdouble xmin = hs_lut_potential[0].Get_XMin();
     std::string filename("lut_hs.dat");
     std::string gnuplot_command("");
     gnuplot_command += "#set term wxt 3; plot ";
-    int row = 2;
+    int row = 1;
     for (int l = 0 ; l < max_lut ; l++)
     {
-        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
+        gnuplot_command += IntToStr(row++) + "  title \"LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
         if (l == max_lut-1)
             gnuplot_command += "\n";
         else
@@ -357,11 +356,12 @@ void Initialize_HS(const fdouble &base_potential)
     gnuplot_command += "#set term wxt 4; plot ";
     for (int l = 0 ; l < max_lut ; l++)
     {
-        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"cs*LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+        gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
+        gnuplot_command += IntToStr(row++) + "  title \"cs*LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
     }
     for (int l = 1 ; l <= max_lut-2 ; l++)
     {
-        gnuplot_command += "-" + IntToStr(l) + "/x with dots";
+        gnuplot_command += "-" + IntToStr(l) + "/x with points";
         if (l == max_lut-2)
             gnuplot_command += "\n";
         else
@@ -370,7 +370,8 @@ void Initialize_HS(const fdouble &base_potential)
     gnuplot_command += "#set term wxt 5; plot ";
     for (int l = 0 ; l < max_lut ; l++)
     {
-        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
+        gnuplot_command += IntToStr(row++) + "  title \"LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
         if (l == max_lut-1)
             gnuplot_command += "\n";
         else
@@ -379,11 +380,12 @@ void Initialize_HS(const fdouble &base_potential)
     gnuplot_command += "#set term wxt 6; plot ";
     for (int l = 0 ; l < max_lut ; l++)
     {
-        gnuplot_command += "\"" + filename + "\" using 1:" + IntToStr(row++) + "  title \"r*cs*LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+        gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
+        gnuplot_command += IntToStr(row++) + "  title \"r*cs*LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
     }
     for (int l = 1 ; l <= max_lut-2 ; l++)
     {
-        gnuplot_command += "-" + IntToStr(l) + "/x**2 with dots";
+        gnuplot_command += "-" + IntToStr(l) + "/x**2 with points";
         if (l == max_lut-2)
             gnuplot_command += "\n";
         else
@@ -398,56 +400,59 @@ void Initialize_HS(const fdouble &base_potential)
         pos++;
     }
     std_cout << "\n" << gnuplot_command << "\n";
-    fprintf(stderr, "#  r (bohr) ");
+    fprintf(stderr, "#");
     for (int l = 0 ; l < max_lut ; l++)
     {
-        fprintf(stderr, "%13s", std::string("V(" + IntToStr(l-1) + ")").c_str());
+        fprintf(stderr, "%20s ", "r (bohr)");
+        fprintf(stderr, "%20s ", std::string("V(" + IntToStr(l-1) + ")").c_str());
     }
     for (int l = 0 ; l < max_lut ; l++)
     {
-        fprintf(stderr, "%13s", std::string("cs*V(" + IntToStr(l-1) + ")").c_str());
+        fprintf(stderr, "%20s ", "r (bohr)");
+        fprintf(stderr, "%20s ", std::string("cs*V(" + IntToStr(l-1) + ")").c_str());
     }
     for (int l = 0 ; l < max_lut ; l++)
     {
-        fprintf(stderr, "%13s", std::string("E/r(" + IntToStr(l-1) + ")").c_str());
+        fprintf(stderr, "%20s ", "r (bohr)");
+        fprintf(stderr, "%20s ", std::string("E/r(" + IntToStr(l-1) + ")").c_str());
     }
     for (int l = 0 ; l < max_lut ; l++)
     {
-        fprintf(stderr, "%13s", std::string("cs*E(" + IntToStr(l-1) + ")").c_str());
+        fprintf(stderr, "%20s ", "r (bohr)");
+        fprintf(stderr, "%20s ", std::string("cs*E(" + IntToStr(l-1) + ")").c_str());
     }
     fprintf(stderr, "\n");
 
+    const int lut_n      = hs_lut_potential[0].Get_n();
     for (int i = 0 ; i < lut_n ; i++)
     {
-        const float distance = float(i)/hs_lut_potential[0].Get_inv_dx() + xmin;
-        fprintf(stderr, "%20.15g   ", distance);
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
-            if (distance <= hs_lut_potential[lut_index].Get_XMax())
-                fprintf(stderr, "%20.15g ", hs_lut_potential[lut_index].read(distance));
-            else
-                fprintf(stderr, "%20.15g ", 0.0);
+            const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
+            const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            fprintf(stderr, "%20.15g ", distance);
+            fprintf(stderr, "%20.15g ", hs_lut_potential[lut_index].read(distance));
         }
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
-            if (distance <= hs_lut_potential[lut_index].Get_XMax())
-                fprintf(stderr, "%20.15g ", fdouble(lut_index-1)*hs_lut_potential[lut_index].read(distance));
-            else
-                fprintf(stderr, "%20.15g ", 0.0);
+            const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
+            const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            fprintf(stderr, "%20.15g ", distance);
+            fprintf(stderr, "%20.15g ", fdouble(lut_index-1)*hs_lut_potential[lut_index].read(distance));
         }
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
-            if (distance <= hs_lut_potential[lut_index].Get_XMax())
-                fprintf(stderr, "%20.15g ", hs_lut_field[lut_index].read(distance));
-            else
-                fprintf(stderr, "%20.15g ", 0.0);
+            const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
+            const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            fprintf(stderr, "%20.15g ", distance);
+            fprintf(stderr, "%20.15g ", hs_lut_field[lut_index].read(distance));
         }
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
-            if (distance <= hs_lut_potential[lut_index].Get_XMax())
-                fprintf(stderr, "%20.15g ", distance*fdouble(lut_index-1)*hs_lut_field[lut_index].read(distance));
-            else
-                fprintf(stderr, "%20.15g ", 0.0);
+            const fdouble xmin   = hs_lut_potential[lut_index].Get_XMin();
+            const float distance = float(i)/hs_lut_potential[lut_index].Get_inv_dx() + xmin;
+            fprintf(stderr, "%20.15g ", distance);
+            fprintf(stderr, "%20.15g ", distance*fdouble(lut_index-1)*hs_lut_field[lut_index].read(distance));
         }
         fprintf(stderr, "\n");
     }
