@@ -41,11 +41,6 @@ fdouble sg_one_over_two_m;
 fdouble sg_m_pow_one_over_two_m;
 fdouble sg_exp_one_over_two_m;
 
-std::vector<fdouble> hs_min_rad;
-std::vector<LookUpTable<fdouble> > hs_lut_potential;
-std::vector<LookUpTable<fdouble> > hs_lut_field;
-const int max_hs_cs = 7;
-
 const fdouble ps_A = fdouble(0.1)   * angstrom_to_m;
 const fdouble ps_B = fdouble(0.45)  * angstrom_to_m;
 const fdouble ps_C = fdouble(0.358) * angstrom_to_m;
@@ -59,6 +54,7 @@ const fdouble ps_A_minus_B2  = ps_A_minus_B*ps_A_minus_B;
 const fdouble ps_A_minus_B3  = ps_A_minus_B*ps_A_minus_B*ps_A_minus_B;
 
 // ********** Herman-Skillman (HS) potential fit parameters *****
+const int max_hs_cs = 7;
 // The fit function is f(x)=-a/(x^n-b)-b/x^m +d*x^o and the fit
 // parameters are in alphabetical order there is a different
 // array for each radial distance, where the cutoff radial
@@ -190,7 +186,7 @@ void Initialize_HS(const fdouble &base_potential)
     std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
     Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
 
-    hs_min_rad.resize(max_hs_cs+2); // +2 for the electron and neutral.
+    hs_min_rad.resize(hs_lut_potential.size());
     potential_paramaters potparams;
 
 //     // FIXME: Useless!

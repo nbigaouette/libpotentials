@@ -5,8 +5,9 @@
 
 #include "HermanSkillman.hpp"
 
-// Includes electrons (0) and neutral (1).
-const int HS_Xe_MaxNbCS = 8;
+std::vector<fdouble> hs_min_rad;
+std::vector<LookUpTable<fdouble> > hs_lut_potential;
+std::vector<LookUpTable<fdouble> > hs_lut_field;
 
 // Distance (in Bohr) where HS potential reaches the Coulombic values
 const double HS_Xe_rmax[HS_Xe_MaxNbCS] = {
