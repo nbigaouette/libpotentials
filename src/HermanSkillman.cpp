@@ -85,7 +85,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
     lut_field.resize(HS_Xe_MaxNbCS);
 
     // Set potential lookup table
-    for (unsigned int cs_i = 0 ; cs_i < lut_pot.size() ; cs_i++)
+    for (int cs_i = 0 ; cs_i < HS_Xe_MaxNbCS ; cs_i++)
     {
         const int cs = int(cs_i) - 1;
         const double xmin = 0.0;
