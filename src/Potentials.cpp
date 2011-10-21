@@ -189,73 +189,75 @@ void Initialize_HS(const fdouble &base_potential)
     hs_min_rad.resize(hs_lut_potential.size());
     potential_paramaters potparams;
 
-//     // FIXME: Useless!
-//     // Find the radius where the HS potential is equal to "base_potential"
-//     // by doing a bisection, for all supported charge states.
-//     fdouble r_left, r_right, found_r, pot; // [Bohr]
-//     for (int cs_i = 0 ; cs_i < max_hs_cs ; cs_i++)
-//     {
-//         const int cs = cs_i - 1;
-//         // Initial conditions
-//         hs_min_rad[cs_i] = hs_lut_potential[cs_i].Get_x_from_i(0);
-//         r_left  = hs_min_rad[cs_i];     // Minimum radius of fit
-//         r_right = xmax;
-//
-//         // Start bisection!
-//         // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
-//         found_r = r_right + (r_left - r_right) / libpotentials::two;
-//
-//         potparams.hs_cs2 = cs;
-//         potparams.kQ2 = fdouble(cs) * e0;
-//
-//         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
-//         {
-//             potparams.r = found_r * bohr_to_m;
-//             pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
-//             //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
-//             Assert_isinf_isnan(pot);
-//             if (pot <= fdouble(std::max(1,cs))*base_potential)
-//             {
-//                 r_right = found_r;
-//             }
-//             else
-//             {
-//                 r_left = found_r;
-//             }
-//             found_r = r_right + (r_left - r_right) /libpotentials::two;
-//         }
-//         std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
-//
-//         Assert_isinf_isnan(found_r);
-//         Assert_isinf_isnan(pot);
-//         assert(found_r > 0.0);
-//         //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
-//
-//         if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs_i])
-//         {
-//             std_cout << "##############################################\n";
-//             DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
-//             std_cout << "The value found " << found_r * si_to_au_length << " Bohr (" << found_r << " m)\n";
-//             std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs_i] << " Bohr (" << hs_min_rad[cs_i] * au_to_si_length<<" m)\n";
-//             std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*eV_to_Eh << " Eh)\n";
-//             std_cout << "Exiting\n";
-//             abort();
-//         }
-//
-//         hs_min_rad[cs_i] = found_r;
-//     }
-//
-//     // Now that the cutting radius is found for each charge states, change lookup tables values
-//     for (int cs_i = 0 ; cs_i < max_hs_cs ; cs_i++)
-//     {
-//         for (int i = 0 ; i <= lut_n ; i++)
-//         {
-//             if (hs_lut_potential[cs_i].Table(i) < -base_potential*eV_to_Eh)
-//                 hs_lut_potential[cs_i].Set(i, -base_potential*eV_to_Eh);
-//             if (hs_lut_potential[cs_i].Table(i) > base_potential*eV_to_Eh)
-//                 hs_lut_potential[cs_i].Set(i, base_potential*eV_to_Eh);
-//         }
-//     }
+    // Find the radius where the HS potential is equal to "base_potential"
+    // by doing a bisection, for all supported charge states.
+    fdouble r_left, r_right, found_r, pot; // [Bohr]
+    for (int cs_i = 0 ; cs_i < int(hs_lut_potential.size()) ; cs_i++)
+    {
+        const int lut_n = hs_lut_potential[cs_i].Get_n();
+        const int cs = cs_i - 1;
+
+        // Initial conditions
+        hs_min_rad[cs_i] = hs_lut_potential[cs_i].Get_x_from_i(0);
+        r_left  = hs_min_rad[cs_i];     // Minimum radius of fit
+        r_right = hs_lut_potential[cs_i].Get_XMax();
+
+        // Start bisection!
+        // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
+        found_r = r_right + (r_left - r_right) / libpotentials::two;
+
+        potparams.hs_cs2 = cs;
+        potparams.kQ2 = fdouble(cs) * e0;
+
+        while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
+        {
+            potparams.r = found_r * bohr_to_m;
+            pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
+            //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
+            Assert_isinf_isnan(pot);
+            if (pot <= fdouble(std::max(1,cs))*base_potential)
+            {
+                r_right = found_r;
+            }
+            else
+            {
+                r_left = found_r;
+            }
+            found_r = r_right + (r_left - r_right) /libpotentials::two;
+        }
+        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
+
+        Assert_isinf_isnan(found_r);
+        Assert_isinf_isnan(pot);
+        assert(found_r > 0.0);
+        //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
+
+        if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs_i])
+        {
+            std_cout << "##############################################\n";
+            DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
+            std_cout << "The value found " << found_r * si_to_au_length << " Bohr (" << found_r << " m)\n";
+            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs_i] << " Bohr (" << hs_min_rad[cs_i] * au_to_si_length<<" m)\n";
+            std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*eV_to_Eh << " Eh)\n";
+            std_cout << "Exiting\n";
+            abort();
+        }
+
+        hs_min_rad[cs_i] = found_r;
+    }
+
+    // Now that the cutting radius is found for each charge states, change lookup tables values
+    for (int cs_i = 0 ; cs_i < int(hs_lut_potential.size()) ; cs_i++)
+    {
+        const int lut_n = hs_lut_potential[cs_i].Get_n();
+        for (int i = 0 ; i <= lut_n ; i++)
+        {
+            if (hs_lut_potential[cs_i].Table(i) < -base_potential*eV_to_Eh)
+                hs_lut_potential[cs_i].Set(i, -base_potential*eV_to_Eh);
+            if (hs_lut_potential[cs_i].Table(i) > base_potential*eV_to_Eh)
+                hs_lut_potential[cs_i].Set(i, base_potential*eV_to_Eh);
+        }
+    }
 
 //     /*
     // Print lookup table for verification
