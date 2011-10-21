@@ -719,12 +719,36 @@ void Set_Field_Cutoff_HS_SuperGaussian(
 {
     Check_if_LibPotentials_is_initialized();
 
+    fdouble E_over_r = 0.0;   // Electrostatic field over distance r
+    fdouble unit_dr[3];
+
     // Fits are in atomic units
     fdouble distance_au = potparams.r * si_to_au_length;
-
     const int cs = potparams.hs_cs2;
-    fdouble Ef, unit_dr[3];
 
+    // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
+    const unsigned int lut_i = cs + 1;
+
+    if (lut_i < hs_lut_field.size())
+    {
+        E_over_r = hs_lut_field[lut_i].read(distance_au);
+
+        E_over_r *= au_to_si_field;
+        for (int d = 0 ; d < 3 ; d++)
+        {
+            unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
+            E[d]  += unit_dr[d] * E_over_r;
+        }
+    }
+    else
+    {
+        // Electron or high charge state ion
+        assert(p1 != NULL);
+        assert(p2 != NULL);
+        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
+    }
+
+/*
     // Ions are given a potential inside the electron cloud.
     // The last two fdoubles of the fit_lessthan_R array is the range
     // the fit is valid for below the smallest range we have a simple
@@ -804,6 +828,7 @@ void Set_Field_Cutoff_HS_SuperGaussian(
             }
         }
     }
+*/
 }
 
 // **************************************************************
