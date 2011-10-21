@@ -109,7 +109,6 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             {
                 // Use Coulomb
                 HS_U_r = -double(std::abs(cs)) / r;
-                HS_E_r = -double(std::abs(cs)) / (r*r);
             }
             else
             {
@@ -126,9 +125,19 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
                     // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
                     // on top of each other be seen by other particles as a neutral.
                     HS_U_r = HS_Fitting_Function_Xe_Potential(r, std::abs(cs));
-                    HS_E_r = HS_Fitting_Function_Xe_Field(    r, std::abs(cs));
                 }
             }
+
+            // The fitting is performed on the potential, not the field. By doing the same test
+            // over "r" for the field as for the potential, a discontinuity always show up in the field
+            // close to where the potential becomes Coulombic. What is important is the field: it must
+            // be smooth. The fit will cross the Coulomb field at some point, a bit farther then
+            // the HS_Xe_rmax distance. Detect that crossing by taking the minumum value between
+            // the Coulomb field and the fit. This enforce a continuous field.
+            HS_E_r = std::min(
+                -double(std::abs(cs)) / (r*r),
+                HS_Fitting_Function_Xe_Field(r, std::abs(cs))
+            );
 
             // Scale with the charge state
             if (cs != 0)
