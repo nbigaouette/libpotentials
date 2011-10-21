@@ -187,7 +187,6 @@ void Initialize_HS(const fdouble &base_potential)
     Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
 
     hs_min_rad.resize(hs_lut_potential.size());
-    potential_paramaters potparams;
 
     // Find the radius where the HS potential is equal to "base_potential"
     // by doing a bisection, for all supported charge states.
@@ -206,13 +205,9 @@ void Initialize_HS(const fdouble &base_potential)
         // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
         found_r = r_right + (r_left - r_right) / libpotentials::two;
 
-        potparams.hs_cs2 = cs;
-        potparams.kQ2 = fdouble(cs) * e0;
-
         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
         {
-            potparams.r = found_r * bohr_to_m;
-            pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
+            pot = hs_lut_potential[cs_i].read(found_r);
             //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
             Assert_isinf_isnan(pot);
             if (pot <= fdouble(std::max(1,cs))*base_potential)
