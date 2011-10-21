@@ -262,7 +262,7 @@ void Initialize_HS(const fdouble &base_potential)
         }
     }
 
-//     /*
+    /*
     // Print lookup table for verification
     const int max_lut = 8;
     std::string filename("lut_hs.dat");
@@ -388,10 +388,9 @@ void Initialize_HS(const fdouble &base_potential)
         fprintf(stderr, "\n");
     }
     std_cout << std::flush;
-// */
 //     hs_lut_field[0].Print_Table();
 //     hs_lut_potential[0].Print_Table();
     exit(0);
-//     */
+    */
 }
 
