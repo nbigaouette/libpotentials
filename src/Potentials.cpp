@@ -188,178 +188,160 @@ void Initialize_HS(const fdouble &base_potential)
 {
     // We'll need one lookup table per charge state
     std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
-    hs_lut_potential.resize(max_hs_cs);
-    const fdouble xmin = fdouble(0.0);  // Bohr
-    const fdouble xmax = fdouble(12.0); // Bohr
-    const int lut_n = 10000;
-    for (size_t cs_i = 0 ; cs_i < hs_lut_potential.size() ; cs_i++)
-    {
-        const int cs = int(cs_i) - 1;
-        hs_lut_potential[cs_i].Initialize(NULL, xmin, xmax, lut_n, "Initialize_HS() LookUpTable (hs_lut_potential)" + IntToStr(cs));
-        // FIXME: Dynamically choose between atom types for HS
-        // Use the 1+ for the electron by taking the absolute value of the charge state.
-        // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
-        // on top of each other be seen by other particles as a neutral.
-        std::vector<std::pair<fdouble,fdouble> > hs_tmp_array = Load_HermanSkillman_Xe(std::abs(cs));
+//     hs_lut_potential.resize(max_hs_cs);
+//     const fdouble xmin = fdouble(0.0);  // Bohr
+//     const fdouble xmax = fdouble(4.0); // Bohr
+//     const int lut_n = 10000;
+//     for (size_t cs_i = 0 ; cs_i < hs_lut_potential.size() ; cs_i++)
+//     {
+//         const int cs = int(cs_i) - 1;
+//         hs_lut_potential[cs_i].Initialize(NULL, xmin, xmax, lut_n, "Initialize_HS() LookUpTable (hs_lut_potential)" + IntToStr(cs));
+//         // FIXME: Dynamically choose between atom types for HS
+//         // Use the 1+ for the electron by taking the absolute value of the charge state.
+//         // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
+//         // on top of each other be seen by other particles as a neutral.
+//         std::vector<std::pair<fdouble,fdouble> > hs_tmp_array = Load_HermanSkillman_Xe(std::abs(cs));
+//
+//         // Now populate the lookup table.
+//         fdouble r;
+//         for (int i = 0 ; i <= lut_n ; i++)
+//         {
+//             r = hs_lut_potential[cs_i].Get_x_from_i(i);
+//
+//             // FIXME: Potential of a neutral is 0. In HS, neutrals do have a potential.
+//             if (cs == 0)
+//             {
+//                 hs_lut_potential[cs_i].Set(i, 0.0);
+//             }
+//             else
+//             {
+//                 // Find between which index of the vector "r" is.
+//                 // FIXME: Do it more intelligently: bisection?
+//                 int index_up   = -1;
+//                 int index_down = -1;
+//                 for (size_t hsi = 0 ; hsi < hs_tmp_array.size() ; hsi++)
+//                 {
+//                     // hs_tmp_array[hsi].first == r
+//                     // hs_tmp_array[hsi].second == U
+//                     if (hs_tmp_array[hsi].first > r)
+//                     {
+//                         index_up   = int(hsi);
+//                         index_down = int(hsi) - 1;
+//                         break;
+//                     }
+//                 }
+//                 assert(index_up != -1);
+//
+//                 fdouble HS_U_r = 0.0;
+//                 if (index_up == 0)
+//                 {
+//                     // If index_up == 0, index_down == -1, breaking the linear interpolation.
+//                     // In that case, just take the first value.
+//                     HS_U_r = hs_tmp_array[0].second;
+//                 }
+//                 else
+//                 {
+//                     // Linear interpolation between the two points
+//                     const fdouble s = (hs_tmp_array[index_up].second - hs_tmp_array[index_down].second) / (hs_tmp_array[index_up].first - hs_tmp_array[index_down].first);
+//                     const fdouble b = hs_tmp_array[index_down].second - s * hs_tmp_array[index_down].first;
+//
+//                     Assert_isinf_isnan(hs_tmp_array[index_down].first);
+//                     Assert_isinf_isnan(hs_tmp_array[index_down].second);
+//                     Assert_isinf_isnan(hs_tmp_array[index_up].first);
+//                     Assert_isinf_isnan(hs_tmp_array[index_up].second);
+//                     Assert_isinf_isnan(s);
+//                     Assert_isinf_isnan(b);
+//
+//                     // Interpolate
+//                     HS_U_r = s*r + b;
+//                 }
+//                 // Scale with the charge state
+//                 HS_U_r /= fdouble(cs);
+//                 Assert_isinf_isnan(HS_U_r);
+//                 // Save it
+//                 hs_lut_potential[cs_i].Set(i, HS_U_r);
+//             }
+//         }
+//     }
 
-        // Now populate the lookup table.
-        fdouble r;
-        for (int i = 0 ; i <= lut_n ; i++)
-        {
-            r = hs_lut_potential[cs_i].Get_x_from_i(i);
-
-            // FIXME: Potential of a neutral is 0. In HS, neutrals do have a potential.
-            if (cs == 0)
-            {
-                hs_lut_potential[cs_i].Set(i, 0.0);
-            }
-            else
-            {
-                // Find between which index of the vector "r" is.
-                // FIXME: Do it more intelligently: bisection?
-                int index_up   = -1;
-                int index_down = -1;
-                for (size_t hsi = 0 ; hsi < hs_tmp_array.size() ; hsi++)
-                {
-                    // hs_tmp_array[hsi].first == r
-                    // hs_tmp_array[hsi].second == U
-                    if (hs_tmp_array[hsi].first > r)
-                    {
-                        index_up   = int(hsi);
-                        index_down = int(hsi) - 1;
-                        break;
-                    }
-                }
-                assert(index_up != -1);
-
-                fdouble HS_U_r = 0.0;
-                if (index_up == 0)
-                {
-                    // If index_up == 0, index_down == -1, breaking the linear interpolation.
-                    // In that case, just take the first value.
-                    HS_U_r = hs_tmp_array[0].second;
-                }
-                else
-                {
-                    // Linear interpolation between the two points
-                    const fdouble s = (hs_tmp_array[index_up].second - hs_tmp_array[index_down].second) / (hs_tmp_array[index_up].first - hs_tmp_array[index_down].first);
-                    const fdouble b = hs_tmp_array[index_down].second - s * hs_tmp_array[index_down].first;
-
-                    Assert_isinf_isnan(hs_tmp_array[index_down].first);
-                    Assert_isinf_isnan(hs_tmp_array[index_down].second);
-                    Assert_isinf_isnan(hs_tmp_array[index_up].first);
-                    Assert_isinf_isnan(hs_tmp_array[index_up].second);
-                    Assert_isinf_isnan(s);
-                    Assert_isinf_isnan(b);
-
-                    // Interpolate
-                    HS_U_r = s*r + b;
-                }
-                // Scale with the charge state
-                HS_U_r /= fdouble(cs);
-                Assert_isinf_isnan(HS_U_r);
-                // Save it
-                hs_lut_potential[cs_i].Set(i, HS_U_r);
-            }
-        }
-    }
+    Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
 
     hs_min_rad.resize(max_hs_cs+2); // +2 for the electron and neutral.
     potential_paramaters potparams;
 
-    // FIXME: Useless!
-    // Find the radius where the HS potential is equal to "base_potential"
-    // by doing a bisection, for all supported charge states.
-    fdouble r_left, r_right, found_r, pot; // [Bohr]
-    for (int cs_i = 0 ; cs_i < max_hs_cs ; cs_i++)
-    {
-        const int cs = cs_i - 1;
-        // Initial conditions
-        hs_min_rad[cs_i] = hs_lut_potential[cs_i].Get_x_from_i(0);
-        r_left  = hs_min_rad[cs_i];     // Minimum radius of fit
-        r_right = fdouble(10.0);        // At 10 bohr, it should be coulombic
-
-        // Start bisection!
-        // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
-        found_r = r_right + (r_left - r_right) / libpotentials::two;
-
-        potparams.hs_cs2 = cs;
-        potparams.kQ2 = fdouble(cs) * e0;
-
-        while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
-        {
-            potparams.r = found_r * bohr_to_m;
-            pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
-            //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
-            Assert_isinf_isnan(pot);
-            if (pot <= fdouble(std::max(1,cs))*base_potential)
-            {
-                r_right = found_r;
-            }
-            else
-            {
-                r_left = found_r;
-            }
-            found_r = r_right + (r_left - r_right) /libpotentials::two;
-        }
-        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
-
-        Assert_isinf_isnan(found_r);
-        Assert_isinf_isnan(pot);
-        assert(found_r > 0.0);
-        //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
-
-        if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs_i])
-        {
-            std_cout << "##############################################\n";
-            DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
-            std_cout << "The value found " << found_r * si_to_au_length << " Bohr (" << found_r << " m)\n";
-            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs_i] << " Bohr (" << hs_min_rad[cs_i] * au_to_si_length<<" m)\n";
-            std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*eV_to_Eh << " Eh)\n";
-            std_cout << "Exiting\n";
-            abort();
-        }
-
-        hs_min_rad[cs_i] = found_r;
-    }
-
-    // Now that the cutting radius is found for each charge states, change lookup tables values
-    for (int cs_i = 0 ; cs_i < max_hs_cs ; cs_i++)
-    {
-        for (int i = 0 ; i <= lut_n ; i++)
-        {
-            if (hs_lut_potential[cs_i].Table(i) < -base_potential*eV_to_Eh)
-                hs_lut_potential[cs_i].Set(i, -base_potential*eV_to_Eh);
-            if (hs_lut_potential[cs_i].Table(i) > base_potential*eV_to_Eh)
-                hs_lut_potential[cs_i].Set(i, base_potential*eV_to_Eh);
-        }
-    }
-
-    // Set the field's lookup table. Do a second order finite difference
-    hs_lut_field.resize(max_hs_cs);
-    for (size_t cs_i = 0 ; cs_i < hs_lut_field.size() ; cs_i++)
-    {
-        const int cs = int(cs_i) - 1;
-        hs_lut_field[cs_i].Initialize(NULL, xmin, xmax, lut_n, "Initialize_HS() LookUpTable (hs_lut_field)" + IntToStr(cs));
-
-        fdouble field    = 0.0;
-        fdouble distance = 0.0;
-        hs_lut_field[cs_i].Set(0, 0.0); // Field at r == 0 should be 0
-        for (int i = 1 ; i < lut_n ; i++)
-        {
-            // FIXME: field should be in SI, not au
-            field    = (hs_lut_potential[cs_i].Table(i+1) - hs_lut_potential[cs_i].Table(i-1)) / two * hs_lut_potential[cs_i].Get_inv_dx();
-            distance = hs_lut_potential[cs_i].Get_x_from_i(i);
-            // We store E/r, not E
-            hs_lut_field[cs_i].Set(0, field / distance);
-        }
-        field = (hs_lut_potential[cs_i].Table(lut_n) - hs_lut_potential[cs_i].Table(lut_n-1)) * hs_lut_potential[cs_i].Get_inv_dx();
-        hs_lut_field[cs_i].Set(lut_n, field);
-    }
+//     // FIXME: Useless!
+//     // Find the radius where the HS potential is equal to "base_potential"
+//     // by doing a bisection, for all supported charge states.
+//     fdouble r_left, r_right, found_r, pot; // [Bohr]
+//     for (int cs_i = 0 ; cs_i < max_hs_cs ; cs_i++)
+//     {
+//         const int cs = cs_i - 1;
+//         // Initial conditions
+//         hs_min_rad[cs_i] = hs_lut_potential[cs_i].Get_x_from_i(0);
+//         r_left  = hs_min_rad[cs_i];     // Minimum radius of fit
+//         r_right = xmax;
+//
+//         // Start bisection!
+//         // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
+//         found_r = r_right + (r_left - r_right) / libpotentials::two;
+//
+//         potparams.hs_cs2 = cs;
+//         potparams.kQ2 = fdouble(cs) * e0;
+//
+//         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
+//         {
+//             potparams.r = found_r * bohr_to_m;
+//             pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
+//             //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
+//             Assert_isinf_isnan(pot);
+//             if (pot <= fdouble(std::max(1,cs))*base_potential)
+//             {
+//                 r_right = found_r;
+//             }
+//             else
+//             {
+//                 r_left = found_r;
+//             }
+//             found_r = r_right + (r_left - r_right) /libpotentials::two;
+//         }
+//         std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
+//
+//         Assert_isinf_isnan(found_r);
+//         Assert_isinf_isnan(pot);
+//         assert(found_r > 0.0);
+//         //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
+//
+//         if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs_i])
+//         {
+//             std_cout << "##############################################\n";
+//             DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
+//             std_cout << "The value found " << found_r * si_to_au_length << " Bohr (" << found_r << " m)\n";
+//             std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs_i] << " Bohr (" << hs_min_rad[cs_i] * au_to_si_length<<" m)\n";
+//             std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*eV_to_Eh << " Eh)\n";
+//             std_cout << "Exiting\n";
+//             abort();
+//         }
+//
+//         hs_min_rad[cs_i] = found_r;
+//     }
+//
+//     // Now that the cutting radius is found for each charge states, change lookup tables values
+//     for (int cs_i = 0 ; cs_i < max_hs_cs ; cs_i++)
+//     {
+//         for (int i = 0 ; i <= lut_n ; i++)
+//         {
+//             if (hs_lut_potential[cs_i].Table(i) < -base_potential*eV_to_Eh)
+//                 hs_lut_potential[cs_i].Set(i, -base_potential*eV_to_Eh);
+//             if (hs_lut_potential[cs_i].Table(i) > base_potential*eV_to_Eh)
+//                 hs_lut_potential[cs_i].Set(i, base_potential*eV_to_Eh);
+//         }
+//     }
 
 //     /*
     // Print lookup table for verification
     const int max_lut = 7;
+    const int lut_n = hs_lut_potential[0].Get_n();
+    const fdouble xmin = hs_lut_potential[0].Get_XMin();
     std::string filename("lut_hs.dat");
     std::string gnuplot_command("");
     gnuplot_command += "#set term wxt 3; plot ";
@@ -438,26 +420,41 @@ void Initialize_HS(const fdouble &base_potential)
     for (int i = 0 ; i < lut_n ; i++)
     {
         const float distance = float(i)/hs_lut_potential[0].Get_inv_dx() + xmin;
-        fprintf(stderr, "%11.6g   ", distance);
+        fprintf(stderr, "%20.15g   ", distance);
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
-            fprintf(stderr, "%10.4g   ", hs_lut_potential[lut_index].read(distance));
+            if (distance <= hs_lut_potential[lut_index].Get_XMax())
+                fprintf(stderr, "%20.15g ", hs_lut_potential[lut_index].read(distance));
+            else
+                fprintf(stderr, "%20.15g ", 0.0);
         }
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
-            fprintf(stderr, "%10.4g   ", fdouble(lut_index-1)*hs_lut_potential[lut_index].read(distance));
+            if (distance <= hs_lut_potential[lut_index].Get_XMax())
+                fprintf(stderr, "%20.15g ", fdouble(lut_index-1)*hs_lut_potential[lut_index].read(distance));
+            else
+                fprintf(stderr, "%20.15g ", 0.0);
         }
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
-            fprintf(stderr, "%10.4g   ", hs_lut_field[lut_index].read(distance));
+            if (distance <= hs_lut_potential[lut_index].Get_XMax())
+                fprintf(stderr, "%20.15g ", hs_lut_field[lut_index].read(distance));
+            else
+                fprintf(stderr, "%20.15g ", 0.0);
         }
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
         {
-            fprintf(stderr, "%10.4g   ", distance*fdouble(lut_index-1)*hs_lut_field[lut_index].read(distance));
+            if (distance <= hs_lut_potential[lut_index].Get_XMax())
+                fprintf(stderr, "%20.15g ", distance*fdouble(lut_index-1)*hs_lut_field[lut_index].read(distance));
+            else
+                fprintf(stderr, "%20.15g ", 0.0);
         }
         fprintf(stderr, "\n");
     }
     std_cout << std::flush;
+// */
+//     hs_lut_field[0].Print_Table();
+//     hs_lut_potential[0].Print_Table();
     exit(0);
 //     */
 }
