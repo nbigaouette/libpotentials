@@ -55,10 +55,10 @@ double HS_Fitting_Function_Xe_Field(const double r, const int cs)
     const double h = HS_Xe_parameters[cs][7];
     const double i = HS_Xe_parameters[cs][8];
     //const double j = HS_Xe_parameters[cs][9];
-    const double field =
+    const double field = -(
           a * b * std::exp(-r*b + c)
         + d * e * std::exp(-r*e + f)
-        + g * h * std::exp(-r*h + i);
+        + g * h * std::exp(-r*h + i));
 
     return field;
 }
