@@ -96,8 +96,10 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
     for (int cs_i = 0 ; cs_i < HS_Xe_MaxNbCS ; cs_i++)
     {
         const int cs = cs_i - 1;
-        const double xmin = 0.0;
-        double xmax = HS_Xe_rmax[cs_i];
+
+        // Distance range for the HS.
+        const double xmin = 0.0;        // [Bohr]
+        double xmax = HS_Xe_rmax[cs_i]; // [Bohr]
         if (cs != 0)
             xmax *= 2.0;
         lut_pot[cs_i].Initialize(  NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_pot, cs=" + IntToStr(cs) + ")");
@@ -115,7 +117,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         double r;
         for (int i = 0 ; i <= lut_n ; i++)
         {
-            r = lut_pot[cs_i].Get_x_from_i(i);
+            r = lut_pot[cs_i].Get_x_from_i(i);  // [Bohr]
 
             double HS_U_r = 0.0;
             double HS_E_r = 0.0;
@@ -187,6 +189,7 @@ void Initialize_HS(const fdouble &base_potential)
 {
     // We'll need one lookup table per charge state
     std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
+    // LUTs stored in atomic units
     Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
 
     hs_min_rad.resize(hs_lut_potential.size());
