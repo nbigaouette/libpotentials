@@ -154,16 +154,10 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
                 );
             }
 
-            // Scale with the charge state
-            if (cs != 0)
-            {
-                HS_U_r /= double(cs);
-                HS_E_r /= double(cs);
-            }
-//             else
-//             {
-//                 // FIXME: We set the potential of a neutral to be 0.
-//                 //        In real HS, neutrals do have a potential.
+//            // FIXME: We set the potential of a neutral to be 0.
+//            //        In real HS, neutrals do have a potential.
+//            if (cs == 0)
+//            {
 //                 HS_U_r = 0.0;
 //                 HS_E_r = 0.0;
 //             }
