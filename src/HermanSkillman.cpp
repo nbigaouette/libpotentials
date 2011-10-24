@@ -225,7 +225,7 @@ void Initialize_HS(const fdouble &base_potential)
             }
             found_r = r_right + (r_left - r_right) / fdouble(2.0);
         }
-        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
+        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << (cs == 0 ? 1 : fdouble(std::abs(cs)))*pot << "\n";
 
         Assert_isinf_isnan(found_r);
         Assert_isinf_isnan(pot);
