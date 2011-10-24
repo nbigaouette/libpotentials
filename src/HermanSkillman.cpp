@@ -213,6 +213,13 @@ void Initialize_HS(const fdouble &base_potential)
         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
         {
             pot = std::abs(hs_lut_potential[cs_i].read(found_r)); // Potential energy [au]
+
+            // We want a 2+'s base potential to be twice as deep as a 1+. We will
+            // thus compare the base potential with the potential divided by the
+            // charge state, but only for 1+ and up.
+            if (cs > 0)
+                pot /= fdouble(cs);
+
             //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
             Assert_isinf_isnan(pot);
             if (pot <= base_potential)
