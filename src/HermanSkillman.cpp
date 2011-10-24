@@ -209,7 +209,7 @@ void Initialize_HS(const fdouble &base_potential)
 
         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
         {
-            pot = hs_lut_potential[cs_i].read(found_r);
+            pot = std::abs(hs_lut_potential[cs_i].read(found_r));
             //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
             Assert_isinf_isnan(pot);
             if (pot <= fdouble(std::max(1,cs))*base_potential)
