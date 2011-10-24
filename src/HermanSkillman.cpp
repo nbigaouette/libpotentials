@@ -163,7 +163,8 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 //             }
 
             // We store E/r, not E
-            HS_E_r /= r;
+            if (r > 1.0e-10) // Bohr
+                HS_E_r /= r;
 
             Assert_isinf_isnan(HS_U_r);
 
