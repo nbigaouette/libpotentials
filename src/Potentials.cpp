@@ -598,10 +598,12 @@ void Potentials_Set_Parameters_HS(
     potparams.kQ2           = one_over_4Pieps0 * Get_Charge(p2);
     potparams.hs_cs2        = Get_Charge_State(p2);
 
-    // If we have an electron, set the correct parameters for the
-    // potential cutoff. All other cases (neutral atom or ion) are
-    // treated as HS potential (neutral to 7+) and coulomb (8+ and up)
-    if ( (potparams.hs_cs2 == -1) or (potparams.hs_cs2 > max_hs_cs) )
+    // Fits are in atomic units
+    const fdouble distance_au = potparams.r * si_to_au_length;
+
+    const unsigned int lut_i = potparams.hs_cs2 + 1;
+
+    if (lut_i >= hs_lut_potential.size() or distance_au >= hs_lut_potential[lut_i].Get_XMax())
     {
         Potentials_Set_Parameters_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
@@ -612,103 +614,49 @@ fdouble Calculate_Potential_Cutoff_HS(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
- * Output in Volts units. The potential outputs the potential energy
- * (the potential in volts needs to be multiplied
- * by charge_state*e, charge of the electron)
- * Volts = J/C and the fits are in atomic units (Hartree) thus:
- * Hatree * Eh_to_eV(eV/Hartree) * e0(J/eV) * 1/e0(1/C) = Hatree * Eh_to_eV (J/C=Volts)
- * hs_min_rad SHOULDN'T be < 0.073 since the functions aren't fitted there
  */
 {
     Check_if_LibPotentials_is_initialized();
 
-    fdouble phi12 = 0.0;   // Electrostatic potential
+    fdouble phi12 = 0.0;   // Electrostatic potential [Volt]
 
     // Fits are in atomic units
-    fdouble distance_au = potparams.r * si_to_au_length;
+    const fdouble distance_au = potparams.r * si_to_au_length;
 
-    const int cs = potparams.hs_cs2;
+    const int cs2 = potparams.hs_cs2;
 
     // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
 
-    const unsigned int lut_i = cs + 1;
+    const unsigned int lut_i = cs2 + 1;
 
     if (lut_i < hs_lut_potential.size() and distance_au < hs_lut_potential[lut_i].Get_XMax())
+    {
+        // Get the lookup table's value.
         phi12 = hs_lut_potential[lut_i].read(distance_au);
-    else
-        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
 
-    return phi12;
+        // The LUT stores the HS potential energy [Hartree] of an electron (p0) in
+        // an ion's (p1) potential. It is thus NEGATIVE. The libraries and codes
+        // normally expect the potential [Volt] created by p1 (positive or negative)
+        // and multiply by the charge of p0 to get its potential energy [Joule]. 
+        // Thus, make sure we have a potential here.
+        const int cs1 = Get_Charge_State(p1);
+        if (cs1 > 0)
+            phi12 /= -fdouble(cs1);
+            
+        // Make sure electrons create a negative potential
+        if (cs2 == -1)
+            phi12 *= -one;
 
-
-/*
-    // Ions are given a potential inside the electron cloud.
-    // The last two fdoubles of the fit_lessthan_R array is the range
-    // the fit is valid for below the smallest range we have a simple
-    // hard cutoff V(r<r_0) = V(r_0)
-
-    // ___________________________________________________________________ ...
-    // |        |             |                |       |
-    // |  CP    |     R1      |     R2         |  R3   |  Coulomb
-    // |________|_____________|________________|_______|__________________ ...
-
-    if (cs == -1 or cs > max_hs_cs)
-    {
-        // Electron or high charge state ion
-        assert(p1 != NULL);
-        assert(p2 != NULL);
-        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
+        // Convert from energy in Hartree to potential in Volt
+        phi12 *= au_to_si_pot;
     }
     else
     {
-        // Make sure that for distances less then the hard cutoff, we
-        // use that cutoff;
-        assert(cs < int(hs_min_rad.size()));
-        if (distance_au < hs_min_rad[cs])
-        {
-            distance_au = hs_min_rad[cs];
-        }
-
-        if          (distance_au >= fit_lt_R3[cs][8])    // In Coulomb
-        {
-            if (cs == 0)
-            {
-                // Potential outside the electron cloud goes to 0
-                // exponentially using f(x)=h*exp(-v*x+k)
-                phi12 = fdouble(1.93775072943628) * std::exp(fdouble(-0.533297816151)*distance_au -fdouble(0.7486357665822807));
-            }
-            else
-            {
-                phi12 = (fdouble(cs) / distance_au);   // Outside electron cloud: Coulombic pot.
-            }
-        }
-        else if (   (distance_au <  fit_lt_R3[cs][8]) &&
-                    (distance_au >= fit_lt_R3[cs][7]))   // In R3
-        {
-            phi12 = genericHSfit(&(fit_lt_R3[cs][0]),distance_au);
-        }
-        else if (   (distance_au <  fit_lt_R2[cs][8]) &&
-                    (distance_au >= fit_lt_R2[cs][7]))   // In R2
-        {
-            phi12 = genericHSfit(&(fit_lt_R2[cs][0]),distance_au);
-        }
-        else if (   (distance_au <  fit_lt_R1[cs][8]) &&
-                    (distance_au >= fit_lt_R1[cs][7]))   // In R1
-        {
-            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),distance_au);
-        }
-        else                                   // In CP (constant potential)
-        {
-            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),hs_min_rad[cs]);
-        }
-        phi12 *= Eh_to_eV;
+        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
-
-    if (p2 != NULL)
-        phi12 /= fdouble(std::max(1,Get_Charge_State(p2)));
+    //std_cout << "cs2=" << cs << "  r = " << distance_au << " Bohr   phi12 = " << phi12 << " Volt   (should be close to: 1/r = " << (fdouble(cs)/distance_au)*au_to_si_pot << " Volt == " << potparams.kQ2 / potparams.r << ")\n";
 
     return phi12;
-*/
 }
 
 // **************************************************************
