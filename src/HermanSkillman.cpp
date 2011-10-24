@@ -129,9 +129,6 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             }
             else
             {
-                // Use the 1+ for the electron by taking the absolute value of the charge state.
-                // Electron has same potential as 1+. This is necessary to have a 1+ and an electron
-                // on top of each other be seen by other particles as a neutral.
                 HS_U_r = HS_Fitting_Function_Potential(r, cs_i);
             }
 
