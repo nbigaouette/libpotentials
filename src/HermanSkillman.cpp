@@ -173,7 +173,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 
             Assert_isinf_isnan(HS_U_r);
 
-            // Save it
+            // Save it (in atomic units)
             lut_pot[cs_i].Set(  i, fdouble(HS_U_r));
             lut_field[cs_i].Set(i, fdouble(HS_E_r));
         }
