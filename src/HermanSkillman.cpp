@@ -214,7 +214,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
             if (cs > 0)
                 pot /= fdouble(cs);
 
-            //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
+            //printf("cs=%2d  base_potential = %10.5g Hartree   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g Hartree\n", cs, base_potential, r_left, found_r, r_right, pot);
             Assert_isinf_isnan(pot);
             if (pot <= base_potential)
             {
