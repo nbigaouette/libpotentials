@@ -173,12 +173,14 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 }
 
 // **************************************************************
-void Initialize_HS(const fdouble &base_potential)
+void Initialize_HS(const fdouble &base_potential_eV)
 /**
  * Initialize Herman-Skillman potential
- * @param   base_potential  Potential depth wanted [eV]
+ * @param   base_potential_eV  Potential depth wanted [eV]
  */
 {
+    const fdouble base_potential = base_potential_eV*libpotentials::eV_to_Eh;
+
     // We'll need one lookup table per charge state
     std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
     // LUTs stored in atomic units
@@ -237,7 +239,7 @@ void Initialize_HS(const fdouble &base_potential)
             DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
             std_cout << "The value found " << found_r << " Bohr\n";
             std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs_i] << " Bohr\n";
-            std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*libpotentials::eV_to_Eh << " Eh)\n";
+            std_cout << "Potential depth wanted: " << base_potential << " Hartree (" << base_potential_eV << " eV)\n";
             std_cout << "Exiting\n";
             abort();
         }
@@ -251,14 +253,14 @@ void Initialize_HS(const fdouble &base_potential)
         const int lut_n = hs_lut_potential[cs_i].Get_n();
         for (int i = 0 ; i <= lut_n ; i++)
         {
-            if (hs_lut_potential[cs_i].Table(i) < -base_potential*libpotentials::eV_to_Eh)
+            if (hs_lut_potential[cs_i].Table(i) < -base_potential)
             {
-                hs_lut_potential[cs_i].Set(i, -base_potential*libpotentials::eV_to_Eh);
+                hs_lut_potential[cs_i].Set(i, -base_potential);
                 hs_lut_field[cs_i].Set(i, 0.0);
             }
-            if (hs_lut_potential[cs_i].Table(i) > base_potential*libpotentials::eV_to_Eh)
+            if (hs_lut_potential[cs_i].Table(i) > base_potential)
             {
-                hs_lut_potential[cs_i].Set(i, base_potential*libpotentials::eV_to_Eh);
+                hs_lut_potential[cs_i].Set(i, base_potential);
                 hs_lut_field[cs_i].Set(i, 0.0);
             }
         }
