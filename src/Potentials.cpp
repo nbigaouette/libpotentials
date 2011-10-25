@@ -637,12 +637,12 @@ fdouble Calculate_Potential_Cutoff_HS(
         // The LUT stores the HS potential energy [Hartree] of an electron (p0) in
         // an ion's (p1) potential. It is thus NEGATIVE. The libraries and codes
         // normally expect the potential [Volt] created by p1 (positive or negative)
-        // and multiply by the charge of p0 to get its potential energy [Joule]. 
+        // and multiply by the charge of p0 to get its potential energy [Joule].
         // Thus, make sure we have a potential here.
         const int cs1 = Get_Charge_State(p1);
         if (cs1 > 0)
             phi12 /= -fdouble(cs1);
-            
+
         // Make sure electrons create a negative potential
         if (cs2 == -1)
             phi12 *= -one;
