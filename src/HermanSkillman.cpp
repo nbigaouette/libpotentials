@@ -148,11 +148,18 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
                 //HS_U        = 0.0;
                 //HS_E_over_r = 0.0;
             }
-            else
+            else if (cs == -1)
             {
                 HS_E_over_r = std::min(
-                    -double(std::abs(cs)) / (r*r),
-                    HS_Fitting_Function_Field(r, cs_i)
+                    double(cs) / (r*r),
+                    -HS_Fitting_Function_Field(r, cs_i)
+                );
+            }
+            else
+            {
+                HS_E_over_r = std::max(
+                    double(cs) / (r*r),
+                    -HS_Fitting_Function_Field(r, cs_i)
                 );
             }
 
