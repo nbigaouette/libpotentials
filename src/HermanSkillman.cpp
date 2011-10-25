@@ -119,8 +119,8 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         {
             r = lut_pot[cs_i].Get_x_from_i(i);  // [Bohr]
 
-            double HS_U = 0.0;
-            double HS_E_over_r = 0.0;
+            double HS_U         = 0.0;  // [Hartree]
+            double HS_E_over_r  = 0.0;  // [au/Bohr]
 
             if (r >= HS_Xe_rmax[cs_i])
             {
