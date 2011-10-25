@@ -114,7 +114,19 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         HS_Fitting_Function_Field     = &HS_Fitting_Function_Xe_Field;
 
         // Populate the lookup tables.
+        // The HS potential is fitted. But the resulting field has a discontinuity with Coulomb.
+        // To fix, scale the HS field at rmax so it fits the Coulomb field. This add
+        // a multiplicative constant to the field. But it needs to be added to the potential too!
+        // Then, to make sure the potential fits Coulomb at rmax, add an additive constant, which
+        // is not included in the field (due to E=-grad(V)).
         double r;
+        const double HS_E_xmax      = -HS_Fitting_Function_Field(HS_Xe_rmax[cs_i], cs_i);
+        const double Coulomb_E_xmax = double(cs) / (HS_Xe_rmax[cs_i]*HS_Xe_rmax[cs_i]);
+        const double HS_U_xmax      = HS_Fitting_Function_Potential(HS_Xe_rmax[cs_i], cs_i);
+        const double Coulomb_U_xmax = -double(cs) / (HS_Xe_rmax[cs_i]);
+        const double HS_E_scaling_factor = Coulomb_E_xmax / HS_E_xmax;
+        const double HS_U_add_factor     = Coulomb_U_xmax - HS_E_scaling_factor*HS_U_xmax;
+        //std_cout << "cs="<<cs<<"  HS_E_scaling_factor = " <<HS_E_scaling_factor << "\n";
         for (int i = 0 ; i <= lut_n ; i++)
         {
             r = lut_pot[cs_i].Get_x_from_i(i);  // [Bohr]
@@ -122,6 +134,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             double HS_U         = 0.0;  // [Hartree]
             double HS_E_over_r  = 0.0;  // [au/Bohr]
 
+            // Electrostatic potential
             if (r >= HS_Xe_rmax[cs_i])
             {
                 // Use Coulomb
@@ -129,42 +142,15 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             }
             else
             {
-                HS_U = HS_Fitting_Function_Potential(r, cs_i);
+                HS_U = copysign(1.0, cs)*(HS_E_scaling_factor * HS_Fitting_Function_Potential(r, cs_i) + HS_U_add_factor);
             }
 
-            // The fitting is performed on the potential, not the field. By doing the same test
-            // over "r" for the field as for the potential, a discontinuity always show up in the field
-            // close to where the potential becomes Coulombic. What is important is the field: it must
-            // be smooth. The fit will cross the Coulomb field at some point, a bit farther then
-            // the HS_Xe_rmax distance. Detect that crossing by taking the minumum value between
-            // the Coulomb field and the fit. This enforce a continuous field.
-            if (cs == 0)
-            {
-                // Neutrals only have a potential close to core
-                if (r < HS_Xe_rmax[cs_i])
-                    HS_E_over_r = HS_Fitting_Function_Field(r, cs_i);
-
-                // NOTE: Uncomment to set neutral's potential and field to 0
-                //HS_U        = 0.0;
-                //HS_E_over_r = 0.0;
-            }
+            // Electrostatic field
+            if (r < HS_Xe_rmax[cs_i])
+                HS_E_over_r = -HS_E_scaling_factor*HS_Fitting_Function_Field(r, cs_i);
             else
-            {
-                // We need the higher values for HS_E_over_r, but for electron values
-                // are negative while for neutral/ion they are positive. We thus
-                // need the to call std::min() or std::max() depending on the charge.
-                // Instead of duplicating the call, a function pointer is used.
-                const double &(*min_or_max)(const double &val1, const double &val2);
-                if (cs == -1)
-                    min_or_max = &std::min<double>;
-                else
-                    min_or_max = &std::max<double>;
+                HS_E_over_r = double(cs) / (r*r);
 
-                // Use the function pointer to find the extremum.
-                HS_E_over_r = min_or_max(
-                    double(cs) / (r*r),
-                    -HS_Fitting_Function_Field(r, cs_i));
-            }
 
             // We store E/r, not E
             if (r > 1.0e-10) // Bohr
