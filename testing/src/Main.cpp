@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
         const int N = 10000;
         const fdouble xmin = fdouble(0.001 * libpotentials::bohr_to_m);
-        const fdouble xmax = fdouble(100.000 * libpotentials::bohr_to_m);
+        const fdouble xmax = fdouble(11.000 * libpotentials::bohr_to_m);
         const fdouble dx = (xmax - xmin) / fdouble(N);
 
         fdouble r;
