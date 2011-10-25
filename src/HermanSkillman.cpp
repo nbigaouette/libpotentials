@@ -263,6 +263,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
 
     /*
     // Print lookup table for verification
+    // To run: ./mdgit 2> lut_hs.dat
     const int max_lut = 8;
     std::string filename("lut_hs.dat");
     std::string gnuplot_command("");
