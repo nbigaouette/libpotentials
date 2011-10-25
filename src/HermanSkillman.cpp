@@ -140,6 +140,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             // the Coulomb field and the fit. This enforce a continuous field.
             if (cs == 0)
             {
+                // Neutrals only have a potential close to core
                 if (r < HS_Xe_rmax[cs_i])
                     HS_E_over_r = HS_Fitting_Function_Field(r, cs_i);
 
