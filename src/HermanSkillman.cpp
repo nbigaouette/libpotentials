@@ -250,18 +250,19 @@ void Initialize_HS(const fdouble &base_potential_eV)
     // Now that the cutting radius is found for each charge states, change lookup tables values
     for (int cs_i = 0 ; cs_i < int(hs_lut_potential.size()) ; cs_i++)
     {
-        const int cs = cs_i - 1;
+        // Set neutral's charge state to 1, so it does not clear the lookup tables.
+        const fdouble cs_factor = fdouble(std::max(1, cs_i-1));
         const int lut_n = hs_lut_potential[cs_i].Get_n();
         for (int i = 0 ; i <= lut_n ; i++)
         {
-            if (hs_lut_potential[cs_i].Table(i) < -base_potential*fdouble(cs))
+            if (hs_lut_potential[cs_i].Table(i) < -base_potential*cs_factor)
             {
-                hs_lut_potential[cs_i].Set(i, -base_potential*fdouble(cs));
+                hs_lut_potential[cs_i].Set(i, -base_potential*cs_factor);
                 hs_lut_field[cs_i].Set(i, 0.0);
             }
-            if (hs_lut_potential[cs_i].Table(i) > base_potential*fdouble(cs))
+            if (hs_lut_potential[cs_i].Table(i) > base_potential*cs_factor)
             {
-                hs_lut_potential[cs_i].Set(i, base_potential*fdouble(cs));
+                hs_lut_potential[cs_i].Set(i, base_potential*cs_factor);
                 hs_lut_field[cs_i].Set(i, 0.0);
             }
         }
