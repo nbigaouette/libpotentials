@@ -668,7 +668,6 @@ void Set_Field_Cutoff_HS(
     Check_if_LibPotentials_is_initialized();
 
     fdouble E_over_r = 0.0;   // Electrostatic field over distance r
-    fdouble unit_dr[3];
 
     // Fits are in atomic units
     fdouble distance_au = potparams.r * si_to_au_length;
@@ -682,10 +681,11 @@ void Set_Field_Cutoff_HS(
         E_over_r = hs_lut_field[lut_i].read(distance_au);
 
         E_over_r *= au_to_si_field;
+        E_over_r /= au_to_si_length;
+
         for (int d = 0 ; d < 3 ; d++)
         {
-            unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-            E[d]  += unit_dr[d] * E_over_r;
+            E[d]  += potparams.dr[d] * E_over_r;
         }
     }
     else
