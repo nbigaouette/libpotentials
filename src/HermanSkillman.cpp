@@ -142,6 +142,10 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             {
                 if (r < HS_Xe_rmax[cs_i])
                     HS_E_over_r = HS_Fitting_Function_Field(r, cs_i);
+
+                // NOTE: Uncomment to set neutral's potential and field to 0
+                //HS_U        = 0.0;
+                //HS_E_over_r = 0.0;
             }
             else
             {
@@ -150,14 +154,6 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
                     HS_Fitting_Function_Field(r, cs_i)
                 );
             }
-
-//            // FIXME: We set the potential of a neutral to be 0.
-//            //        In real HS, neutrals do have a potential.
-//            if (cs == 0)
-//            {
-//                 HS_U_r = 0.0;
-//                 HS_E_r = 0.0;
-//             }
 
             // We store E/r, not E
             if (r > 1.0e-10) // Bohr
