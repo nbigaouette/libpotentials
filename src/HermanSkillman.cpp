@@ -119,17 +119,17 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         {
             r = lut_pot[cs_i].Get_x_from_i(i);  // [Bohr]
 
-            double HS_U_r = 0.0;
-            double HS_E_r = 0.0;
+            double HS_U = 0.0;
+            double HS_E_over_r = 0.0;
 
             if (r >= HS_Xe_rmax[cs_i])
             {
                 // Use Coulomb
-                HS_U_r = -double(std::abs(cs)) / r;
+                HS_U = -double(std::abs(cs)) / r;
             }
             else
             {
-                HS_U_r = HS_Fitting_Function_Potential(r, cs_i);
+                HS_U = HS_Fitting_Function_Potential(r, cs_i);
             }
 
             // The fitting is performed on the potential, not the field. By doing the same test
@@ -141,11 +141,11 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             if (cs == 0)
             {
                 if (r < HS_Xe_rmax[cs_i])
-                    HS_E_r = HS_Fitting_Function_Field(r, cs_i);
+                    HS_E_over_r = HS_Fitting_Function_Field(r, cs_i);
             }
             else
             {
-                HS_E_r = std::min(
+                HS_E_over_r = std::min(
                     -double(std::abs(cs)) / (r*r),
                     HS_Fitting_Function_Field(r, cs_i)
                 );
@@ -161,13 +161,13 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 
             // We store E/r, not E
             if (r > 1.0e-10) // Bohr
-                HS_E_r /= r;
+                HS_E_over_r /= r;
 
-            Assert_isinf_isnan(HS_U_r);
+            Assert_isinf_isnan(HS_U);
 
             // Save it (in atomic units)
-            lut_pot[cs_i].Set(  i, fdouble(HS_U_r));
-            lut_field[cs_i].Set(i, fdouble(HS_E_r));
+            lut_pot[cs_i].Set(  i, fdouble(HS_U));
+            lut_field[cs_i].Set(i, fdouble(HS_E_over_r));
         }
     }
 }
