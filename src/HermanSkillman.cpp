@@ -148,19 +148,22 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
                 //HS_U        = 0.0;
                 //HS_E_over_r = 0.0;
             }
-            else if (cs == -1)
-            {
-                HS_E_over_r = std::min(
-                    double(cs) / (r*r),
-                    -HS_Fitting_Function_Field(r, cs_i)
-                );
-            }
             else
             {
-                HS_E_over_r = std::max(
+                // We need the higher values for HS_E_over_r, but for electron values
+                // are negative while for neutral/ion they are positive. We thus
+                // need the to call std::min() or std::max() depending on the charge.
+                // Instead of duplicating the call, a function pointer is used.
+                const double &(*min_or_max)(const double &val1, const double &val2);
+                if (cs == -1)
+                    min_or_max = &std::min<double>;
+                else
+                    min_or_max = &std::max<double>;
+
+                // Use the function pointer to find the extremum.
+                HS_E_over_r = min_or_max(
                     double(cs) / (r*r),
-                    -HS_Fitting_Function_Field(r, cs_i)
-                );
+                    -HS_Fitting_Function_Field(r, cs_i));
             }
 
             // We store E/r, not E
