@@ -212,18 +212,21 @@ endef
 
 #################################################################
 # Tools
+SOFTLIMIT        = softlimit -a 500000000
 RM               = rm -f
 CONSOLE          = xterm -hold -e
 #CONSOLE          = konsole --vt_sz 73x41 --noclose -e
 #CONSOLE          = konsole --vt_sz 73x41 --noclose -e
 #CONSOLE            = konsole --noclose -e
-DEBUGGER         = gdb
+DEBUGGER         = gdb --quiet --args
 VALGRIND         = valgrind
 MEMCHECK         = $(VALGRIND) --tool=memcheck --leak-check=full --show-reachable=yes
 CACHEGRIND       = $(VALGRIND) --tool=callgrind
-GIT              = git
-GREP             = grep
-SED              = sed
+GIT              = $(shell which git)
+GREP             = $(shell which grep)
+SED              = $(shell which sed)
+ECHO             = $(shell which echo)
+CAT              = $(shell which cat)
 ifeq ($(NP),)
 ifneq ($(np),)
 NP=$(np)
