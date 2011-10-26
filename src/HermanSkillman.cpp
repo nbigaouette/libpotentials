@@ -92,7 +92,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 
     // Set potential lookup table
     // cs: 0 == neutral, 1 == 1+, etc.
-    for (int cs = 0 ; cs_i < HS_Xe_MaxNbCS ; cs_i++)
+    for (int cs = 0 ; cs < HS_Xe_MaxNbCS ; cs++)
     {
         // Distance range for the HS.
         const double xmin = 0.0;        // [Bohr]
@@ -139,12 +139,12 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             }
             else
             {
-                HS_U = copysign(1.0, cs)*(HS_E_scaling_factor * HS_Fitting_Function_Potential(r, cs_i) + HS_U_add_factor);
+                HS_U = copysign(1.0, cs)*(HS_E_scaling_factor * HS_Fitting_Function_Potential(r, cs) + HS_U_add_factor);
             }
 
             // Electrostatic field
             if (r < HS_Xe_rmax[cs])
-                HS_E_over_r = -HS_E_scaling_factor*HS_Fitting_Function_Field(r, cs_i);
+                HS_E_over_r = -HS_E_scaling_factor*HS_Fitting_Function_Field(r, cs);
             else
                 HS_E_over_r = double(cs) / (r*r);
 
@@ -267,7 +267,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
     for (int l = 0 ; l < max_lut ; l++)
     {
         gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
-        gnuplot_command += IntToStr(row++) + "  title \"LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        gnuplot_command += IntToStr(row++) + "  title \"LUT(V(" + IntToStr(l) + ")) (HS)\" with lines lw 3";
         if (l == max_lut-1)
             gnuplot_command += "\n";
         else
@@ -277,7 +277,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
     for (int l = 0 ; l < max_lut ; l++)
     {
         gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
-        gnuplot_command += IntToStr(row++) + "  title \"cs*LUT(V(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+        gnuplot_command += IntToStr(row++) + "  title \"cs*LUT(V(" + IntToStr(l) + ")) (HS)\" with lines lw 3, ";
     }
     for (int l = 1 ; l <= max_lut-2 ; l++)
     {
@@ -291,7 +291,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
     for (int l = 0 ; l < max_lut ; l++)
     {
         gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
-        gnuplot_command += IntToStr(row++) + "  title \"LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3";
+        gnuplot_command += IntToStr(row++) + "  title \"LUT(E/r(" + IntToStr(l) + ")) (HS)\" with lines lw 3";
         if (l == max_lut-1)
             gnuplot_command += "\n";
         else
@@ -301,7 +301,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
     for (int l = 0 ; l < max_lut ; l++)
     {
         gnuplot_command += "\"" + filename + "\" using " + IntToStr(row++) + ":";
-        gnuplot_command += IntToStr(row++) + "  title \"r*cs*LUT(E/r(" + IntToStr(l-1) + ")) (HS)\" with lines lw 3, ";
+        gnuplot_command += IntToStr(row++) + "  title \"r*cs*LUT(E/r(" + IntToStr(l) + ")) (HS)\" with lines lw 3, ";
     }
     for (int l = 1 ; l <= max_lut-2 ; l++)
     {
@@ -324,26 +324,26 @@ void Initialize_HS(const fdouble &base_potential_eV)
     for (int l = 0 ; l < max_lut ; l++)
     {
         fprintf(stderr, "%20s ", "r (bohr)");
-        fprintf(stderr, "%20s ", std::string("V(" + IntToStr(l-1) + ")").c_str());
+        fprintf(stderr, "%20s ", std::string("V(" + IntToStr(l) + ")").c_str());
     }
     for (int l = 0 ; l < max_lut ; l++)
     {
         fprintf(stderr, "%20s ", "r (bohr)");
-        fprintf(stderr, "%20s ", std::string("cs*V(" + IntToStr(l-1) + ")").c_str());
+        fprintf(stderr, "%20s ", std::string("cs*V(" + IntToStr(l) + ")").c_str());
     }
     for (int l = 0 ; l < max_lut ; l++)
     {
         fprintf(stderr, "%20s ", "r (bohr)");
-        fprintf(stderr, "%20s ", std::string("E/r(" + IntToStr(l-1) + ")").c_str());
+        fprintf(stderr, "%20s ", std::string("E/r(" + IntToStr(l) + ")").c_str());
     }
     for (int l = 0 ; l < max_lut ; l++)
     {
         fprintf(stderr, "%20s ", "r (bohr)");
-        fprintf(stderr, "%20s ", std::string("cs*E(" + IntToStr(l-1) + ")").c_str());
+        fprintf(stderr, "%20s ", std::string("cs*E(" + IntToStr(l) + ")").c_str());
     }
     fprintf(stderr, "\n");
 
-    const int lut_n      = hs_lut_potential[0].Get_n();
+    const int lut_n = hs_lut_potential[0].Get_n();
     for (int i = 0 ; i < lut_n ; i++)
     {
         for (int lut_index = 0 ; lut_index < max_lut ; lut_index++)
