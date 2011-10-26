@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
         const std::string cmd = std::string("mkdir -p output/") + potential_shape;
         system(cmd.c_str());
 
-        Potentials_Initialize(potential_shape,
+        Potentials_Initialize("output",
+                                potential_shape,
                                 fdouble(1.5 * libpotentials::Eh_to_eV),     // base potential
                                 fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
                                 1);                                 // Super Gaussian order (m=1 for gaussian)
