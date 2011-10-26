@@ -6,10 +6,14 @@
 #include "Potentials.hpp"
 #include "Global.hpp"
 #include "Code_Functions_Declarations.hpp"
+#include "Git_Diff.hpp"
+#include "Version.hpp"
 
 extern void Initialize_Simple(const fdouble &minr);
 extern void Initialize_SuperGaussian(const int &m);
 extern void Initialize_HS(const fdouble &base_potential);
+
+std::string io_basename;
 
 // **************************************************************
 bool Is_HS_used()
@@ -18,7 +22,8 @@ bool Is_HS_used()
 }
 
 // **************************************************************
-void Potentials_Initialize(const std::string potential_shape,
+void Potentials_Initialize(const std::string _io_basename,
+                           const std::string potential_shape,
                            const fdouble base_potential_depth,
                            const fdouble input_s_rmin,
                            const int input_sg_m)
@@ -32,6 +37,8 @@ void Potentials_Initialize(const std::string potential_shape,
  */
 {
     is_libpotentials_initialized = true;
+
+    io_basename = _io_basename;
 
     libpotentials_private::base_pot_well_depth = base_potential_depth;
 
@@ -143,11 +150,9 @@ void Potentials_Initialize(const std::string potential_shape,
         abort();
     }
 
-    std_cout << "### Git versioning:                                                ###\n"
-             << "###     build_time:   "<< libpotentials::build_time << std::endl
-             << "###     build_sha:    "<< libpotentials::build_sha << std::endl
-             << "###     build_branch: "<< libpotentials::build_branch << std::endl
-             << "###----------------------------------------------------------------###\n"
+    Log_Git_Info(io_basename);
+
+    std_cout << "###----------------------------------------------------------------###\n"
              << "###            Potentials library initialization done.             ###\n"
              << "######################################################################\n";
 }
