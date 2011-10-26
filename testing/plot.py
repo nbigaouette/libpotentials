@@ -42,21 +42,31 @@ for folder in globber:
 
     for cs in xrange(nb_cs):
         data = numpy.loadtxt(pot_files[cs], delimiter=',', skiprows=0, dtype=float)
+        p1_cs = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
         r     = data[:,0]
         pot   = data[:,1]
+        Coulomb_U = p0_cs*p1_cs/r
+        Umax = +10.0
+        Umin = -10.0
+        Coulomb_U[numpy.where(Coulomb_U > Umax)] = Umax
+        Coulomb_U[numpy.where(Coulomb_U < Umin)] = Umin
 
-        charge_state = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
-        ax1.plot(r, pot, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
-        ax1.plot(r, charge_state/r, ':'+colors[cs%len(colors)], lw=line_width)
+        ax1.plot(r, pot, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
+        ax1.plot(r, Coulomb_U, ':'+colors[cs%len(colors)], lw=line_width)
 
     for cs in xrange(nb_cs):
         data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
+        p1_cs = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
         r     = data[:,0]
         field = data[:,1]
+        Coulomb_E = p1_cs/(r*r)
+        Emax = +10.0
+        Emin = -10.0
+        Coulomb_E[numpy.where(Coulomb_E > Emax)] = Emax
+        Coulomb_E[numpy.where(Coulomb_E < Emin)] = Emin
 
-        charge_state = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
-        ax2.plot(r, field, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
-        ax2.plot(r, charge_state/(r*r), ':'+colors[cs%len(colors)], lw=line_width)
+        ax2.plot(r, field, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
+        ax2.plot(r, Coulomb_E, ':'+colors[cs%len(colors)], lw=line_width)
 
     fi += 1
 
