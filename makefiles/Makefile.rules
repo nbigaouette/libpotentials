@@ -210,6 +210,16 @@ $(eval $(call CFLAGS_template,$(1),$(2),$(3)))
 $(eval $(call LDFLAGS_template,$(1),$(2),$(3)))
 endef
 
+ifneq ($(LD_LIBRARY_PATH),)
+ifeq ($(LINK_PREFERED),shared)
+# Make sure the resulting binary will know the exact path of the shared libraries.
+LD_LIBRARY_PATHs = $(subst :, ,$(LD_LIBRARY_PATH) )
+ifneq ($(RPATH),)
+LDFLAGS += $(strip $(sort $(addprefix $(RPATH), $(LD_LIBRARY_PATHs))))
+endif
+endif
+endif
+
 #################################################################
 # Tools
 SOFTLIMIT        = softlimit -a 500000000
