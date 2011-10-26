@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
         system(cmd.c_str());
 
         Potentials_Initialize(potential_shape,
-                                fdouble(1.0 * libpotentials::Eh_to_eV),     // base potential
+                                fdouble(1.5 * libpotentials::Eh_to_eV),     // base potential
                                 fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
                                 1);                                 // Super Gaussian order (m=1 for gaussian)
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
         const int N = 10000;
         const fdouble xmin = fdouble(0.001 * libpotentials::bohr_to_m);
-        const fdouble xmax = fdouble(100.000 * libpotentials::bohr_to_m);
+        const fdouble xmax = fdouble(11.000 * libpotentials::bohr_to_m);
         const fdouble dx = (xmax - xmin) / fdouble(N);
 
         fdouble r;
@@ -126,6 +126,8 @@ int main(int argc, char *argv[])
                 // Put first particle at right of second. The particle creating the field is at the left,
                 // so a positively charged p1 will create a positive field.
                 p0.pos[0] = r;
+
+                // Reset values
                 for (int d = 0 ; d < 3 ; d++)
                 {
                     E_at_p0_from_p1[d]  = libpotentials::zero;
@@ -135,12 +137,7 @@ int main(int argc, char *argv[])
                 // Set parameters, calculate potential and field
                 Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
                 potential_at_p0_from_p1 = Calculate_Potential((void *) &p0, (void *) &p1, potparams);
-                if (potential_shape == "HermanSkillman")
-                    potential_at_p0_from_p1 *= std::abs(Get_Charge_State((void *) &p1));
                 Set_Field((void *) &p0, (void *) &p1, potparams, potential_at_p0_from_p1, E_at_p0_from_p1);
-
-                if (potential_shape == "HermanSkillman")
-                    E_at_p0_from_p1[0] *= cs;
 
                 // Save potential and field
                 f_poten << r * libpotentials::m_to_bohr << ", " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";

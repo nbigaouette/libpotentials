@@ -19,6 +19,7 @@
 #include "Code_Functions_Declarations.hpp"
 #include "Global.hpp"
 #include "Vectors.hpp"
+#include "HermanSkillman.hpp"
 
 using namespace libpotentials;
 
@@ -40,9 +41,6 @@ fdouble sg_one_over_two_m;
 fdouble sg_m_pow_one_over_two_m;
 fdouble sg_exp_one_over_two_m;
 
-std::vector<fdouble> hs_min_rad;
-const int max_hs_cs = 7;
-
 const fdouble ps_A = fdouble(0.1)   * angstrom_to_m;
 const fdouble ps_B = fdouble(0.45)  * angstrom_to_m;
 const fdouble ps_C = fdouble(0.358) * angstrom_to_m;
@@ -55,58 +53,27 @@ const fdouble ps_A_minus_B   = ps_A - ps_B;
 const fdouble ps_A_minus_B2  = ps_A_minus_B*ps_A_minus_B;
 const fdouble ps_A_minus_B3  = ps_A_minus_B*ps_A_minus_B*ps_A_minus_B;
 
-// ********** Herman-Skillman (HS) potential fit parameters *****
-// The fit function is f(x)=-a/(x^n-b)-b/x^m +d*x^o and the fit
-// parameters are in alphabetical order there is a different
-// array for each radial distance, where the cutoff radial
-// distance is the last element of the array.
-const fdouble fit_lt_R1[max_hs_cs+1][9] = {
-/*                                                                                                                                                  r_min               r_max */
-    {fdouble(-39.3117),  fdouble(-0.23822),       fdouble(1137.15),    fdouble(1093.87),    fdouble(0.926033),   fdouble(1.35102),    fdouble(-0.902534),  fdouble(0.073),  fdouble(1.0)},
-    {fdouble(-50.9699),  fdouble(-0.249349),      fdouble(1190.93),    fdouble(1137.92),    fdouble(0.934615),   fdouble(1.26191),    fdouble(-0.915538),  fdouble(0.073),  fdouble(1.0)},
-    {fdouble(-103318.0), fdouble(-0.0025085),     fdouble(109884.0),   fdouble(6808.38),    fdouble(0.452195),   fdouble(0.453217),   fdouble(-0.452051),  fdouble(0.073),  fdouble(0.6)},
-    {fdouble(-103309.0), fdouble(-0.00222854),    fdouble(109893.0),   fdouble(6799.44),    fdouble(0.462727),   fdouble(0.46361),    fdouble(-0.462679),  fdouble(0.073),  fdouble(0.75)},
-    {fdouble(-106539.0), fdouble(-0.00253429),    fdouble(106375.0),   fdouble(90.6738),    fdouble(0.576876),   fdouble(0.577581),   fdouble(-1.31088),   fdouble(0.073),  fdouble(0.75)},
-    {fdouble(-106552.0), fdouble(-0.00285323),    fdouble(106363.0),   fdouble(97.8488),    fdouble(0.555262),   fdouble(0.556083),   fdouble(-1.26473),   fdouble(0.073),  fdouble(0.75)},
-    {fdouble(-106572.0), fdouble(-0.00333483),    fdouble(106342.0),   fdouble(106.134),    fdouble(0.523154),   fdouble(0.524146),   fdouble(-1.19394),   fdouble(0.073),  fdouble(0.75)},
-    {fdouble(-156137.0), fdouble(-9.52875),       fdouble(16279.0),    fdouble(-30.664),    fdouble(0.00362412), fdouble(4.27026),    fdouble(-1.32769),   fdouble(0.073),  fdouble(0.35)}
-};
-const fdouble fit_lt_R2[max_hs_cs+1][9] = {
-/*                                                                                                                                                                                                              r_min           r_max */
-    {fdouble(-106456.523613218), fdouble(-0.00434541093317553),   fdouble(106457.47661029),    fdouble(449.688681389621),   fdouble(1.05645523648719),   fdouble(1.05644674944298),   fdouble(-2.10055725950707),  fdouble(1.0),    fdouble(3.0)},
-    {fdouble(-103240.467920728), fdouble(-0.000208924735834372),  fdouble(109961.532079643),   fdouble(6730.47792027321),   fdouble(0.935905881633714),  fdouble(0.935947358356231),  fdouble(-0.93589486453368),  fdouble(1.0),    fdouble(5.0)},
-    {fdouble(-7.43911046752643), fdouble(-7.49680170563087),      fdouble(83544.7086195816),   fdouble(83531.3679985203),   fdouble(2.4477467508823),    fdouble(6.7666148229704),    fdouble(-2.44780121116816),  fdouble(0.6),    fdouble(2.0)},
-    {fdouble(-106458.718251124), fdouble(-0.000545743677370998),  fdouble(106455.682016356),   fdouble(42.3237633727421),   fdouble(1.00559843304636),   fdouble(1.00563829185779),   fdouble(-1.95708048412661),  fdouble(0.75),   fdouble(4.6)},
-    {fdouble(-106453.495071328), fdouble(-0.00399495917548577),   fdouble(106460.925622402),   fdouble(418.039392846222),   fdouble(2.49073456323941),   fdouble(2.4909137590075),    fdouble(-4.9738722919108),   fdouble(0.75),   fdouble(1.49)},
-    {fdouble(-106455.157115451), fdouble(-0.00456229507833856),   fdouble(106460.145184005),   fdouble(475.327392665337),   fdouble(2.27725233310332),   fdouble(2.27744553473598),   fdouble(-4.5488537847976),   fdouble(0.75),   fdouble(1.5)},
-    {fdouble(-106452.180354907), fdouble(-0.00278122155186969),   fdouble(106461.721043604),   fdouble(291.588888724572),   fdouble(3.59580873362151),   fdouble(3.59615037646864),   fdouble(-7.17813960396325),  fdouble(0.75),   fdouble(1.1)},
-    {fdouble(-156436.219173519), fdouble(-13.360177523064),       fdouble(10907.4536590735),   fdouble(-0.0178811573295934),fdouble(0.0295757482829108), fdouble(0.398808602998421),  fdouble(-5.49402342863045),  fdouble(0.35),   fdouble(0.96)}
-};
-
-const fdouble fit_lt_R3[max_hs_cs+1][9] = {
-/*                                                                                                                                                                                                          r_min           r_max */
-    {fdouble(-106344.499357271), fdouble(-0.0870404156519758),    fdouble(106379.969770542),   fdouble(8916.02780769541),   fdouble(2.34571347967461),   fdouble(2.34558512875328),   fdouble(-4.64724093315347),  fdouble(3.0),    fdouble(6.0)},
-    {fdouble(-103237.178865962), fdouble(-6.19966863330973e-05),  fdouble(109964.821133342),   fdouble(6727.38883676891),   fdouble(0.990416309150688),  fdouble(0.990415990770504),  fdouble(-0.990490798848876), fdouble(5.0),    fdouble(12.0)},
-    {fdouble(-106453.321357016), fdouble(-0.0233720244005975),    fdouble(106447.424341854),   fdouble(2423.61663166259),   fdouble(1.69020647850117),   fdouble(1.69030805063035),   fdouble(-3.36829845029172),  fdouble(2.0),    fdouble(6.0)},
-    {fdouble(-106457.189833221), fdouble(-0.000453936408454839),  fdouble(106457.21043453),    fdouble(42.3245989284602),   fdouble(0.499881464943715),  fdouble(0.499881437435555),  fdouble(-0.999349099198404), fdouble(4.6),    fdouble(12.0)},
-    {fdouble(-106478.807529316), fdouble(-0.00470475292274558),   fdouble(106435.613140363),   fdouble(443.194839747241),   fdouble(0.192492936878364),  fdouble(0.1932366392085),    fdouble(-0.192465568481317), fdouble(1.49),   fdouble(2.0)},
-    {fdouble(-106455.157115451), fdouble(-0.00456229507833856),   fdouble(106460.145184005),   fdouble(475.327392665337),   fdouble(2.27725233310332),   fdouble(2.27744553473598),   fdouble(-4.5488537847976),   fdouble(1.49),   fdouble(1.49)},
-    {fdouble(-106452.180354907), fdouble(-0.00278122155186969),   fdouble(106461.721043604),   fdouble(291.588888724572),   fdouble(3.59580873362151),   fdouble(3.59615037646864),   fdouble(-7.17813960396325),  fdouble(1.1),    fdouble(1.1)},
-    {fdouble(-156436.219173519), fdouble(-13.360177523064),       fdouble(10907.4536590735),   fdouble(-0.0178811573295934),fdouble(0.0295757482829108), fdouble(0.398808602998421),  fdouble(-5.49402342863045),  fdouble(0.96),   fdouble(0.96)}
-};
-
 // **************************************************************
 // ********** Local functions prototypes ************************
 // **************************************************************
 void Set_Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3],
                    const fdouble dr2);
 
-// Herman-Skillman (HS) potential fit functions
-fdouble deriv_genericHSfit(const fdouble *par, fdouble x);
-fdouble genericHSfit(const fdouble *par, fdouble x);
-
 fdouble tmp_get_shieldr_2(const int chg_st_1, const int chg_st_2);
 fdouble tmp_get_shieldr(const int chg_st, const char *message);
+
+template <class Integer>
+inline std::string IntToStr(const Integer integer, const int width = 0, const char fill = ' ')
+{
+    std::ostringstream MyStream;
+    if (width != 0)
+    {
+        MyStream << std::setw(width);
+        MyStream << std::setfill(fill);
+    }
+    MyStream << integer << std::flush;
+    return (MyStream.str());
+}
 
 // **************************************************************
 // ********** Accessible functions implementations **************
@@ -164,73 +131,6 @@ void Initialize_SuperGaussian(const int &m)
 }
 
 // **************************************************************
-void Initialize_HS(const int &m, const fdouble &base_potential)
-/**
- * Initialize super-gaussian like potential
- * @param   m               Order of the Super-Gaussian (m=1 is a simple gaussian) [-]
- * @param   base_potential  Potential depth wanted [eV]
- */
-{
-    hs_min_rad.resize(max_hs_cs+1); // +1 for the neutral.
-    potential_paramaters potparams;
-
-    // Find the radius where the HS potential is equal to "base_potential"
-    // by doing a bisection, for all supported charge states.
-    fdouble r_left, r_right, found_r, pot; // [Bohr]
-    for (int cs = 0 ; cs <= max_hs_cs ; cs++)
-    {
-        // Initial conditions
-        hs_min_rad[cs] = fit_lt_R1[cs][7];
-        r_left  = fit_lt_R1[cs][7]; // Minimum radius of fit
-        r_right = fdouble(10.0);             // At 10 bohr, it should be coulombic
-
-        // Start bisection!
-        // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
-        found_r = r_right + (r_left - r_right) / libpotentials::two;
-
-        potparams.hs_cs2 = cs;
-        potparams.kQ2 = fdouble(cs) * e0;
-
-        while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
-        {
-            potparams.r = found_r * bohr_to_m;
-            pot = Calculate_Potential_Cutoff_HS_SuperGaussian(NULL, NULL, potparams);
-            //printf("base_potential = %10.5g   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g\n", base_potential, r_left, found_r, r_right, pot);
-            if (pot <= fdouble(std::max(1,cs))*base_potential)
-            {
-                r_right = found_r;
-            }
-            else
-            {
-                r_left = found_r;
-            }
-            found_r = r_right + (r_left - r_right) /libpotentials::two;
-        }
-        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << pot << "\n";
-
-        Assert_isinf_isnan(found_r);
-        Assert_isinf_isnan(pot);
-        assert(found_r > 0.0);
-        //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
-
-        if (found_r * si_to_au_length <= 0.99999*hs_min_rad[cs])
-        {
-            std_cout << "##############################################\n";
-            DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
-            std_cout << "The value found " << found_r * si_to_au_length << " Bohr (" << found_r << " m)\n";
-            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs] << " Bohr (" << hs_min_rad[cs] * au_to_si_length<<" m)\n";
-            std_cout << "Potential depth wanted: " << base_potential << " eV (" << base_potential*eV_to_Eh << " Eh)\n";
-            std_cout << "Exiting\n";
-            abort();
-        }
-
-        hs_min_rad[cs] = found_r;
-    }
-
-    Initialize_SuperGaussian(m);
-}
-
-// **************************************************************
 fdouble Coulomb_Potential(const fdouble kQ, const fdouble r)
 /**
  * Calculate the Coulomb potential due to a point charge.
@@ -263,28 +163,6 @@ void Set_Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3],
         for (int d = 0 ; d < 3 ; d++)
             E[d] += dr[d] * phi12_over_dr2;
     }
-}
-
-// **************************************************************
-fdouble deriv_genericHSfit(const fdouble *par, fdouble x){
-    // The 1/2 factor is becuase HS outputs the
-    // potential as 2V(x) and that's how they were fit
-    return libpotentials::half*(
-              par[0]*par[5]*std::pow(x,par[5]-1)/(std::pow(x,par[5])-par[1])/(std::pow(x,par[5])-par[1])
-            + par[2]*par[4]/std::pow(x,par[4]+1)
-            + par[6]*par[3]*std::pow(x,par[6]-1)
-        );
-}
-
-// **************************************************************
-// f(x) = -a/(x^n-b)-b/x^m +d*x^o where the parameters are passed alphabetically
-fdouble genericHSfit(const fdouble *par, fdouble x){
-    //the 1/2 factor is becuase HS outputs the potential as 2V and that's how they were fit
-    return -libpotentials::half*(
-            - par[0]/(std::pow(x,par[5])-par[1])
-            - par[2]/std::pow(x,par[4])
-            + par[3]*std::pow(x,par[6])
-        );
 }
 
 // **************************************************************
@@ -635,7 +513,7 @@ void Set_Field_Cutoff_SuperGaussian(
 
 // **************************************************************
 
-void Potentials_Set_Parameters_HS_SuperGaussian(
+void Potentials_Set_Parameters_HS(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
@@ -653,197 +531,102 @@ void Potentials_Set_Parameters_HS_SuperGaussian(
     potparams.kQ2           = one_over_4Pieps0 * Get_Charge(p2);
     potparams.hs_cs2        = Get_Charge_State(p2);
 
-    // If we have an electron, set the correct parameters for the
-    // potential cutoff. All other cases (neutral atom or ion) are
-    // treated as HS potential (neutral to 7+) and coulomb (8+ and up)
-    if ( (potparams.hs_cs2 == -1) or (potparams.hs_cs2 > max_hs_cs) )
+    // Fits are in atomic units
+    const fdouble distance_au = potparams.r * si_to_au_length;
+
+    const unsigned int lut_i = potparams.hs_cs2 + 1;
+
+    if (lut_i >= hs_lut_potential.size() or distance_au >= hs_lut_potential[lut_i].Get_XMax())
     {
         Potentials_Set_Parameters_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
 }
 
 // **************************************************************
-fdouble Calculate_Potential_Cutoff_HS_SuperGaussian(
+fdouble Calculate_Potential_Cutoff_HS(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
- * Output in Volts units. The potential outputs the potential energy
- * (the potential in volts needs to be multiplied
- * by charge_state*e, charge of the electron)
- * Volts = J/C and the fits are in atomic units (Hartree) thus:
- * Hatree * Eh_to_eV(eV/Hartree) * e0(J/eV) * 1/e0(1/C) = Hatree * Eh_to_eV (J/C=Volts)
- * hs_min_rad SHOULDN'T be < 0.073 since the functions aren't fitted there
  */
 {
     Check_if_LibPotentials_is_initialized();
 
-    fdouble phi12 = 0.0;   // Electrostatic potential
+    fdouble phi12 = 0.0;   // Electrostatic potential [Volt]
 
     // Fits are in atomic units
-    fdouble distance_au = potparams.r * si_to_au_length;
+    const fdouble distance_au = potparams.r * si_to_au_length;
 
-    const int cs = potparams.hs_cs2;
+    const int cs2 = potparams.hs_cs2;
 
-    // Ions are given a potential inside the electron cloud.
-    // The last two fdoubles of the fit_lessthan_R array is the range
-    // the fit is valid for below the smallest range we have a simple
-    // hard cutoff V(r<r_0) = V(r_0)
+    // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
 
-    // ___________________________________________________________________ ...
-    // |        |             |                |       |
-    // |  CP    |     R1      |     R2         |  R3   |  Coulomb
-    // |________|_____________|________________|_______|__________________ ...
+    const unsigned int lut_i = cs2 + 1;
 
-    if (cs == -1 or cs > max_hs_cs)
+    if (lut_i < hs_lut_potential.size() and distance_au < hs_lut_potential[lut_i].Get_XMax())
     {
-        // Electron or high charge state ion
-        assert(p1 != NULL);
-        assert(p2 != NULL);
-        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
+        // Get the lookup table's value.
+        phi12 = hs_lut_potential[lut_i].read(distance_au);
+
+        // The LUT stores the HS potential energy [Hartree] of an electron (p0) in
+        // an ion's (p1) potential. It is thus NEGATIVE. The libraries and codes
+        // normally expect the potential [Volt] created by p1 (positive or negative)
+        // and multiply by the charge of p0 to get its potential energy [Joule].
+        // Thus, make sure we have a potential here.
+        const int cs1 = Get_Charge_State(p1);
+        if (cs1 > 0)
+            phi12 /= -fdouble(cs1);
+
+        // Make sure electrons create a negative potential
+        if (cs2 == -1)
+            phi12 *= -one;
+
+        // Convert from energy in Hartree to potential in Volt
+        phi12 *= au_to_si_pot;
     }
     else
     {
-        // Make sure that for distances less then the hard cutoff, we
-        // use that cutoff;
-        assert(cs < int(hs_min_rad.size()));
-        if (distance_au < hs_min_rad[cs])
-        {
-            distance_au = hs_min_rad[cs];
-        }
-
-        if          (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
-        {
-            if (cs == 0)
-            {
-                // Potential outside the electron cloud goes to 0
-                // exponentially using f(x)=h*exp(-v*x+k)
-                phi12 = fdouble(1.93775072943628) * std::exp(fdouble(-0.533297816151)*distance_au -fdouble(0.7486357665822807));
-            }
-            else
-            {
-                phi12 = (fdouble(cs) / distance_au);   // Outside electron cloud: Coulombic pot.
-            }
-        }
-        else if (   (distance_au <  fit_lt_R3[cs][8]) &&
-                    (distance_au >= fit_lt_R3[cs][7]))   /* In R3 */
-        {
-            phi12 = genericHSfit(&(fit_lt_R3[cs][0]),distance_au);
-        }
-        else if (   (distance_au <  fit_lt_R2[cs][8]) &&
-                    (distance_au >= fit_lt_R2[cs][7]))   /* In R2 */
-        {
-            phi12 = genericHSfit(&(fit_lt_R2[cs][0]),distance_au);
-        }
-        else if (   (distance_au <  fit_lt_R1[cs][8]) &&
-                    (distance_au >= fit_lt_R1[cs][7]))   /* In R1 */
-        {
-            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),distance_au);
-        }
-        else                                   /* In CP (constant potential) */
-        {
-            phi12 = genericHSfit(&(fit_lt_R1[cs][0]),hs_min_rad[cs]);
-        }
-        phi12 *= Eh_to_eV;
+        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
-
-    if (p2 != NULL)
-        phi12 /= fdouble(std::max(1,Get_Charge_State(p2)));
+    //std_cout << "cs2=" << cs << "  r = " << distance_au << " Bohr   phi12 = " << phi12 << " Volt   (should be close to: 1/r = " << (fdouble(cs)/distance_au)*au_to_si_pot << " Volt == " << potparams.kQ2 / potparams.r << ")\n";
 
     return phi12;
 }
 
 // **************************************************************
-void Set_Field_Cutoff_HS_SuperGaussian(
+void Set_Field_Cutoff_HS(
     void *p1, void *p2,
     potential_paramaters &potparams,
     fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
+    fdouble E_over_r = 0.0;   // Electrostatic field over distance r
+
     // Fits are in atomic units
     fdouble distance_au = potparams.r * si_to_au_length;
-
     const int cs = potparams.hs_cs2;
-    fdouble Ef, unit_dr[3];
 
-    // Ions are given a potential inside the electron cloud.
-    // The last two fdoubles of the fit_lessthan_R array is the range
-    // the fit is valid for below the smallest range we have a simple
-    // hard cutoff V(r<r_0) = V(r_0)
+    // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
+    const unsigned int lut_i = cs + 1;
 
-    // ___________________________________________________________________ ...
-    // |        |             |                |       |
-    // |  CP    |     R1      |     R2         |  R3   |  Coulomb
-    // |________|_____________|________________|_______|__________________ ...
+    if (lut_i < hs_lut_potential.size() and distance_au < hs_lut_potential[lut_i].Get_XMax())
+    {
+        E_over_r = hs_lut_field[lut_i].read(distance_au);
 
-    bool field_vector_multiplication = true;
+        E_over_r *= au_to_si_field;
+        E_over_r /= au_to_si_length;
 
-    if (cs == -1 or cs > max_hs_cs)
+        for (int d = 0 ; d < 3 ; d++)
+        {
+            E[d]  += potparams.dr[d] * E_over_r;
+        }
+    }
+    else
     {
         // Electron or high charge state ion
         assert(p1 != NULL);
         assert(p2 != NULL);
         Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
-    }
-    else
-    {
-        if (distance_au < hs_min_rad[cs]) /* In CP (constant potential) */
-        {
-            // No field in hard cutoff region
-            Ef = 0.0;
-            field_vector_multiplication = false;
-        }
-        else if (distance_au >= fit_lt_R3[cs][8])    /* In Coulomb */
-        {
-            if (cs == 0)
-            {
-                // Potential outside the electron cloud goes to 0
-                // exponentially using f(x)=h*exp(-v*x+k)
-                Ef = fdouble(-0.272) * (
-                             (fdouble(-1.93775072943628))
-                        *    (fdouble(-0.533297816151))
-                        *    (fdouble(-0.533297816151)*distance_au - fdouble(0.7486357665822807))
-                        * std::exp(fdouble(-0.533297816151)*distance_au - fdouble(0.7486357665822807))
-                    );
-            }
-            else
-            {
-                Ef = fdouble(cs) / (distance_au*distance_au);
-            }
-        }
-        else if (   (distance_au <  fit_lt_R3[cs][8]) &&
-                    (distance_au >= fit_lt_R3[cs][7]))   /* In R3 */
-        {
-            Ef = deriv_genericHSfit(&(fit_lt_R3[cs][0]),distance_au);
-        }
-        else if (   (distance_au <  fit_lt_R2[cs][8]) &&
-                    (distance_au >= fit_lt_R2[cs][7]))   /* In R2 */
-        {
-            Ef = deriv_genericHSfit(&(fit_lt_R2[cs][0]),distance_au);
-        }
-        else if (   (distance_au <  fit_lt_R1[cs][8]) &&
-                    (distance_au >= fit_lt_R1[cs][7]))   /* In R1 */
-        {
-            Ef = deriv_genericHSfit(&(fit_lt_R1[cs][0]),distance_au);
-        }
-        else                                   /* In CP (constant potential) */
-        {
-            printf("CAN'T BE HERE!!!\n");
-            abort();
-        }
-
-        if (p2 != NULL)
-            Ef /= fdouble(std::max(1,Get_Charge_State(p2)));
-
-        Ef *= au_to_si_field;
-        if (field_vector_multiplication)
-        {
-            for (int d = 0 ; d < 3 ; d++)
-            {
-                unit_dr[d] = potparams.dr[d] * potparams.one_over_r;
-                E[d]  += unit_dr[d] * Ef;
-            }
-        }
     }
 }
 
