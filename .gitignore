@@ -10,3 +10,5 @@ src/Version.hpp
 *.toc
 *.swp.*
 *.o
+src/Git_Diff.cpp
+src/Version.cpp
