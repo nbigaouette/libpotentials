@@ -356,6 +356,18 @@ $(BIN): clean_bin $(OBJ)
 $(build_dir)/%.o : %.$(SRCEXT) $(HEADERS)
 	$(COMPILER) $(strip $(sort $(CFLAGS) ) $(INCLUDES) -c $< -o $@ )
 
+.PHONY: variables
+variables:
+	# LIB:           $(LIB)
+	# BIN:           $(BIN)
+	# OBJ:           $(OBJ)
+	#
+	# HEADERS:       $(HEADERS)
+	# TESTDIR:       $(TESTDIR)
+	# SOURCES:       $(SOURCES)
+	# TEST_SOURCES:  $(TEST_SOURCES)
+	# TEST_NAMES:    $(TEST_NAMES)
+	# TEST_OBJ:      $(TEST_OBJ)
 
 
 # Clean the project
