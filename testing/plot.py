@@ -6,7 +6,6 @@ import numpy
 import matplotlib.pyplot as plt
 
 import on_key
-import herman_skillman
 
 globber = glob.glob(os.path.join("output", "*"))
 
@@ -50,11 +49,6 @@ for folder in globber:
         ax1.plot(r, pot, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
         ax1.plot(r, charge_state/r, ':'+colors[cs%len(colors)], lw=line_width)
 
-        # Plot HS's cuttofs
-        #if (potential_shape == "HermanSkillman" and cs < herman_skillman.max_hs_cs+2):
-        #    for hsi in xrange(1,4):
-        #        ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs%len(colors)])
-
     for cs in xrange(nb_cs):
         data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
         r     = data[:,0]
@@ -63,11 +57,6 @@ for folder in globber:
         charge_state = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
         ax2.plot(r, field, symbols[fi]+colors[cs%len(colors)], label = str(charge_state) + " " + potential_shape, lw=line_width)
         ax2.plot(r, charge_state/(r*r), ':'+colors[cs%len(colors)], lw=line_width)
-
-        # Plot HS's cuttofs
-        #if (potential_shape == "HermanSkillman" and cs < herman_skillman.max_hs_cs+2):
-        #    for hsi in xrange(1,4):
-        #        ax2.plot([herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi], herman_skillman.cutoffs[cs,hsi]], [-1.0, 1.0e-5, 20.0], '--' + colors[cs%len(colors)])
 
     fi += 1
 
