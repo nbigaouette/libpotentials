@@ -76,14 +76,17 @@ ax1.set_ylabel("Potential (au)")
 ax2.set_ylabel("Field (au)")
 ax2.set_xlabel("r (Bohr)")
 
-ax1.set_ylim((-2.0, 11.0))
-ax2.set_ylim((-2.0, 5.0))
 #ax1.set_yscale('log')
 #ax2.set_yscale('log')
 #ax1.set_xscale('log')
 #ax2.set_xscale('log')
 ax1.grid(True)
 ax2.grid(True)
+
+
+ax1.set_ylim((-2.0, 7.0))
+ax1.set_xlim((0.0, 4.0))
+ax2.set_ylim((-2.0, 10.0))
 
 plt.legend()
 
