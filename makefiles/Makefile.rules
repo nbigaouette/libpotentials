@@ -350,7 +350,7 @@ $(BIN): $(OBJ)
 	$(LD) $(OBJ) -o $(BIN) $(LDFLAGS)
 
 # Compilation of source files, depends on ALL headers
-$(build_dir)/%.o : %.$(SRCEXT) $(foreach DIR,$(SRCDIRS) .,$(filter-out $(DIR)/Version.hpp, $(wildcard $(DIR)/*.$(HEADEXT))))
+$(build_dir)/%.o : %.$(SRCEXT) $(HEADERS)
 	$(COMPILER) $(strip $(CFLAGS) $(INCLUDES)) -c $< -o $@
 
 
