@@ -43,7 +43,7 @@ ifneq ($(filter gcc, $(MAKECMDGOALS) ),)
     include makefiles/Makefile.gcc
 endif
 #################################################################
-# Call "make gcc" for building using LLVM's Clang (clang or clang++)
+# Call "make clang" for building using LLVM's Clang (clang or clang++)
 ifneq ($(filter clang, $(MAKECMDGOALS) ),)
     include makefiles/Makefile.clang
 endif
