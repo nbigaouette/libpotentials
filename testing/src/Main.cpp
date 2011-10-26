@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
         system(cmd.c_str());
 
         Potentials_Initialize(potential_shape,
-                                fdouble(1.0 * libpotentials::Eh_to_eV),     // base potential
+                                fdouble(1.5 * libpotentials::Eh_to_eV),     // base potential
                                 fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
                                 1);                                 // Super Gaussian order (m=1 for gaussian)
 
