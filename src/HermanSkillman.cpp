@@ -259,7 +259,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
     /*
     // Print lookup table for verification
     // To run: ./mdgit 2> lut_hs.dat
-    const int max_lut = 8;
+    const int max_lut = HS_Xe_MaxNbCS;
     std::string filename("lut_hs.dat");
     std::string gnuplot_command("");
     gnuplot_command += "#set term wxt 3; plot ";
