@@ -249,6 +249,9 @@ endif
 ifneq ($(INPUT),)
 INPUT_ARGUMENT  = --input $(INPUT)
 endif
+ifneq ($(ARGS),)
+OTHER_ARGUMENT  = $(ARGS)
+endif
 #################################################################
 
 LINK_PREFERED    = shared
