@@ -254,10 +254,9 @@ OTHER_ARGUMENT  = $(ARGS)
 endif
 #################################################################
 
-LINK_PREFERED    = shared
-# Link statically on clusters
 ifneq (,$(filter $(host), $(HPCVL_MACHINES) ))
-LINK_PREFERED    = static
+GREP            := $(shell which ggrep)
+SED             := $(shell which gsed)
 endif
 
 .PHONY: a b l all
