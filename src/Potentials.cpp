@@ -53,56 +53,11 @@ const fdouble ps_A_minus_B   = ps_A - ps_B;
 const fdouble ps_A_minus_B2  = ps_A_minus_B*ps_A_minus_B;
 const fdouble ps_A_minus_B3  = ps_A_minus_B*ps_A_minus_B*ps_A_minus_B;
 
-// ********** Herman-Skillman (HS) potential fit parameters *****
-const int max_hs_cs = 7;
-// The fit function is f(x)=-a/(x^n-b)-b/x^m +d*x^o and the fit
-// parameters are in alphabetical order there is a different
-// array for each radial distance, where the cutoff radial
-// distance is the last element of the array.
-const fdouble fit_lt_R1[max_hs_cs+1][9] = {
-/*                                                                                                                                                  r_min               r_max */
-    {fdouble(-39.3117),  fdouble(-0.23822),       fdouble(1137.15),    fdouble(1093.87),    fdouble(0.926033),   fdouble(1.35102),    fdouble(-0.902534),  fdouble(0.073),  fdouble(1.0)},
-    {fdouble(-50.9699),  fdouble(-0.249349),      fdouble(1190.93),    fdouble(1137.92),    fdouble(0.934615),   fdouble(1.26191),    fdouble(-0.915538),  fdouble(0.073),  fdouble(1.0)},
-    {fdouble(-103318.0), fdouble(-0.0025085),     fdouble(109884.0),   fdouble(6808.38),    fdouble(0.452195),   fdouble(0.453217),   fdouble(-0.452051),  fdouble(0.073),  fdouble(0.6)},
-    {fdouble(-103309.0), fdouble(-0.00222854),    fdouble(109893.0),   fdouble(6799.44),    fdouble(0.462727),   fdouble(0.46361),    fdouble(-0.462679),  fdouble(0.073),  fdouble(0.75)},
-    {fdouble(-106539.0), fdouble(-0.00253429),    fdouble(106375.0),   fdouble(90.6738),    fdouble(0.576876),   fdouble(0.577581),   fdouble(-1.31088),   fdouble(0.073),  fdouble(0.75)},
-    {fdouble(-106552.0), fdouble(-0.00285323),    fdouble(106363.0),   fdouble(97.8488),    fdouble(0.555262),   fdouble(0.556083),   fdouble(-1.26473),   fdouble(0.073),  fdouble(0.75)},
-    {fdouble(-106572.0), fdouble(-0.00333483),    fdouble(106342.0),   fdouble(106.134),    fdouble(0.523154),   fdouble(0.524146),   fdouble(-1.19394),   fdouble(0.073),  fdouble(0.75)},
-    {fdouble(-156137.0), fdouble(-9.52875),       fdouble(16279.0),    fdouble(-30.664),    fdouble(0.00362412), fdouble(4.27026),    fdouble(-1.32769),   fdouble(0.073),  fdouble(0.35)}
-};
-const fdouble fit_lt_R2[max_hs_cs+1][9] = {
-/*                                                                                                                                                                                                              r_min           r_max */
-    {fdouble(-106456.523613218), fdouble(-0.00434541093317553),   fdouble(106457.47661029),    fdouble(449.688681389621),   fdouble(1.05645523648719),   fdouble(1.05644674944298),   fdouble(-2.10055725950707),  fdouble(1.0),    fdouble(3.0)},
-    {fdouble(-103240.467920728), fdouble(-0.000208924735834372),  fdouble(109961.532079643),   fdouble(6730.47792027321),   fdouble(0.935905881633714),  fdouble(0.935947358356231),  fdouble(-0.93589486453368),  fdouble(1.0),    fdouble(5.0)},
-    {fdouble(-7.43911046752643), fdouble(-7.49680170563087),      fdouble(83544.7086195816),   fdouble(83531.3679985203),   fdouble(2.4477467508823),    fdouble(6.7666148229704),    fdouble(-2.44780121116816),  fdouble(0.6),    fdouble(2.0)},
-    {fdouble(-106458.718251124), fdouble(-0.000545743677370998),  fdouble(106455.682016356),   fdouble(42.3237633727421),   fdouble(1.00559843304636),   fdouble(1.00563829185779),   fdouble(-1.95708048412661),  fdouble(0.75),   fdouble(4.6)},
-    {fdouble(-106453.495071328), fdouble(-0.00399495917548577),   fdouble(106460.925622402),   fdouble(418.039392846222),   fdouble(2.49073456323941),   fdouble(2.4909137590075),    fdouble(-4.9738722919108),   fdouble(0.75),   fdouble(1.49)},
-    {fdouble(-106455.157115451), fdouble(-0.00456229507833856),   fdouble(106460.145184005),   fdouble(475.327392665337),   fdouble(2.27725233310332),   fdouble(2.27744553473598),   fdouble(-4.5488537847976),   fdouble(0.75),   fdouble(1.5)},
-    {fdouble(-106452.180354907), fdouble(-0.00278122155186969),   fdouble(106461.721043604),   fdouble(291.588888724572),   fdouble(3.59580873362151),   fdouble(3.59615037646864),   fdouble(-7.17813960396325),  fdouble(0.75),   fdouble(1.1)},
-    {fdouble(-156436.219173519), fdouble(-13.360177523064),       fdouble(10907.4536590735),   fdouble(-0.0178811573295934),fdouble(0.0295757482829108), fdouble(0.398808602998421),  fdouble(-5.49402342863045),  fdouble(0.35),   fdouble(0.96)}
-};
-
-const fdouble fit_lt_R3[max_hs_cs+1][9] = {
-/*                                                                                                                                                                                                          r_min           r_max */
-    {fdouble(-106344.499357271), fdouble(-0.0870404156519758),    fdouble(106379.969770542),   fdouble(8916.02780769541),   fdouble(2.34571347967461),   fdouble(2.34558512875328),   fdouble(-4.64724093315347),  fdouble(3.0),    fdouble(6.0)},
-    {fdouble(-103237.178865962), fdouble(-6.19966863330973e-05),  fdouble(109964.821133342),   fdouble(6727.38883676891),   fdouble(0.990416309150688),  fdouble(0.990415990770504),  fdouble(-0.990490798848876), fdouble(5.0),    fdouble(12.0)},
-    {fdouble(-106453.321357016), fdouble(-0.0233720244005975),    fdouble(106447.424341854),   fdouble(2423.61663166259),   fdouble(1.69020647850117),   fdouble(1.69030805063035),   fdouble(-3.36829845029172),  fdouble(2.0),    fdouble(6.0)},
-    {fdouble(-106457.189833221), fdouble(-0.000453936408454839),  fdouble(106457.21043453),    fdouble(42.3245989284602),   fdouble(0.499881464943715),  fdouble(0.499881437435555),  fdouble(-0.999349099198404), fdouble(4.6),    fdouble(12.0)},
-    {fdouble(-106478.807529316), fdouble(-0.00470475292274558),   fdouble(106435.613140363),   fdouble(443.194839747241),   fdouble(0.192492936878364),  fdouble(0.1932366392085),    fdouble(-0.192465568481317), fdouble(1.49),   fdouble(2.0)},
-    {fdouble(-106455.157115451), fdouble(-0.00456229507833856),   fdouble(106460.145184005),   fdouble(475.327392665337),   fdouble(2.27725233310332),   fdouble(2.27744553473598),   fdouble(-4.5488537847976),   fdouble(1.49),   fdouble(1.49)},
-    {fdouble(-106452.180354907), fdouble(-0.00278122155186969),   fdouble(106461.721043604),   fdouble(291.588888724572),   fdouble(3.59580873362151),   fdouble(3.59615037646864),   fdouble(-7.17813960396325),  fdouble(1.1),    fdouble(1.1)},
-    {fdouble(-156436.219173519), fdouble(-13.360177523064),       fdouble(10907.4536590735),   fdouble(-0.0178811573295934),fdouble(0.0295757482829108), fdouble(0.398808602998421),  fdouble(-5.49402342863045),  fdouble(0.96),   fdouble(0.96)}
-};
-
 // **************************************************************
 // ********** Local functions prototypes ************************
 // **************************************************************
 void Set_Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3],
                    const fdouble dr2);
-
-// Herman-Skillman (HS) potential fit functions
-fdouble deriv_genericHSfit(const fdouble *par, fdouble x);
-fdouble genericHSfit(const fdouble *par, fdouble x);
 
 fdouble tmp_get_shieldr_2(const int chg_st_1, const int chg_st_2);
 fdouble tmp_get_shieldr(const int chg_st, const char *message);
@@ -208,28 +163,6 @@ void Set_Coulomb_Field(const fdouble phi12, fdouble E[3], const fdouble dr[3],
         for (int d = 0 ; d < 3 ; d++)
             E[d] += dr[d] * phi12_over_dr2;
     }
-}
-
-// **************************************************************
-fdouble deriv_genericHSfit(const fdouble *par, fdouble x){
-    // The 1/2 factor is becuase HS outputs the
-    // potential as 2V(x) and that's how they were fit
-    return libpotentials::half*(
-              par[0]*par[5]*std::pow(x,par[5]-1)/(std::pow(x,par[5])-par[1])/(std::pow(x,par[5])-par[1])
-            + par[2]*par[4]/std::pow(x,par[4]+1)
-            + par[6]*par[3]*std::pow(x,par[6]-1)
-        );
-}
-
-// **************************************************************
-// f(x) = -a/(x^n-b)-b/x^m +d*x^o where the parameters are passed alphabetically
-fdouble genericHSfit(const fdouble *par, fdouble x){
-    //the 1/2 factor is becuase HS outputs the potential as 2V and that's how they were fit
-    return -libpotentials::half*(
-            - par[0]/(std::pow(x,par[5])-par[1])
-            - par[2]/std::pow(x,par[4])
-            + par[3]*std::pow(x,par[6])
-        );
 }
 
 // **************************************************************
