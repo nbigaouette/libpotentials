@@ -356,25 +356,25 @@ distclean: clean_bin clean_obj clean_data clean_doc
 .PHONY: r run
 r: run
 run: $(BIN)
-	./$(BIN)
+	$(SOFTLIMIT) ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT) 2>&1 | tee output/make_run.log
 
 # Run the parallel program
 .PHONY: p rp pr
 rp: p
 pr: p
 p:
-	mpirun -np $(NP) ./$(BIN)
+	mpirun -np $(NP) ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT)
 pk:
-	mpirun -np $(NP) $(CONSOLE) ./$(BIN)
+	mpirun -np $(NP) $(CONSOLE) ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT)
 pkd:
-	mpirun -np $(NP) $(CONSOLE) $(DEBUGGER) ./$(BIN)
+	mpirun -np $(NP) $(CONSOLE) $(DEBUGGER) ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT)
 pkv:
-	mpirun -np $(NP) $(CONSOLE) $(VALGRIND) ./$(BIN)
+	mpirun -np $(NP) $(CONSOLE) $(VALGRIND) ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT)
 
-# Count the number of lines of project, without tinyxml files
+# Count the number of lines of project
 .PHONY: count
 count:
-	wc -l $(addsuffix /*, $(filter-out src/tinyxml, $(SRCDIRS)))
+	wc -l $(addsuffix /*, $(SRCDIRS))
 
 # Build doxygen documentation
 .PHONY: doxygen doc
@@ -382,23 +382,29 @@ doc: doxygen
 doxygen:
 	doxygen
 
+# Run cppcheck on source code
+.PHONY: cppcheck check
+check: cppcheck
+cppcheck: force
+	cppcheck --enable=all $(SRCDIRS)
+
 # Run through valgrind for errors
 .PHONY: valgrind v vv
 v: valgrind
 valgrind: $(BIN)
-	$(MEMCHECK) ./$(BIN)
+	$(MEMCHECK) ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT)
 vv: $(BIN)
-	$(MEMCHECK) --verbose ./$(BIN)
+	$(MEMCHECK) --verbose ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT)
 .PHONY: cachegrind cg
 cg: cachegrind
 cachegrind: $(BIN)
-	$(CACHEGRIND) ./$(BIN)
+	$(CACHEGRIND) ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT)
 
 # Run through gdb for debugging
 .PHONY: g gdb
 g: gdb
 gdb: $(BIN)
-	gdb --quiet $(BIN)
+	$(DEBUGGER) ./$(BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT)
 
 #################################################################
 # Target depending on the binary. Necessary for the previous
