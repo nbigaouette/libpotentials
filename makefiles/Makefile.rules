@@ -111,6 +111,10 @@ OBJ              = $(addprefix $(build_dir)/,$(addsuffix .o, $(BASENAMES) ) )
 INCLUDES         = $(addprefix -I./, $(SRCDIRS) )
 LDFLAGS         += -L./$(build_dir)
 
+ifeq ($(os), Darwin)
+CFLAGS          += -DMACOSX
+endif
+
 #################################################################
 # This is a "template", acting like a function.
 # It will add to the CFLAGS the right path to a library.
