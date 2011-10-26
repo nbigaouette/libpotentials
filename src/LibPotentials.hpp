@@ -10,7 +10,7 @@
 #include "Structure_Potentials.hpp"
 #include "Version.hpp"
 #include "Constants.hpp"
-#include "HermanSkillman.hpp"
+
 // Public interface of potentials library
 
 #ifndef DEBUGP

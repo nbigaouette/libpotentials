@@ -1,3 +1,7 @@
+# Don't install these headers
+HEADERS         := $(filter-out src/Version.hpp, $(HEADERS))
+HEADERS         := $(filter-out src/Git_Diff.hpp, $(HEADERS))
+
 LIB_OBJ          = $(filter-out $(build_dir)/Main.o, $(filter-out $(TEST_OBJ), $(OBJ) ) )
 
 ### Just build "full" and install

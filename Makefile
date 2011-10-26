@@ -21,6 +21,9 @@ include makefiles/Makefile.rules
 ### By default, it's double precision.
 CFLAGS          += -DFLOATTYPE_SINGLE
 
+# Don't install all headers
+HEADERS         := $(filter-out src/HermanSkillman.hpp, $(HEADERS))
+
 #################################################################
 # Project specific options
 
