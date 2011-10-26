@@ -27,6 +27,8 @@ space:= $(empty) $(empty)
 
 build_dir        = build
 
+HEADERS          = $(wildcard $(addsuffix *.$(HEADEXT),$(addsuffix /, $(SRCDIRS)) ) )
+
 HPCVL_MACHINES   = sflogin xenakis
 SHARCNET_MACHINES= bul narwhal wha hnd bal
 

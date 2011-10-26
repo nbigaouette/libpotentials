@@ -12,7 +12,6 @@ LIB              = potentials
 SRCDIRS          = src
 SRCEXT           = cpp
 HEADEXT          = hpp
-HEADERS          = $(wildcard $(addsuffix *.$(HEADEXT),$(addsuffix /, $(SRCDIRS)) ) )
 LANGUAGE         = CPP
 
 # Include the generic rules
