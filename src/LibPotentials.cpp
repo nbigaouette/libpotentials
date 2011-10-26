@@ -112,6 +112,10 @@ void Potentials_Initialize(const std::string _io_basename,
         std_cout << "### for close range interaction                                    ###\n";
         Initialize_HS(base_potential_depth);
 
+        // Same as symmetric. Necessary for ion-ion interactions
+        libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
+        libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
+
         USING_HS = true;
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_HS;

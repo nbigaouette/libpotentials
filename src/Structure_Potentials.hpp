@@ -39,7 +39,9 @@ struct potential_paramaters {
     fdouble  sg_exp_half_r_over_sigma_two_m; // exp(-0.5(r/sigma)^(2m))  [-]
 
     // ********** Herman-Skillman (HS) parameters *******************
+    int     hs_cs1;         // Charge state of particle 1               [-]
     int     hs_cs2;         // Charge state of particle 2               [-]
+    unsigned int hs_lut_i;  // Lookup table index
 
     // ********** Gaussian Distribution parameters ******************
     fdouble  gd_sigma;       // Width of gaussian distribution (NPS eq. 21) [m]

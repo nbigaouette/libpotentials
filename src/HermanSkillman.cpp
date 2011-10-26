@@ -121,8 +121,15 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         const double Coulomb_E_xmax = double(cs) / (HS_Xe_rmax[cs]*HS_Xe_rmax[cs]);
         const double HS_U_xmax      = HS_Fitting_Function_Potential(HS_Xe_rmax[cs], cs);
         const double Coulomb_U_xmax = -double(cs) / (HS_Xe_rmax[cs]);
-        const double HS_E_scaling_factor = Coulomb_E_xmax / HS_E_xmax;
-        const double HS_U_add_factor     = Coulomb_U_xmax - HS_E_scaling_factor*HS_U_xmax;
+              double HS_E_scaling_factor = Coulomb_E_xmax / HS_E_xmax;
+              double HS_U_add_factor     = Coulomb_U_xmax - HS_E_scaling_factor*HS_U_xmax;
+        // Prevent neutral being scaled by 0
+        if (cs == 0)
+        {
+            HS_U_add_factor = -HS_U_xmax;
+            HS_E_scaling_factor = 1.0;
+        }
+
         //std_cout << "cs="<<cs<<"  HS_E_scaling_factor = " <<HS_E_scaling_factor << "\n";
         for (int i = 0 ; i <= lut_n ; i++)
         {
@@ -135,16 +142,24 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             if (r >= HS_Xe_rmax[cs])
             {
                 // Use Coulomb
-                HS_U = -double(std::abs(cs)) / r;
+                HS_U = -double(cs) / r;
             }
             else
             {
-                HS_U = copysign(1.0, cs)*(HS_E_scaling_factor * HS_Fitting_Function_Potential(r, cs) + HS_U_add_factor);
+                // Use HS
+                HS_U = HS_Fitting_Function_Potential(r, cs);
+                // Scale to prevent discontinuities
+                HS_U *= HS_E_scaling_factor;
+                HS_U += HS_U_add_factor;
             }
 
             // Electrostatic field
             if (r < HS_Xe_rmax[cs])
-                HS_E_over_r = -HS_E_scaling_factor*HS_Fitting_Function_Field(r, cs);
+            {
+                HS_E_over_r = -HS_Fitting_Function_Field(r, cs);
+                // Scale to prevent discontinuities
+                HS_E_over_r *= HS_E_scaling_factor;
+            }
             else
                 HS_E_over_r = double(cs) / (r*r);
 
@@ -169,7 +184,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
  * @param   base_potential_eV  Potential depth wanted [eV]
  */
 {
-    const fdouble base_potential = base_potential_eV*libpotentials::eV_to_Eh;
+    const fdouble base_potential = -std::abs(base_potential_eV)*libpotentials::eV_to_Eh;
 
     // We'll need one lookup table per charge state
     std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
@@ -194,17 +209,16 @@ void Initialize_HS(const fdouble &base_potential_eV)
 
         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
         {
-            pot = std::abs(hs_lut_potential[cs].read(found_r)); // Potential energy [au]
+            pot = hs_lut_potential[cs].read(found_r); // Potential energy [au]
+            assert(pot < 0.0);
 
             // We want a 2+'s base potential to be twice as deep as a 1+. We will
             // thus compare the base potential with the potential divided by the
             // charge state, but only for 1+ and up.
-            if (cs > 0)
-                pot /= fdouble(cs);
 
             //printf("cs=%2d  base_potential = %10.5g Hartree   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g Hartree\n", cs, base_potential, r_left, found_r, r_right, pot);
             Assert_isinf_isnan(pot);
-            if (pot <= base_potential)
+            if (pot >= base_potential*fdouble(std::max(1,cs)))
             {
                 r_right = found_r;
             }
@@ -214,7 +228,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
             }
             found_r = r_right + (r_left - r_right) / fdouble(2.0);
         }
-        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << (cs == 0 ? 1 : fdouble(std::abs(cs)))*pot << "\n";
+        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << double(std::max(1,cs))*pot << "\n";
 
         Assert_isinf_isnan(found_r);
         Assert_isinf_isnan(pot);
@@ -243,18 +257,18 @@ void Initialize_HS(const fdouble &base_potential_eV)
         const int lut_n = hs_lut_potential[cs].Get_n();
         for (int i = 0 ; i <= lut_n ; i++)
         {
-            if (hs_lut_potential[cs].Table(i) < -base_potential*cs_factor)
-            {
-                hs_lut_potential[cs].Set(i, -base_potential*cs_factor);
-                hs_lut_field[cs].Set(i, 0.0);
-            }
-            if (hs_lut_potential[cs].Table(i) > base_potential*cs_factor)
+            assert(base_potential < 0.0);
+            if (hs_lut_potential[cs].Table(i) < base_potential*cs_factor)
             {
                 hs_lut_potential[cs].Set(i, base_potential*cs_factor);
                 hs_lut_field[cs].Set(i, 0.0);
             }
         }
     }
+
+    //hs_lut_potential[0].Print_Table();
+    //hs_lut_field[0].Print_Table();
+    //exit(0);
 
     /*
     // Print lookup table for verification
