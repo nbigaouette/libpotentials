@@ -100,6 +100,18 @@ ifneq ($(filter omp, $(MAKECMDGOALS) ),)
     LDFLAGS     += $(OMP_LDFLAGS)
 endif
 #################################################################
+# Call "make ocl" for OpenCL compilation
+ifneq ($(filter ocl, $(MAKECMDGOALS) ),)
+    USE_OPENCL       = "yes"
+    CFLAGS          += -DGPGPU_OPENCL
+    ifeq ($(os), Darwin)
+        #CFLAGS      += -I"/Developer/GPU Computing/OpenCL/common/inc"
+        LDFLAGS     += -framework OpenCL
+    else
+        LDFLAGS     += -lOpenCL
+    endif
+endif
+#################################################################
 
 COMPILER    := $(CC)
 ifeq ($(LANGUAGE),CPP)
