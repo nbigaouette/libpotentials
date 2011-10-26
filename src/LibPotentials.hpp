@@ -8,7 +8,6 @@
 #include "Potentials.hpp"
 #include "Vectors.hpp"
 #include "Structure_Potentials.hpp"
-#include "Version.hpp"
 #include "Constants.hpp"
 
 // Public interface of potentials library
