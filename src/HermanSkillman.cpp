@@ -12,14 +12,13 @@ std::vector<LookUpTable<fdouble> > hs_lut_field;
 
 // Distance (in Bohr) where HS potential reaches the Coulombic values
 const double HS_Xe_rmax[HS_Xe_MaxNbCS] = {
-//  El.     Neutral   1+           2+                   3+                  4+                   5+                6+
-    3.20671, 12.0, 3.20671, 3.4419260284993465, 2.5786383389900931, 2.3069998849855851, 2.1424931697942897, 1.9288708307182563
+//  Neutral   1+           2+                   3+                  4+                   5+                6+
+    12.0, 3.20671, 3.4419260284993465, 2.5786383389900931, 2.3069998849855851, 2.1424931697942897, 1.9288708307182563
 };
 
 // Function parameters: -a*exp(-r*b+c) - d*exp(-r*e+f) - g*exp(-r*h+i)
 const double HS_Xe_parameters[HS_Xe_MaxNbCS][10] = {
 //                   a                  b               c               d               e               f               g               h               i               j
-/* Electron */  {6.68943368,        5.46613511,     3.50223818,     9.84854609,     16.33928308,    4.55862051,     2.05998631,     1.79149357,     2.67105113,     -0.21651473},
 /* Neutral  */  {3.14083382,        2.23690529,     2.45999159,     1.04922253,     0.758964055,    0.916259659,    6.43949225,     5.57500308,     3.46700894,     -2.22471387e-03},
 /* 1+ */        {6.68943368,        5.46613511,     3.50223818,     9.84854609,     16.33928308,    4.55862051,     2.05998631,     1.79149357,     2.67105113,     -0.21651473},
 /* 2+ */        {1.08862692,        1.12845509,     2.40634711,     7.5231977,      11.80857511,    4.40029841,     3.5171341,      4.02105327,     3.70863489,     -0.33244088},
@@ -92,18 +91,16 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
     lut_field.resize(HS_Xe_MaxNbCS);
 
     // Set potential lookup table
-    // cs_i: 0 == electron, 1 == neutral, 2 == 1+, etc.
-    for (int cs_i = 0 ; cs_i < HS_Xe_MaxNbCS ; cs_i++)
+    // cs: 0 == neutral, 1 == 1+, etc.
+    for (int cs = 0 ; cs_i < HS_Xe_MaxNbCS ; cs_i++)
     {
-        const int cs = cs_i - 1;
-
         // Distance range for the HS.
         const double xmin = 0.0;        // [Bohr]
-        double xmax = HS_Xe_rmax[cs_i]; // [Bohr]
+        double xmax = HS_Xe_rmax[cs];   // [Bohr]
         if (cs != 0)
             xmax *= 2.0;
-        lut_pot[cs_i].Initialize(  NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_pot, cs=" + IntToStr(cs) + ")");
-        lut_field[cs_i].Initialize(NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_field, cs=" + IntToStr(cs) + ")");
+        lut_pot[cs].Initialize(  NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_pot, cs=" + IntToStr(cs) + ")");
+        lut_field[cs].Initialize(NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_field, cs=" + IntToStr(cs) + ")");
 
         // FIXME: Dynamically choose between atom types for HS
         // Start: use function pointers
@@ -120,22 +117,22 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         // Then, to make sure the potential fits Coulomb at rmax, add an additive constant, which
         // is not included in the field (due to E=-grad(V)).
         double r;
-        const double HS_E_xmax      = -HS_Fitting_Function_Field(HS_Xe_rmax[cs_i], cs_i);
-        const double Coulomb_E_xmax = double(cs) / (HS_Xe_rmax[cs_i]*HS_Xe_rmax[cs_i]);
-        const double HS_U_xmax      = HS_Fitting_Function_Potential(HS_Xe_rmax[cs_i], cs_i);
-        const double Coulomb_U_xmax = -double(cs) / (HS_Xe_rmax[cs_i]);
+        const double HS_E_xmax      = -HS_Fitting_Function_Field(HS_Xe_rmax[cs], cs);
+        const double Coulomb_E_xmax = double(cs) / (HS_Xe_rmax[cs]*HS_Xe_rmax[cs]);
+        const double HS_U_xmax      = HS_Fitting_Function_Potential(HS_Xe_rmax[cs], cs);
+        const double Coulomb_U_xmax = -double(cs) / (HS_Xe_rmax[cs]);
         const double HS_E_scaling_factor = Coulomb_E_xmax / HS_E_xmax;
         const double HS_U_add_factor     = Coulomb_U_xmax - HS_E_scaling_factor*HS_U_xmax;
         //std_cout << "cs="<<cs<<"  HS_E_scaling_factor = " <<HS_E_scaling_factor << "\n";
         for (int i = 0 ; i <= lut_n ; i++)
         {
-            r = lut_pot[cs_i].Get_x_from_i(i);  // [Bohr]
+            r = lut_pot[cs].Get_x_from_i(i);  // [Bohr]
 
             double HS_U         = 0.0;  // [Hartree]
             double HS_E_over_r  = 0.0;  // [au/Bohr]
 
             // Electrostatic potential
-            if (r >= HS_Xe_rmax[cs_i])
+            if (r >= HS_Xe_rmax[cs])
             {
                 // Use Coulomb
                 HS_U = -double(std::abs(cs)) / r;
@@ -146,7 +143,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             }
 
             // Electrostatic field
-            if (r < HS_Xe_rmax[cs_i])
+            if (r < HS_Xe_rmax[cs])
                 HS_E_over_r = -HS_E_scaling_factor*HS_Fitting_Function_Field(r, cs_i);
             else
                 HS_E_over_r = double(cs) / (r*r);
@@ -159,8 +156,8 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
             Assert_isinf_isnan(HS_U);
 
             // Save it (in atomic units)
-            lut_pot[cs_i].Set(  i, fdouble(HS_U));
-            lut_field[cs_i].Set(i, fdouble(HS_E_over_r));
+            lut_pot[cs].Set(  i, fdouble(HS_U));
+            lut_field[cs].Set(i, fdouble(HS_E_over_r));
         }
     }
 }
@@ -184,14 +181,12 @@ void Initialize_HS(const fdouble &base_potential_eV)
     // Find the radius where the HS potential is equal to "base_potential"
     // by doing a bisection, for all supported charge states.
     fdouble r_left, r_right, found_r, pot; // [Bohr]
-    for (int cs_i = 0 ; cs_i < int(hs_lut_potential.size()) ; cs_i++)
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
-        const int cs = cs_i - 1;
-
         // Initial conditions
-        hs_min_rad[cs_i] = hs_lut_potential[cs_i].Get_x_from_i(0);
-        r_left  = hs_min_rad[cs_i];     // Minimum radius of fit
-        r_right = hs_lut_potential[cs_i].Get_XMax();
+        hs_min_rad[cs] = hs_lut_potential[cs].Get_x_from_i(0);
+        r_left  = hs_min_rad[cs];     // Minimum radius of fit
+        r_right = hs_lut_potential[cs].Get_XMax();
 
         // Start bisection!
         // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
@@ -199,7 +194,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
 
         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
         {
-            pot = std::abs(hs_lut_potential[cs_i].read(found_r)); // Potential energy [au]
+            pot = std::abs(hs_lut_potential[cs].read(found_r)); // Potential energy [au]
 
             // We want a 2+'s base potential to be twice as deep as a 1+. We will
             // thus compare the base potential with the potential divided by the
@@ -226,37 +221,37 @@ void Initialize_HS(const fdouble &base_potential_eV)
         assert(found_r > 0.0);
         //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
 
-        if (found_r <= 0.99999*hs_min_rad[cs_i])
+        if (found_r <= 0.99999*hs_min_rad[cs])
         {
             std_cout << "##############################################\n";
             DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
             std_cout << "The value found " << found_r << " Bohr\n";
-            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs_i] << " Bohr\n";
+            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs] << " Bohr\n";
             std_cout << "Potential depth wanted: " << base_potential << " Hartree (" << base_potential_eV << " eV)\n";
             std_cout << "Exiting\n";
             abort();
         }
 
-        hs_min_rad[cs_i] = found_r;
+        hs_min_rad[cs] = found_r;
     }
 
     // Now that the cutting radius is found for each charge states, change lookup tables values
-    for (int cs_i = 0 ; cs_i < int(hs_lut_potential.size()) ; cs_i++)
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
         // Set neutral's charge state to 1, so it does not clear the lookup tables.
-        const fdouble cs_factor = fdouble(std::max(1, cs_i-1));
-        const int lut_n = hs_lut_potential[cs_i].Get_n();
+        const fdouble cs_factor = fdouble(std::max(1, cs));
+        const int lut_n = hs_lut_potential[cs].Get_n();
         for (int i = 0 ; i <= lut_n ; i++)
         {
-            if (hs_lut_potential[cs_i].Table(i) < -base_potential*cs_factor)
+            if (hs_lut_potential[cs].Table(i) < -base_potential*cs_factor)
             {
-                hs_lut_potential[cs_i].Set(i, -base_potential*cs_factor);
-                hs_lut_field[cs_i].Set(i, 0.0);
+                hs_lut_potential[cs].Set(i, -base_potential*cs_factor);
+                hs_lut_field[cs].Set(i, 0.0);
             }
-            if (hs_lut_potential[cs_i].Table(i) > base_potential*cs_factor)
+            if (hs_lut_potential[cs].Table(i) > base_potential*cs_factor)
             {
-                hs_lut_potential[cs_i].Set(i, base_potential*cs_factor);
-                hs_lut_field[cs_i].Set(i, 0.0);
+                hs_lut_potential[cs].Set(i, base_potential*cs_factor);
+                hs_lut_field[cs].Set(i, 0.0);
             }
         }
     }
