@@ -9,14 +9,21 @@ import on_key
 
 globber = glob.glob(os.path.join("output", "*"))
 
+# Electron's curve?
+p0_cs = -1
+p0_name = "electron"
+# Ion's curve?
+#p0_cs = 1
+#p0_name = "ion (" + str(p0_cs) + "+)"
 
 
 fig = on_key.figure()
 axprops = dict()
-ax1 = fig.add_axes([0.15, 0.51, 0.6, 0.4], **axprops)
+ax1 = fig.add_subplot(211, **axprops)
 axprops['sharex'] = ax1
 plt.setp(ax1.get_xticklabels(), visible=False)
-ax2 = fig.add_axes([0.15, 0.1, 0.6, 0.4], **axprops)
+ax2 = fig.add_subplot(212, **axprops)
+plt.subplots_adjust(hspace=0.0)
 
 colors  = ['b', 'r', 'm', 'c', 'g', 'y']
 symbols = ['-', '--', ':', '-.']
@@ -71,7 +78,7 @@ for folder in globber:
     fi += 1
 
 
-ax1.set_ylabel("Potential (au)")
+ax1.set_ylabel("Potential Energy (Hartree)")
 ax2.set_ylabel("Field (au)")
 ax2.set_xlabel("r (Bohr)")
 
@@ -83,11 +90,12 @@ ax1.grid(True)
 ax2.grid(True)
 
 
-ax1.set_ylim((-2.0, 7.0))
-ax1.set_xlim((0.0, 4.0))
-ax2.set_ylim((-2.0, 10.0))
+#ax1.set_xlim((0.0, 4.0))
+#ax1.set_ylim((-7.0, 0.5))
+#ax2.set_ylim((-2.0, 10.0))
 
-plt.legend()
+plt.suptitle("What an " + p0_name + " feels")
+plt.legend(loc="best")
 
 plt.show()
 
