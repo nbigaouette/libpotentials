@@ -379,7 +379,9 @@ clean: clean_bin clean_obj
 .PHONY: cb clean_bin
 cb: clean_bin
 clean_bin:
-	$(RM) $(BIN)
+ifeq ($(LIB),)
+	$(RM) $(BIN) $(TEST_BIN)
+endif
 
 # Clean the project of object files
 .PHONY: co clean_obj
