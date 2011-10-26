@@ -196,9 +196,21 @@ define LDFLAGS_template
             endif
         endif
     endif
-    LDFLAGS     += -L$$($(1)_LibDir) -l$(1)
-    ifneq ($(RPATH),)
-        LDFLAGS += $(RPATH)$$($(1)_LibDir)
+
+   ifeq ($$(os),Darwin)
+       MyLibs += $$($(1)_LibDir)/lib$(1).a
+       #MyLibs += -framework $(1)
+       #MyLibs_Path += -F$$($(1)_LibDir) $(RPATH)$$($(1)_LibDir)
+   else
+        ifeq ($(LINK_PREFERED),static)
+             MyLibs += $$($(1)_LibDir)/lib$(1).a
+        else  # ifeq ($(LINK_PREFERED),static)
+            ifeq ($(LINK_PREFERED),shared)
+                MyLibs += -L$$($(1)_LibDir) $(RPATH)$$($(1)_LibDir) -l$(1)
+            else  # ifeq ($(LINK_PREFERED),shared)
+                $$(error Please define LINK_PREFERED=static or LINK_PREFERED=shared in main Makefile, before the "include makefiles/Makefile.rules" directive.)
+            endif # ifeq ($(LINK_PREFERED),shared)
+        endif # ifeq ($(LINK_PREFERED),static)
     endif
 endef
 
