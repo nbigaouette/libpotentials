@@ -95,10 +95,8 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
     for (int cs = 0 ; cs < HS_Xe_MaxNbCS ; cs++)
     {
         // Distance range for the HS.
-        const double xmin = 0.0;        // [Bohr]
-        double xmax = HS_Xe_rmax[cs];   // [Bohr]
-        if (cs != 0)
-            xmax *= 2.0;
+        const double xmin = 0.0;    // [Bohr]
+        const double xmax = 15.0;   // [Bohr]
         lut_pot[cs].Initialize(  NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_pot, cs=" + IntToStr(cs) + ")");
         lut_field[cs].Initialize(NULL, fdouble(xmin), fdouble(xmax), lut_n, "Initialize_HS() LookUpTable (lut_field, cs=" + IntToStr(cs) + ")");
 
