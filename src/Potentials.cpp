@@ -613,7 +613,18 @@ void Set_Field_Cutoff_HS(
     fdouble distance_au = potparams.r * si_to_au_length;
     const int cs = potparams.hs_cs2;
 
-    if (potparams.hs_lut_i < hs_lut_potential.size() and distance_au < hs_lut_potential[potparams.hs_lut_i].Get_XMax())
+    if (
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
+        (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
+    )
+    {
+        // Electron or high charge state ion
+        assert(p1 != NULL);
+        assert(p2 != NULL);
+        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
+    }
+    else
     {
         E_over_r = hs_lut_field[potparams.hs_lut_i].read(distance_au);
 
@@ -624,13 +635,6 @@ void Set_Field_Cutoff_HS(
         {
             E[d]  += potparams.dr[d] * E_over_r;
         }
-    }
-    else
-    {
-        // Electron or high charge state ion
-        assert(p1 != NULL);
-        assert(p2 != NULL);
-        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
     }
 }
 
