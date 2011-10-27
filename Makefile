@@ -26,8 +26,9 @@ CFLAGS          += -DFLOATTYPE_SINGLE
 #################################################################
 # Project specific options
 
-$(eval $(call Flags_template,stdcout,StdCout.hpp,ssh://optimusprime.selfip.net/git/nicolas/stdcout.git))
-$(eval $(call Flags_template,memory,Memory.hpp,ssh://optimusprime.selfip.net/git/nicolas/memory.git))
+$(eval $(call CFLAGS_template,stdcout,StdCout.hpp,ssh://optimusprime.selfip.net/git/nicolas/stdcout.git))
+$(eval $(call CFLAGS_template,memory,Memory.hpp,ssh://optimusprime.selfip.net/git/nicolas/memory.git))
+$(eval $(call CFLAGS_template,assert,Assert.hpp,ssh://optimusprime.selfip.net/git/nicolas/assert.git))
 
 # Project is a library. Include the makefile for build and install.
 include makefiles/Makefile.library
