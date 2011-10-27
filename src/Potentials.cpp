@@ -541,8 +541,8 @@ void Potentials_Set_Parameters_HS(
     potparams.hs_lut_i = std::abs(std::max(potparams.hs_cs1, potparams.hs_cs2));
 
     if (
-        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or // Two ions
-        (potparams.hs_lut_i >= hs_lut_potential.size())                  or // Too high charge state
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
         (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
     )
     {
@@ -566,8 +566,8 @@ fdouble Calculate_Potential_Cutoff_HS(
     const fdouble distance_au = potparams.r * si_to_au_length;
 
     if (
-        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or // Two ions
-        (potparams.hs_lut_i >= hs_lut_potential.size())                  or // Too high charge state
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
         (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
     )
     {
