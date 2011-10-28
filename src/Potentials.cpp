@@ -611,7 +611,6 @@ void Set_Field_Cutoff_HS(
 
     // Fits are in atomic units
     fdouble distance_au = potparams.r * si_to_au_length;
-    const int cs = potparams.hs_cs2;
 
     if (
         (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
