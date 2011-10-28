@@ -577,20 +577,15 @@ fdouble Calculate_Potential_Cutoff_HS(
     else
     {
         // Get the lookup table's value. NOTE: The potential ENERGY of an electron in an atomic potential is stored [Hartree].
-        phi12 = hs_lut_potential[potparams.hs_lut_i].read(distance_au);
+        phi12 = std::abs(hs_lut_potential[potparams.hs_lut_i].read(distance_au)); // [Hartree]
 
-        // The LUT stores the HS potential energy [Hartree] of an electron (p0) in
-        // an ion's (p1) potential. It is thus NEGATIVE. The libraries and codes
-        // normally expect the potential [Volt] created by p1 (positive or negative)
-        // and multiply by the charge of p0 to get its potential energy [Joule].
-        // Thus, make sure we have a potential here.
+        // We get |LUT|/|cs1*cs2|
         if (potparams.hs_cs1 > 0)
             phi12 /= fdouble(potparams.hs_cs1);
+        if (potparams.hs_cs2 > 0)
+            phi12 /= fdouble(potparams.hs_cs2);
 
-        // Fix the sign
-        phi12 *= -copysignf(1.0f, float(potparams.hs_cs2));
-
-        // Convert from energy in Hartree to potential in Volt
+        phi12 *= fdouble(potparams.hs_cs2);
         phi12 *= au_to_si_pot;
     }
 
