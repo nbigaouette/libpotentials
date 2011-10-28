@@ -620,9 +620,9 @@ void Set_Field_Cutoff_HS(
     }
     else
     {
-        E_over_r = std::abs(hs_lut_field[potparams.hs_lut_i].read(distance_au));
+        E_over_r = hs_lut_field[potparams.hs_lut_i].read(distance_au);
 
-        // We get |LUT|/|cs1*cs2|
+        // We get LUT/|cs1*cs2|
         if (potparams.hs_cs1 > 0)
             E_over_r /= fdouble(potparams.hs_cs1);
         if (potparams.hs_cs2 > 0)
