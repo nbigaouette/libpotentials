@@ -4,6 +4,7 @@
 #include "FloatType.hpp"
 
 #include "Structure_Potentials.hpp"
+#include "HermanSkillman.hpp"
 
 extern bool USING_HS;
 

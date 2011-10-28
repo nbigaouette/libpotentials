@@ -529,15 +529,24 @@ void Potentials_Set_Parameters_HS(
                                   potparams.r, potparams.one_over_r);
 
     potparams.kQ2           = one_over_4Pieps0 * Get_Charge(p2);
+    potparams.hs_cs1        = Get_Charge_State(p1);
     potparams.hs_cs2        = Get_Charge_State(p2);
 
     // Fits are in atomic units
     const fdouble distance_au = potparams.r * si_to_au_length;
 
-    const unsigned int lut_i = potparams.hs_cs2 + 1;
+    // Find the right lookup table to use.
+    // LUT indices: 0 == neutral, 1 == 1+, etc.
+    // The max() will pick up an ion if present. If two electrons, abs() will make it a 1+
+    potparams.hs_lut_i = std::abs(std::max(potparams.hs_cs1, potparams.hs_cs2));
 
-    if (lut_i >= hs_lut_potential.size() or distance_au >= hs_lut_potential[lut_i].Get_XMax())
+    if (
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
+        (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
+    )
     {
+        // Coulombic
         Potentials_Set_Parameters_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
 }
@@ -556,38 +565,31 @@ fdouble Calculate_Potential_Cutoff_HS(
     // Fits are in atomic units
     const fdouble distance_au = potparams.r * si_to_au_length;
 
-    const int cs2 = potparams.hs_cs2;
-
-    // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
-
-    const unsigned int lut_i = cs2 + 1;
-
-    if (lut_i < hs_lut_potential.size() and distance_au < hs_lut_potential[lut_i].Get_XMax())
+    if (
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
+        (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
+    )
     {
-        // Get the lookup table's value.
-        phi12 = hs_lut_potential[lut_i].read(distance_au);
-
-        // The LUT stores the HS potential energy [Hartree] of an electron (p0) in
-        // an ion's (p1) potential. It is thus NEGATIVE. The libraries and codes
-        // normally expect the potential [Volt] created by p1 (positive or negative)
-        // and multiply by the charge of p0 to get its potential energy [Joule].
-        // Thus, make sure we have a potential here.
-        const int cs1 = Get_Charge_State(p1);
-        if (cs1 > 0)
-            phi12 /= -fdouble(cs1);
-
-        // Make sure electrons create a negative potential
-        if (cs2 == -1)
-            phi12 *= -one;
-
-        // Convert from energy in Hartree to potential in Volt
-        phi12 *= au_to_si_pot;
+        // Coulombic
+        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
     }
     else
     {
-        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
+        // Get the lookup table's value. NOTE: The potential ENERGY of an electron in an atomic potential is stored [Hartree].
+        phi12 = std::abs(hs_lut_potential[potparams.hs_lut_i].read(distance_au)); // [Hartree]
+
+        // We get |LUT|/|cs1*cs2|
+        if (potparams.hs_cs1 > 0)
+            phi12 /= fdouble(potparams.hs_cs1);
+        if (potparams.hs_cs2 > 0)
+            phi12 /= fdouble(potparams.hs_cs2);
+
+        phi12 *= fdouble(potparams.hs_cs2);
+        phi12 *= au_to_si_pot;
     }
-    //std_cout << "cs2=" << cs << "  r = " << distance_au << " Bohr   phi12 = " << phi12 << " Volt   (should be close to: 1/r = " << (fdouble(cs)/distance_au)*au_to_si_pot << " Volt == " << potparams.kQ2 / potparams.r << ")\n";
+
+    //std_cout << "(cs1,cs2)=(" << Get_Charge_State(p1) << ", " << Get_Charge_State(p2) << ")  r = " << distance_au << " Bohr   phi12 = " << phi12 << " Volt   (Coulomb: cs1*cs2/r = " << (fdouble(Get_Charge_State(p1)*Get_Charge_State(p2))/distance_au)*au_to_si_pot << ")     hs_lut_potential[potparams.hs_lut_i].Get_XMax() = " << hs_lut_potential[potparams.hs_lut_i].Get_XMax() << "\n";
 
     return phi12;
 }
@@ -604,15 +606,29 @@ void Set_Field_Cutoff_HS(
 
     // Fits are in atomic units
     fdouble distance_au = potparams.r * si_to_au_length;
-    const int cs = potparams.hs_cs2;
 
-    // LUT indices: 0 == electron, 1 == neutral, 2 == 1+, etc.
-    const unsigned int lut_i = cs + 1;
-
-    if (lut_i < hs_lut_potential.size() and distance_au < hs_lut_potential[lut_i].Get_XMax())
+    if (
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
+        (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
+    )
     {
-        E_over_r = hs_lut_field[lut_i].read(distance_au);
+        // Electron or high charge state ion
+        assert(p1 != NULL);
+        assert(p2 != NULL);
+        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
+    }
+    else
+    {
+        E_over_r = hs_lut_field[potparams.hs_lut_i].read(distance_au);
 
+        // We get LUT/|cs1*cs2|
+        if (potparams.hs_cs1 > 0)
+            E_over_r /= fdouble(potparams.hs_cs1);
+        if (potparams.hs_cs2 > 0)
+            E_over_r /= fdouble(potparams.hs_cs2);
+
+        E_over_r *= fdouble(potparams.hs_cs2);
         E_over_r *= au_to_si_field;
         E_over_r /= au_to_si_length;
 
@@ -620,13 +636,6 @@ void Set_Field_Cutoff_HS(
         {
             E[d]  += potparams.dr[d] * E_over_r;
         }
-    }
-    else
-    {
-        // Electron or high charge state ion
-        assert(p1 != NULL);
-        assert(p2 != NULL);
-        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
     }
 }
 

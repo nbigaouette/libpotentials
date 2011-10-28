@@ -7,8 +7,8 @@
 
 #include "FloatType.hpp"
 
-// Includes electrons (0) and neutral (1).
-const int HS_Xe_MaxNbCS = 8;
+// Includes neutrals
+const int HS_Xe_MaxNbCS = 7;
 
 extern std::vector<fdouble> hs_min_rad;
 extern std::vector<LookUpTable<fdouble> > hs_lut_potential;

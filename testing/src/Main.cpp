@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
         const std::string cmd = std::string("mkdir -p output/") + potential_shape;
         system(cmd.c_str());
 
-        Potentials_Initialize(potential_shape,
+        Potentials_Initialize("output",
+                                potential_shape,
                                 fdouble(1.5 * libpotentials::Eh_to_eV),     // base potential
                                 fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
                                 1);                                 // Super Gaussian order (m=1 for gaussian)
@@ -72,8 +73,6 @@ int main(int argc, char *argv[])
             p0.pos[d] = libpotentials::zero;
             p1.pos[d] = libpotentials::zero;
         }
-        p0.charge_state = libpotentials::one;
-        p1.charge_state = libpotentials::one;
 
         const int N = 10000;
         const fdouble xmin = fdouble(0.001 * libpotentials::bohr_to_m);
@@ -83,7 +82,6 @@ int main(int argc, char *argv[])
         fdouble r;
 
         std::vector<int> charge_states;
-        charge_states.push_back(-1);
         charge_states.push_back(0);
         charge_states.push_back(1);
         charge_states.push_back(2);
@@ -102,6 +100,8 @@ int main(int argc, char *argv[])
         {
             const int cs = charge_states[csi];
 
+            //p0.charge_state = 1;    // p0 is a 1+ feeling the ion p1
+            p0.charge_state = -1;   // p0 is an electron feeling the ion p1
             p1.charge_state = cs;
 
             char filename[1024];
@@ -128,20 +128,18 @@ int main(int argc, char *argv[])
                 p0.pos[0] = r;
 
                 // Reset values
-                for (int d = 0 ; d < 3 ; d++)
-                {
-                    E_at_p0_from_p1[d]  = libpotentials::zero;
-                }
                 potential_at_p0_from_p1 = libpotentials::zero;
+                for (int d = 0 ; d < 3 ; d++)
+                    E_at_p0_from_p1[d]  = libpotentials::zero;
 
                 // Set parameters, calculate potential and field
                 Potentials_Set_Parameters((void *) &p0, (void *) &p1, potparams);
                 potential_at_p0_from_p1 = Calculate_Potential((void *) &p0, (void *) &p1, potparams);
                 Set_Field((void *) &p0, (void *) &p1, potparams, potential_at_p0_from_p1, E_at_p0_from_p1);
 
-                // Save potential and field
-                f_poten << r * libpotentials::m_to_bohr << ", " << potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
-                f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0]      * libpotentials::si_to_au_field << "\n";
+                // Save potential ENERGY and field
+                f_poten << r * libpotentials::m_to_bohr << ", " << fdouble(p0.charge_state) * potential_at_p0_from_p1 * libpotentials::si_to_au_pot << "\n";
+                f_field << r * libpotentials::m_to_bohr << ", " << E_at_p0_from_p1[0] * libpotentials::si_to_au_field << "\n";
             }
 
             f_poten.close();
