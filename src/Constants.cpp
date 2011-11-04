@@ -162,7 +162,10 @@ void Print_Constants()
     Print(au_to_si_acc);
     Print(au_to_si_acc);
     std_cout << "----------------------------------------------------------------------\n";
-    std_cout << " Laser Pulse: E(t) = A*sin(pi/T*t)^2, I(t) = E(t)^2 = A*sin(pi/T*t)^4 \n";
+    std_cout << " Laser Pulse: E(t) = A*sin(2*pi*t/T)^2, I(t) = E(t)^2 = A^2*sin(2*pi*t/T)^4\n";
+    std_cout << " NOTE: one period contains two pulses!";
+    std_cout << " See md.git/scripts/sin4_laser.py and notes.git/xournal/20111104_14h22_Sine4_Intensity_Profile.xoj\n";
+    Print(acos_pow_half_fourth);
     Print(sin4_fwhm_to_period);
     std_cout << "######################################################################\n";
     std_cout << "######################################################################\n";

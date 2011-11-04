@@ -21,10 +21,6 @@ void Print_Constants();
 
 namespace libpotentials_double
 {
-
-    // The base potential well giving the bottom of the potential well.
-    //const fdouble base_pot_well_depth = 26.0; //[eV]
-
     // **************************************************************
 
     const double zero                   = 0.0;
@@ -194,9 +190,10 @@ namespace libpotentials_double
     const double Mb_to_atomic_area      = Mb_to_m2 * m2_to_atomic_area;      // bohr^2 . Mb^-1
     const double atomic_area_to_Mb      = one / Mb_to_atomic_area;           // Mb . bohr^-2
 
-    // Laser Pulse: E(t) = A*sin(pi/T*t)^2, I(t) = E(t)^2 = A*sin(pi/T*t)^4
-    // T: period
-    const double sin4_fwhm_to_period    = Pi / ( Pi - 2.0 * std::asin( pow(2.0, -0.25) ) );
+    // sin^4 intensity profile. NOTE: This period contains two pulses!
+    // See md.git/scripts/sin4_laser.py and notes.git/xournal/20111104_14h22_Sine4_Intensity_Profile.xoj
+    const double acos_pow_half_fourth   = std::acos(std::pow(0.5, 0.25));
+    const double sin4_fwhm_to_period    = Pi / acos_pow_half_fourth;
 }
 
 namespace libpotentials
@@ -326,6 +323,7 @@ namespace libpotentials
     const fdouble Mb_to_atomic_area     = fdouble(libpotentials_double::Mb_to_atomic_area      );
     const fdouble atomic_area_to_Mb     = fdouble(libpotentials_double::atomic_area_to_Mb      );
     const fdouble sin4_fwhm_to_period   = fdouble(libpotentials_double::sin4_fwhm_to_period    );
+    const fdouble acos_pow_half_fourth  = fdouble(libpotentials_double::acos_pow_half_fourth   );
 }
 
 
