@@ -54,6 +54,32 @@ struct potential_paramaters {
 
     // ********** Screened Coulomb **********************************
     // None
+
+    // Constructor: Set everything to 0
+    potential_paramaters()
+    {
+        dr[0] = 0.0; dr[1] = 0.0; dr[2] = 0.0;
+        r = 0.0;
+        r2 = 0.0;
+        one_over_r = 0.0;
+        cutoff_radius = 0.0;
+        kQ2 = 0.0;
+        B = 0.0;
+        kQ2_over_B = 0.0;
+        h_A = 0.0;
+        h_A_r = 0.0;
+        sg_sigma = 0.0;
+        sg_r_over_sigma_two_m = 0.0;
+        sg_exp_half_r_over_sigma_two_m = 0.0;
+        hs_cs1 = 0;
+        hs_cs2 = 0;
+        hs_lut_i = 0;
+        gd_sigma = 0.0;
+        sym_sigma1 = 0.0;
+        sym_sigma2 = 0.0;
+        sym_cs1 = 0;
+        sym_cs2 = 0;
+    }
 };
 
 #endif // #ifndef INC_STRUCTURES_POTENTIALS_HPP
