@@ -68,7 +68,7 @@ Double Vector_Substract_and_Length_Squared(Double a[3], const Double b[3])
 
 // **************************************************************
 template <class Double>
-void Get_r21(Double r1[3], Double r2[3], Double r21[3])
+void Get_r21(const Double r1[3], const Double r2[3], Double r21[3])
 /**
  * r21 is the vector groing from position r2 to position r1
  * r21 = r1 - r2
