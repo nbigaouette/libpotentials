@@ -301,9 +301,6 @@ void Initialize_HS(const fdouble &base_potential_eV)
         // Store the 3 points used for the cubic spline
         const int n = 2;
         const int intervals[2*n] = {0, iE, iE+10};
-//         const fdouble p0[2] = {0.0,                                  0.0};
-//         const fdouble p1[2] = {hs_lut_field[cs].Get_x_from_i(iE),    hs_lut_field[cs].Table(iE)};
-//         const fdouble p2[2] = {hs_lut_field[cs].Get_x_from_i(iE+10), hs_lut_field[cs].Table(iE+10)};
         const fdouble p0[2] = {hs_lut_field[cs].Get_x_from_i(intervals[0]), hs_lut_field[cs].Table(intervals[0])};
         const fdouble p1[2] = {hs_lut_field[cs].Get_x_from_i(intervals[1]), hs_lut_field[cs].Table(intervals[1])};
         const fdouble p2[2] = {hs_lut_field[cs].Get_x_from_i(intervals[2]), hs_lut_field[cs].Table(intervals[2])};
