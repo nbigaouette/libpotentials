@@ -194,12 +194,12 @@ void Initialize_HS(const fdouble &base_potential_eV)
     // Find the radius where the HS potential is equal to "base_potential"
     // by doing a bisection, for all supported charge states.
     fdouble r_left, r_right, found_r, pot; // [Bohr]
-    for (int csi = 0 ; csi < int(hs_lut_potential.size()) ; csi++)
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
         // Initial conditions
-        hs_min_rad[csi] = hs_lut_potential[csi].Get_x_from_i(0);
-        r_left  = hs_min_rad[csi];     // Minimum radius of fit
-        r_right = hs_lut_potential[csi].Get_XMax();
+        hs_min_rad[cs] = hs_lut_potential[cs].Get_x_from_i(0);
+        r_left  = hs_min_rad[cs];     // Minimum radius of fit
+        r_right = hs_lut_potential[cs].Get_XMax();
 
         // Start bisection!
         // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
@@ -207,7 +207,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
 
         while (std::abs(found_r - r_left) > 1.0e-100 && std::abs(found_r - r_right) > 1.0e-100)
         {
-            pot = hs_lut_potential[csi].read(found_r); // Potential energy [au]
+            pot = hs_lut_potential[cs].read(found_r); // Potential energy [au]
             assert(pot < 0.0);
 
             // We want a 2+'s base potential to be twice as deep as a 1+. We will
@@ -216,7 +216,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
 
             //printf("cs=%2d  base_potential = %10.5g Hartree   r_left = %10.5g   r = %10.5g   r_right = %10.5g   HS(r) = %10.5g Hartree\n", cs, base_potential, r_left, found_r, r_right, pot);
             Assert_isinf_isnan(pot);
-            if (pot >= base_potential*fdouble(std::max(1,csi)))
+            if (pot >= base_potential*fdouble(std::max(1,cs)))
             {
                 r_right = found_r;
             }
@@ -226,42 +226,42 @@ void Initialize_HS(const fdouble &base_potential_eV)
             }
             found_r = r_right + (r_left - r_right) / fdouble(2.0);
         }
-        std_cout << "Bisection end: cs = " << csi << "  HS(r="<<found_r<<") = " << double(std::max(1,csi))*pot << "\n";
+        std_cout << "Bisection end: cs = " << cs << "  HS(r="<<found_r<<") = " << double(std::max(1,cs))*pot << "\n";
 
         Assert_isinf_isnan(found_r);
         Assert_isinf_isnan(pot);
         assert(found_r > 0.0);
         //assert(std::abs(pot - std::max(1,cs)*base_potential) < 1.0e-3);
 
-        if (found_r <= 0.99999*hs_min_rad[csi])
+        if (found_r <= 0.99999*hs_min_rad[cs])
         {
             std_cout << "##############################################\n";
             DEBUGP("Initialize_HS() called with a potential depth too deep.\n");
             std_cout << "The value found " << found_r << " Bohr\n";
-            std_cout << "for charge state " << csi << " should not be lower than " << hs_min_rad[csi] << " Bohr\n";
+            std_cout << "for charge state " << cs << " should not be lower than " << hs_min_rad[cs] << " Bohr\n";
             std_cout << "Potential depth wanted: " << base_potential << " Hartree (" << base_potential_eV << " eV)\n";
             std_cout << "Exiting\n";
             abort();
         }
 
-        hs_min_rad[csi] = found_r;
+        hs_min_rad[cs] = found_r;
     }
 
     // Now that the cutting radius is found for each charge states, change lookup tables values
     // This is a "hard" cutoff: the field inside hs_min_rad will be 0, and the
     // potential will be the base_potential.
-    for (int csi = 0 ; csi < int(hs_lut_potential.size()) ; csi++)
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
         // Set neutral's charge state to 1, so it does not clear the lookup tables.
-        const fdouble cs_factor = fdouble(std::max(1, csi));
-        const int lut_n = hs_lut_potential[csi].Get_n();
+        const fdouble cs_factor = fdouble(std::max(1, cs));
+        const int lut_n = hs_lut_potential[cs].Get_n();
         for (int i = 0 ; i <= lut_n ; i++)
         {
             assert(base_potential < 0.0);
-            if (hs_lut_potential[csi].Table(i) < base_potential*cs_factor)
+            if (hs_lut_potential[cs].Table(i) < base_potential*cs_factor)
             {
-                hs_lut_potential[csi].Set(i, base_potential*cs_factor);
-                hs_lut_field[csi].Set(i, 0.0);
+                hs_lut_potential[cs].Set(i, base_potential*cs_factor);
+                hs_lut_field[cs].Set(i, 0.0);
             }
         }
     }
