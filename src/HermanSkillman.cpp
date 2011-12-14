@@ -273,17 +273,96 @@ void Initialize_HS(const fdouble &base_potential_eV)
     {
         const int lut_n = hs_lut_potential[cs].Get_n();
         // Find index of maximum field
-        int index = -1;
+        int iEmax = -1;
         fdouble max_field = 0.0;
         for (int i = 0 ; i <= lut_n ; i++)
         {
             if (hs_lut_field[cs].Table(i) > max_field)
             {
                 max_field = hs_lut_field[cs].Table(i);
-                index = i;
+                iEmax = i;
             }
         }
+        assert(iEmax != -1);
 
+        // Find the index where the electric field is 3.9 times less then the max
+        const fdouble factor = 3.9f;
+        int iE = -1;
+        for (int i = 0 ; i < lut_n ; i++)
+        {
+            if ( (hs_lut_field[cs].Table(i) <= max_field/factor) and (max_field/factor < hs_lut_field[cs].Table(i+1)) )
+            {
+                iE = i;
+                break;
+            }
+        }
+        assert(iE != -1);
+
+        // Store the 3 points used for the cubic spline
+        const int n = 2;
+        const int intervals[2*n] = {0, iE, iE+10};
+//         const fdouble p0[2] = {0.0,                                  0.0};
+//         const fdouble p1[2] = {hs_lut_field[cs].Get_x_from_i(iE),    hs_lut_field[cs].Table(iE)};
+//         const fdouble p2[2] = {hs_lut_field[cs].Get_x_from_i(iE+10), hs_lut_field[cs].Table(iE+10)};
+        const fdouble p0[2] = {hs_lut_field[cs].Get_x_from_i(intervals[0]), hs_lut_field[cs].Table(intervals[0])};
+        const fdouble p1[2] = {hs_lut_field[cs].Get_x_from_i(intervals[1]), hs_lut_field[cs].Table(intervals[1])};
+        const fdouble p2[2] = {hs_lut_field[cs].Get_x_from_i(intervals[2]), hs_lut_field[cs].Table(intervals[2])};
+
+        if (cs == 1)
+        {
+            std_cout << "p0 = (" << p0[0] << "," << p0[1] << ")\n";
+            std_cout << "p1 = (" << p1[0] << "," << p1[1] << ")\n";
+            std_cout << "p2 = (" << p2[0] << "," << p2[1] << ")\n";
+        }
+
+        const fdouble r[n+1]= {p0[0], p1[0], p2[0]};
+        const fdouble y[n+1]= {p0[1], p1[1], p2[1]};
+
+        const fdouble h[n]  = {r[1] - r[0], r[2] - r[1]};
+
+        // Construct cubic spline coefficients. See doc/cubic_splines/cubic_spline.pdf
+        const fdouble two   = libpotentials::two;
+        const fdouble three = libpotentials::three;
+        const fdouble four  = libpotentials::four;
+        const fdouble five  = fdouble(5.0);
+        const fdouble six   = libpotentials::six;
+        const fdouble m[n+1] = {0.0, (three / (h[0]-h[1])) * ( (y[2]-y[1])/h[1] - (y[1]-y[0])/h[0] ), 0.0};
+//         const fdouble a[n] = {y[0],                             y[1]};
+//         const fdouble b[n] = {(y[1]-y[0])/h[0] - h[0]*m[1]/six, (y[2]-y[1])/h[1] - h[1]*m[1]/three};
+//         const fdouble c[n] = {0.0,                              m[1]/two};
+//         const fdouble d[n] = {m1/(six*h[0]),                    -m[1]/(six*h[1])};
+        fdouble a[n];
+        fdouble b[n];
+        fdouble c[n];
+        fdouble d[n];
+        for (int i = 0 ; i < n ; i++)
+        {
+            a[i] = y[i];
+            b[i] = (y[i+1] - y[i])/h[i] - h[i]*m[i]/two - h[i]/six*(m[i+1] - m[i]);
+            c[i] = m[i] / two;
+            d[i] = (m[i+1] - m[i]) / (six * h[i]);
+        }
+
+        // For the two regions defined by the three points, calculate the cubic spline
+        fdouble new_field = 0.0;
+        fdouble new_pot   = 0.0;
+        fdouble x = 0.0;
+        // Set neutral's charge state to 1, so it does not clear the lookup tables.
+        const fdouble cs_factor = fdouble(std::max(1, cs));
+        fdouble last_IntV = base_potential*cs_factor;
+        for (int interval = 0 ; interval < n ; interval++)
+        {
+            for (int i = intervals[interval] ; i <= intervals[interval+1] ; i++)
+            {
+                x = hs_lut_field[cs].Get_x_from_i(i);
+                new_field = a[interval]                   + b[interval]*        (x - r[interval])         + c[interval]*std::pow(x - r[interval], 2)      + d[interval]*std::pow(x - r[interval], 3);
+                new_pot   = a[interval]*(x - r[interval]) + b[interval]*std::pow(x - r[interval],2)/three + c[interval]*std::pow(x - r[interval], 3)/four + d[interval]*std::pow(x - r[interval], 4)/five + last_IntV;
+
+                hs_lut_field[cs].Set(i, new_field);
+                hs_lut_potential[cs].Set(i, new_pot);
+            }
+            last_IntV = new_pot;
+        }
     }
 
 
