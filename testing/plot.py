@@ -39,7 +39,7 @@ def cubic_spline(cs, rV, V, rE, E):
     print "index =", index
     print "Emax =", Emax
     print "rEmax =", rEmax
-    f = 3.9
+    f = 6.67
     #index = numpy.where((Emax/3.9 <= E) & (E <= Emax/3.8))[0][0]
     index = numpy.where((0.99*Emax/f <= E) & (E <= 1.01*Emax/f))[0][0]
     p1 = (rE[index], E[index])

@@ -287,8 +287,8 @@ void Initialize_HS(const fdouble &base_potential_eV)
         }
         assert(iEmax != -1);
 
-        // Find the index where the electric field is 3.9 times less then the max
-        const fdouble factor = 3.9f;
+        // Find the index where the electric field is 6.67 times less then the max
+        const fdouble factor = 6.67f;
         int iE = -1;
         for (int i = iEmax ; i < lut_n ; i++)
         {
