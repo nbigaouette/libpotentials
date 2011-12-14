@@ -266,6 +266,30 @@ void Initialize_HS(const fdouble &base_potential_eV)
         }
     }
 
+    // Do a cubic spline interpolation on the field to prevent the drop from the maximum
+    // of field to 0 at cutoff radius. This hard cutoff introduce a lot of numerical heating.
+    // The spline should make it smooth and thus no more heating.
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
+    {
+        const int lut_n = hs_lut_potential[cs].Get_n();
+        // Find index of maximum field
+        int index = -1;
+        fdouble max_field = 0.0;
+        for (int i = 0 ; i <= lut_n ; i++)
+        {
+            if (hs_lut_field[cs].Table(i) > max_field)
+            {
+                max_field = hs_lut_field[cs].Table(i);
+                index = i;
+            }
+        }
+
+    }
+
+
+
+
+
     //hs_lut_potential[0].Print_Table();
     //hs_lut_field[0].Print_Table();
     //exit(0);
