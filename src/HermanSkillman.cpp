@@ -333,10 +333,6 @@ void Initialize_HS(const fdouble &base_potential_eV)
         const fdouble five  = fdouble(5.0);
         const fdouble six   = libpotentials::six;
         const fdouble m[n+1] = {0.0, (three / (h[0]-h[1])) * ( (y[2]-y[1])/h[1] - (y[1]-y[0])/h[0] ), 0.0};
-//         const fdouble a[n] = {y[0],                             y[1]};
-//         const fdouble b[n] = {(y[1]-y[0])/h[0] - h[0]*m[1]/six, (y[2]-y[1])/h[1] - h[1]*m[1]/three};
-//         const fdouble c[n] = {0.0,                              m[1]/two};
-//         const fdouble d[n] = {m1/(six*h[0]),                    -m[1]/(six*h[1])};
         fdouble a[n];
         fdouble b[n];
         fdouble c[n];
