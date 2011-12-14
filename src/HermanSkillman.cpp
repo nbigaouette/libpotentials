@@ -459,7 +459,8 @@ void Initialize_HS(const fdouble &base_potential_eV)
                 // As soon as the spline crosses the old potential, stop using it.
                 new_pot = std::max(new_pot, old_pot);
                 // We store E/r, not E
-                new_field /= x;
+                if (x > 0.0)
+                    new_field /= x;
 
                 hs_lut_field[cs].Set(i, new_field);
                 hs_lut_potential[cs].Set(i, new_pot);
