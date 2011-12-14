@@ -248,6 +248,8 @@ void Initialize_HS(const fdouble &base_potential_eV)
     }
 
     // Now that the cutting radius is found for each charge states, change lookup tables values
+    // This is a "hard" cutoff: the field inside hs_min_rad will be 0, and the
+    // potential will be the base_potential.
     for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
         // Set neutral's charge state to 1, so it does not clear the lookup tables.
