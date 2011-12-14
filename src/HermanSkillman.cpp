@@ -287,8 +287,109 @@ void Initialize_HS(const fdouble &base_potential_eV)
         }
         assert(iEmax != -1);
 
+        // Do a bisection to find the proper factor to use for a given potential depth and charge state
+        fdouble f_up, f_down, found_f;
+        // Initial conditions
+        f_down = 2.0f;
+        f_up   = 10.0f;
+
+        // Start bisection!
+        // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
+        found_f = f_down + (f_up - f_down) / fdouble(2.0);
+        while (std::abs(found_f - f_down) > 1.0e-100 && std::abs(found_f - f_up) > 1.0e-100)
+        {
+            // Find the index where the electric field is found_f times less then the max
+            int iE = -1;
+            for (int i = iEmax ; i < lut_n ; i++)
+            {
+                // The field's lut stores E/r, not E.
+                const fdouble r_i   = hs_lut_field[cs].Get_x_from_i(i);
+                const fdouble r_ip1 = hs_lut_field[cs].Get_x_from_i(i+1);
+                const fdouble E_i   = r_i  *hs_lut_field[cs].Table(i);
+                const fdouble E_ip1 = r_ip1*hs_lut_field[cs].Table(i+1);
+                if ( (E_i >= max_field/found_f) and (max_field/found_f > E_ip1) )
+                {
+                    iE = i;
+                    break;
+                }
+            }
+            assert(iE != -1);
+
+            // Store the 3 points used for the cubic spline
+            const int n = 2;
+            const int intervals[n+1] = {0, iE, iE+10};
+            //std_cout
+            //    << "intervals = ("<<intervals[0] << "," << intervals[1] << "," << intervals[2] << ")    "
+            //    << "x = (" << hs_lut_field[cs].Get_x_from_i(intervals[0]) << "," << hs_lut_field[cs].Get_x_from_i(intervals[1]) << "," << hs_lut_field[cs].Get_x_from_i(intervals[1]) << ")\n";
+            const fdouble p0[2] = {hs_lut_field[cs].Get_x_from_i(intervals[0]), hs_lut_field[cs].Get_x_from_i(intervals[0])*hs_lut_field[cs].Table(intervals[0])};
+            const fdouble p1[2] = {hs_lut_field[cs].Get_x_from_i(intervals[1]), hs_lut_field[cs].Get_x_from_i(intervals[1])*hs_lut_field[cs].Table(intervals[1])};
+            const fdouble p2[2] = {hs_lut_field[cs].Get_x_from_i(intervals[2]), hs_lut_field[cs].Get_x_from_i(intervals[2])*hs_lut_field[cs].Table(intervals[2])};
+
+            const fdouble r[n+1]= {p0[0], p1[0], p2[0]};
+            const fdouble y[n+1]= {p0[1], p1[1], p2[1]};
+
+            const fdouble h[n]  = {r[1] - r[0], r[2] - r[1]};
+
+            // Construct cubic spline coefficients. See doc/cubic_splines/cubic_spline.pdf
+            const fdouble two   = libpotentials::two;
+            const fdouble three = libpotentials::three;
+            const fdouble four  = libpotentials::four;
+            const fdouble five  = fdouble(5.0);
+            const fdouble six   = libpotentials::six;
+            // For a 3 points "natural" spline, the solution "m" to "A.m = b" is easy:
+            const fdouble m[n+1] = {0.0, (three / (h[0]-h[1])) * ( (y[2]-y[1])/h[1] - (y[1]-y[0])/h[0] ), 0.0};
+            // Get the coefficients from "m"
+            fdouble a[n];
+            fdouble b[n];
+            fdouble c[n];
+            fdouble d[n];
+            for (int i = 0 ; i < n ; i++)
+            {
+                a[i] = y[i];
+                b[i] = (y[i+1] - y[i])/h[i] - h[i]*m[i]/two - h[i]/six*(m[i+1] - m[i]);
+                c[i] = m[i] / two;
+                d[i] = (m[i+1] - m[i]) / (six * h[i]);
+            }
+            //for (int i = 0 ; i < n ; i++)
+            //{
+            //    std_cout << "    i="<<i<<" (a,b,c,d,m) = ("<<a[i]<<","<<b[i]<<","<<c[i]<<","<<d[i]<<","<<m[i]<<")\n";
+            //}
+
+            // For the two regions defined by the three points, calculate the cubic spline
+            fdouble new_field = 0.0;
+            fdouble pot_at_end_section = 0.0;
+            fdouble old_pot   = 0.0;
+            fdouble x = 0.0;
+            // Set neutral's charge state to 1, so it does not clear the lookup tables.
+            const fdouble cs_factor = fdouble(std::max(1, cs));
+            fdouble last_IntV = base_potential*cs_factor;
+            for (int interval = 0 ; interval < n ; interval++)
+            {
+                x = hs_lut_field[cs].Get_x_from_i(intervals[interval+1]);
+                pot_at_end_section = a[interval]*(x - r[interval]) + b[interval]*std::pow(x - r[interval],2)/two   + c[interval]*std::pow(x - r[interval], 3)/three + d[interval]*std::pow(x - r[interval], 4)/four + last_IntV;
+                last_IntV = pot_at_end_section;
+                //std_cout << "intervals[interval="<<interval<<"] = " << intervals[interval] << "  ->  (x,r) = (" << x << "," << r[interval] << ")   pot_at_end_section = " << pot_at_end_section
+                //    << "    (a,b,c,d,m) = ("<<a[interval]<<","<<b[interval]<<","<<c[interval]<<","<<d[interval]<<","<<m[interval]<<")"
+                //    << "\n";
+            }
+
+            //printf("cs=%2d  f_up = %5.3g   f = %5.3g   f_down = %5.3g int[n]=%d  Table(int[n])=%6.3g  r(int[n])=%5.3g  last_IntV=%5.3g\n",
+            //       cs, f_up, found_f, f_down, intervals[n], hs_lut_potential[cs].Table(intervals[n]), hs_lut_potential[cs].Get_x_from_i(intervals[n]), last_IntV);
+            if (last_IntV >= hs_lut_potential[cs].Table(intervals[n]))
+            {
+                f_down = found_f;
+            }
+            else
+            {
+                f_up = found_f;
+            }
+            found_f = f_down + (f_up - f_down) / fdouble(2.0);
+        }
+
+        std_cout << "cs=" << cs << "  found_f = " << found_f << "\n";
+
         // Find the index where the electric field is 6.67 times less then the max
-        const fdouble factor = 6.67f;
+        const fdouble factor = found_f;
         int iE = -1;
         for (int i = iEmax ; i < lut_n ; i++)
         {
