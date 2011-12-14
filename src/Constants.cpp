@@ -48,6 +48,7 @@ void Print_Constants()
     Print(two);
     Print(three);
     Print(four);
+    Print(six);
     Print(seven);
     Print(eight);
     Print(Pi);
