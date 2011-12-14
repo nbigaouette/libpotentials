@@ -351,7 +351,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
             for (int i = intervals[interval] ; i <= intervals[interval+1] ; i++)
             {
                 x = hs_lut_field[cs].Get_x_from_i(i);
-                new_field = a[interval]                   + b[interval]*        (x - r[interval])         + c[interval]*std::pow(x - r[interval], 2)      + d[interval]*std::pow(x - r[interval], 3);
+                new_field = a[interval]                   + b[interval]*        (x - r[interval])         + c[interval]*std::pow(x - r[interval], 2)       + d[interval]*std::pow(x - r[interval], 3);
                 new_pot   = a[interval]*(x - r[interval]) + b[interval]*std::pow(x - r[interval],2)/two   + c[interval]*std::pow(x - r[interval], 3)/three + d[interval]*std::pow(x - r[interval], 4)/four + last_IntV;
                 old_pot   = hs_lut_potential[cs].Table(i);
 
