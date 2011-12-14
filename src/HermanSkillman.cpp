@@ -312,15 +312,6 @@ void Initialize_HS(const fdouble &base_potential_eV)
         const fdouble p1[2] = {hs_lut_field[cs].Get_x_from_i(intervals[1]), hs_lut_field[cs].Get_x_from_i(intervals[1])*hs_lut_field[cs].Table(intervals[1])};
         const fdouble p2[2] = {hs_lut_field[cs].Get_x_from_i(intervals[2]), hs_lut_field[cs].Get_x_from_i(intervals[2])*hs_lut_field[cs].Table(intervals[2])};
 
-        if (cs == 1)
-        {
-            std_cout << "iEmax = " << iEmax << "\n";
-            std_cout << "iE    = " << iE << "\n";
-            std_cout << "p0 = (" << p0[0] << "," << p0[1] << ")\n";
-            std_cout << "p1 = (" << p1[0] << "," << p1[1] << ")\n";
-            std_cout << "p2 = (" << p2[0] << "," << p2[1] << ")\n";
-        }
-
         const fdouble r[n+1]= {p0[0], p1[0], p2[0]};
         const fdouble y[n+1]= {p0[1], p1[1], p2[1]};
 
