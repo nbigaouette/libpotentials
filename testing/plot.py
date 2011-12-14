@@ -133,7 +133,7 @@ def cubic_spline(cs, rV, V, rE, E):
         new_V[indices]  = ai[i] + bi[i]*(new_r[indices] - r[i]) +     ci[i]*(new_r[indices]-r[i])**2  +     di[i]*(new_r[indices]-r[i])**3
         #new_dV[indices] =         bi[i]                         + 2.0*ci[i]*(new_r[indices]-r[i])     + 3.0*di[i]*(new_r[indices]-r[i])**2
         #new_IntV[indices] = V0 + ai[i]*(new_r[indices]-r[0]) + bi[i]/3.0*(new_r[indices]-r[0])**2 + ci[i]/4.0*(new_r[indices]-r[0])**3 + di[i]/5.0*(new_r[indices]-r[0])**4
-        new_IntV[indices] = ai[i]*(new_r[indices]-r[i]) + bi[i]/3.0*(new_r[indices]-r[i])**2 + ci[i]/4.0*(new_r[indices]-r[i])**3 + di[i]/5.0*(new_r[indices]-r[i])**4 + last_IntV
+        new_IntV[indices] = ai[i]*(new_r[indices]-r[i]) + bi[i]/2.0*(new_r[indices]-r[i])**2 + ci[i]/3.0*(new_r[indices]-r[i])**3 + di[i]/4.0*(new_r[indices]-r[i])**4 + last_IntV
         last_IntV = new_IntV[indices][-1]
 
     return new_r, new_V, new_IntV, r, y
