@@ -277,9 +277,11 @@ void Initialize_HS(const fdouble &base_potential_eV)
         fdouble max_field = 0.0;
         for (int i = 0 ; i <= lut_n ; i++)
         {
-            if (hs_lut_field[cs].Table(i) > max_field)
+            // The field's lut stores E/r, not E.
+            const fdouble r_i = hs_lut_field[cs].Get_x_from_i(i);
+            if (r_i*hs_lut_field[cs].Table(i) > max_field)
             {
-                max_field = hs_lut_field[cs].Table(i);
+                max_field = r_i*hs_lut_field[cs].Table(i);
                 iEmax = i;
             }
         }
@@ -288,9 +290,14 @@ void Initialize_HS(const fdouble &base_potential_eV)
         // Find the index where the electric field is 3.9 times less then the max
         const fdouble factor = 3.9f;
         int iE = -1;
-        for (int i = 0 ; i < lut_n ; i++)
+        for (int i = iEmax ; i < lut_n ; i++)
         {
-            if ( (hs_lut_field[cs].Table(i) <= max_field/factor) and (max_field/factor < hs_lut_field[cs].Table(i+1)) )
+            // The field's lut stores E/r, not E.
+            const fdouble r_i   = hs_lut_field[cs].Get_x_from_i(i);
+            const fdouble r_ip1 = hs_lut_field[cs].Get_x_from_i(i+1);
+            const fdouble E_i   = r_i  *hs_lut_field[cs].Table(i);
+            const fdouble E_ip1 = r_ip1*hs_lut_field[cs].Table(i+1);
+            if ( (E_i >= max_field/factor) and (max_field/factor > E_ip1) )
             {
                 iE = i;
                 break;
@@ -301,12 +308,14 @@ void Initialize_HS(const fdouble &base_potential_eV)
         // Store the 3 points used for the cubic spline
         const int n = 2;
         const int intervals[2*n] = {0, iE, iE+10};
-        const fdouble p0[2] = {hs_lut_field[cs].Get_x_from_i(intervals[0]), hs_lut_field[cs].Table(intervals[0])};
-        const fdouble p1[2] = {hs_lut_field[cs].Get_x_from_i(intervals[1]), hs_lut_field[cs].Table(intervals[1])};
-        const fdouble p2[2] = {hs_lut_field[cs].Get_x_from_i(intervals[2]), hs_lut_field[cs].Table(intervals[2])};
+        const fdouble p0[2] = {hs_lut_field[cs].Get_x_from_i(intervals[0]), hs_lut_field[cs].Get_x_from_i(intervals[0])*hs_lut_field[cs].Table(intervals[0])};
+        const fdouble p1[2] = {hs_lut_field[cs].Get_x_from_i(intervals[1]), hs_lut_field[cs].Get_x_from_i(intervals[1])*hs_lut_field[cs].Table(intervals[1])};
+        const fdouble p2[2] = {hs_lut_field[cs].Get_x_from_i(intervals[2]), hs_lut_field[cs].Get_x_from_i(intervals[2])*hs_lut_field[cs].Table(intervals[2])};
 
         if (cs == 1)
         {
+            std_cout << "iEmax = " << iEmax << "\n";
+            std_cout << "iE    = " << iE << "\n";
             std_cout << "p0 = (" << p0[0] << "," << p0[1] << ")\n";
             std_cout << "p1 = (" << p1[0] << "," << p1[1] << ")\n";
             std_cout << "p2 = (" << p2[0] << "," << p2[1] << ")\n";
@@ -354,6 +363,9 @@ void Initialize_HS(const fdouble &base_potential_eV)
                 x = hs_lut_field[cs].Get_x_from_i(i);
                 new_field = a[interval]                   + b[interval]*        (x - r[interval])         + c[interval]*std::pow(x - r[interval], 2)      + d[interval]*std::pow(x - r[interval], 3);
                 new_pot   = a[interval]*(x - r[interval]) + b[interval]*std::pow(x - r[interval],2)/three + c[interval]*std::pow(x - r[interval], 3)/four + d[interval]*std::pow(x - r[interval], 4)/five + last_IntV;
+
+                // We store E/r, not E
+                new_field /= x;
 
                 hs_lut_field[cs].Set(i, new_field);
                 hs_lut_potential[cs].Set(i, new_pot);
