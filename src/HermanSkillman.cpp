@@ -341,6 +341,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
         // For the two regions defined by the three points, calculate the cubic spline
         fdouble new_field = 0.0;
         fdouble new_pot   = 0.0;
+        fdouble old_pot   = 0.0;
         fdouble x = 0.0;
         // Set neutral's charge state to 1, so it does not clear the lookup tables.
         const fdouble cs_factor = fdouble(std::max(1, cs));
@@ -352,7 +353,10 @@ void Initialize_HS(const fdouble &base_potential_eV)
                 x = hs_lut_field[cs].Get_x_from_i(i);
                 new_field = a[interval]                   + b[interval]*        (x - r[interval])         + c[interval]*std::pow(x - r[interval], 2)      + d[interval]*std::pow(x - r[interval], 3);
                 new_pot   = a[interval]*(x - r[interval]) + b[interval]*std::pow(x - r[interval],2)/three + c[interval]*std::pow(x - r[interval], 3)/four + d[interval]*std::pow(x - r[interval], 4)/five + last_IntV;
+                old_pot   = hs_lut_potential[cs].Table(i);
 
+                // As soon as the spline crosses the old potential, stop using it.
+                new_pot = std::max(new_pot, old_pot);
                 // We store E/r, not E
                 new_field /= x;
 
