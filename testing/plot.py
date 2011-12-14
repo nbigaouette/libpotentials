@@ -29,16 +29,34 @@ colors  = ['b', 'r', 'm', 'c', 'g', 'y']
 symbols = ['-', '--', ':', '-.']
 line_width = 2
 
-def cubic_spline():
+def cubic_spline(rV, V, rE, E):
     # http://people.math.sfu.ca/~stockie/teaching/macm316/notes/splines.pdf
 
-    V0 = -1.5
+    # Find where field is maximum
+    index = numpy.where(E == E.max())[0][0]
+    Emax = E[index]
+    rEmax = rE[index]
+    print "index =", index
+    print "Emax =", Emax
+    print "rEmax =", rEmax
+    f = 3.9
+    #index = numpy.where((Emax/3.9 <= E) & (E <= Emax/3.8))[0][0]
+    index = numpy.where((0.99*Emax/f <= E) & (E <= 1.01*Emax/f))[0][0]
+    p1 = (rE[index], E[index])
+    p2 = (rE[index+1], E[index+1])
+    print "index =", index
+    print "rE[index] =", rE[index]
+    print "E[index] =", E[index]
+    #sys.exit(0)
+
+    #V0 = -1.5
+    V0 = V[0]
     ## Cubic spline with 3 points
     n = 2
     p0 = (0.0, 0.0)
     # This gives the right potential
-    p1 = (2.1876497612049692, 0.60793404213156088)
-    p2 = (2.1981567182814885, 0.59642039133345082)
+    #p1 = (2.1876497612049692, 0.60793404213156088)
+    #p2 = (2.1981567182814885, 0.59642039133345082)
     r = numpy.array([p0[0], p1[0], p2[0]])
     y = numpy.array([p0[1], p1[1], p2[1]])
 
@@ -139,7 +157,15 @@ for folder in globber:
     nb_cs = len(field_files)
 
     if (potential_shape == "HermanSkillman"):
-        new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline()
+        data = numpy.loadtxt(pot_files[0], delimiter=',', skiprows=0, dtype=float)
+        p1_cs = int(pot_files[0].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
+        rV    = data[:,0]
+        pot   = data[:,1]
+        data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
+        p1_cs = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
+        rE    = data[:,0]
+        field = data[:,1]
+        new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline(rV, pot, rE, field)
         ax1.plot(new_r, new_IntE)
         ax2.plot(new_r, new_E)
         ax2.plot(pts_r, pts_E, 'xr', ms=10, markeredgewidth=3)
