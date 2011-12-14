@@ -29,7 +29,7 @@ colors  = ['b', 'r', 'm', 'c', 'g', 'y']
 symbols = ['-', '--', ':', '-.']
 line_width = 2
 
-def cubic_spline(rV, V, rE, E):
+def cubic_spline(cs, rV, V, rE, E):
     # http://people.math.sfu.ca/~stockie/teaching/macm316/notes/splines.pdf
 
     # Find where field is maximum
@@ -43,7 +43,7 @@ def cubic_spline(rV, V, rE, E):
     #index = numpy.where((Emax/3.9 <= E) & (E <= Emax/3.8))[0][0]
     index = numpy.where((0.99*Emax/f <= E) & (E <= 1.01*Emax/f))[0][0]
     p1 = (rE[index], E[index])
-    p2 = (rE[index+1], E[index+1])
+    p2 = (rE[index+10], E[index+10])
     print "index =", index
     print "rE[index] =", rE[index]
     print "E[index] =", E[index]
@@ -156,47 +156,37 @@ for folder in globber:
     assert(len(field_files) == len(pot_files))
     nb_cs = len(field_files)
 
-    if (potential_shape == "HermanSkillman"):
-        data = numpy.loadtxt(pot_files[0], delimiter=',', skiprows=0, dtype=float)
-        p1_cs = int(pot_files[0].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
-        rV    = data[:,0]
-        pot   = data[:,1]
-        data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
-        p1_cs = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
-        rE    = data[:,0]
-        field = data[:,1]
-        new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline(rV, pot, rE, field)
-        ax1.plot(new_r, new_IntE)
-        ax2.plot(new_r, new_E)
-        ax2.plot(pts_r, pts_E, 'xr', ms=10, markeredgewidth=3)
-
     for cs in xrange(nb_cs):
-        data = numpy.loadtxt(pot_files[cs], delimiter=',', skiprows=0, dtype=float)
-        p1_cs = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
-        r     = data[:,0]
-        pot   = data[:,1]
-        Coulomb_U = p0_cs*p1_cs/r
-        Umax = +10.0
-        Umin = -10.0
+        data        = numpy.loadtxt(pot_files[cs], delimiter=',', skiprows=0, dtype=float)
+        p1_cs       = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
+        rU          = data[:,0]
+        U           = data[:,1]
+        Coulomb_U   = p0_cs*p1_cs/rU
+        Umax = +4.0
+        Umin = -4.0
         Coulomb_U[numpy.where(Coulomb_U > Umax)] = Umax
         Coulomb_U[numpy.where(Coulomb_U < Umin)] = Umin
 
-        ax1.plot(r, pot, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
-        ax1.plot(r, Coulomb_U, ':'+colors[cs%len(colors)], lw=line_width)
-
-    for cs in xrange(nb_cs):
-        data = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
-        p1_cs = int(field_files[cs].replace(folder,"").replace("/field_", "").replace(".csv", ""))
-        r     = data[:,0]
-        field = data[:,1]
-        Coulomb_E = p1_cs/(r*r)
-        Emax = +10.0
-        Emin = -10.0
+        data        = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
+        rE          = data[:,0]
+        E           = data[:,1]
+        Coulomb_E   = p1_cs/(rE*rE)
+        Emax = +6.0
+        Emin = -6.0
         Coulomb_E[numpy.where(Coulomb_E > Emax)] = Emax
         Coulomb_E[numpy.where(Coulomb_E < Emin)] = Emin
 
-        ax2.plot(r, field, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
-        ax2.plot(r, Coulomb_E, ':'+colors[cs%len(colors)], lw=line_width)
+
+        if (potential_shape == "HermanSkillman"):
+            new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline(p1_cs, rU, U, rE, E)
+            ax1.plot(new_r, new_IntE, colors[cs%len(colors)])
+            ax2.plot(new_r, new_E, colors[cs%len(colors)])
+            ax2.plot(pts_r, pts_E, colors[cs%len(colors)] + 'x', ms=10, markeredgewidth=3)
+
+        ax1.plot(rU, U, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
+        ax1.plot(rU, Coulomb_U, ':'+colors[cs%len(colors)], lw=line_width)
+        ax2.plot(rE, E, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
+        ax2.plot(rE, Coulomb_E, ':'+colors[cs%len(colors)], lw=line_width)
 
     fi += 1
 
