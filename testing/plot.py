@@ -29,6 +29,121 @@ colors  = ['b', 'r', 'm', 'c', 'g', 'y']
 symbols = ['-', '--', ':', '-.']
 line_width = 2
 
+def cubic_spline():
+    # http://people.math.sfu.ca/~stockie/teaching/macm316/notes/splines.pdf
+
+    V0 = -1.5
+    ## Cubic spline with 3 points
+    n = 2
+    ##r = numpy.array([0.0, 1.870967741935484, 2.0])
+    ##y = numpy.array([V0, -0.86828193832599121, -0.73132642957081728])
+    ##r = numpy.array([0.0, 1.8211654247297484, 2.0])
+    ##y = numpy.array([V0, -0.9130904719349312, -0.73130094995906259])
+    ##r = numpy.array([0.0, 1.9900194191230658, 2.0])
+    ##y = numpy.array([V0, -0.73995994913682517, -0.73130094995906259])
+    #p0 = (0.0, V0)
+    #p1 = (1.8008000000012403, -0.93794211500585412)
+    #p2 = (1.8046278958704034, -0.93319842870893943)
+    #r = numpy.array([0.0, 1.4867695218705212, 1.5479910629005638])
+    #y = numpy.array([V0, -1.4771980403949858, -1.3438936655010429])
+    p0 = (0.0, 0.0)
+    #p0 = (1.3785531767545407, -0.00071200245811464669)
+    #p1 = (1.4774652490201767, 2.2262399649129496)
+    #p2 = (1.5346999601964524, 2.1011909948960472)
+    #p2 = (1.5140753664523681, 2.1928782855063305)
+    #p1 = (1.8192500725576393, 1.2029471215270493)
+    #p2 = (1.8765599892402332, 1.077657510344959)
+    #p1 = (1.9564512589635226, 0.92698222764630733)
+    #p2 = (2.0075247580822131, 0.84385309204629966)
+    #p1 = (2.1552945840146669, 0.64879757727732112)
+    #p2 = (2.1658844599234071, 0.63367641730706881)
+    p1 = (2.1876497612049692, 0.60793404213156088)
+    p2 = (2.1981567182814885, 0.59642039133345082)
+    #p1 = (2.208541272908747, 0.58697214488663452)
+    #p2 = (2.234470895538236, 0.56054735917507303)
+    #p1 = (2.3504144633920165, 0.45246086077687303)
+    #p2 = (2.4111505163980262, 0.40452752855590091)
+    r = numpy.array([p0[0], p1[0], p2[0]])
+    y = numpy.array([p0[1], p1[1], p2[1]])
+
+    A = numpy.zeros((3,3))
+    b = numpy.zeros((3))
+    h = numpy.array([r[1]-r[0], r[2]-r[1]])
+    b[0] = 0.0
+    b[1] = 6.0 * ( (y[2] - y[1])/h[1] - (y[1] - y[0])/h[0] )
+    b[2] = 0.0
+    ## First line
+    A[0,0] = 1.0
+    ## Second line
+    A[1,0] = h[0]
+    A[1,1] = 2.0 * (h[0] + h[1])
+    A[1,2] = h[1]
+    ## Third line
+    A[2,2] = 1.0
+
+
+    ## Cubic spline with 4 points
+    #n = 3
+    #p0 = (0.0, 0.0)
+    #p1 = (0.90464476213767697, 1.2121277423263328)
+    #p2 = (1.4765745007680491, 2.376101321585903)
+    #p3 = (1.5341781874039935, 2.0952643171806171)
+    #r = numpy.array([p0[0], p1[0], p2[0], p3[0]])
+    #y = numpy.array([p0[1], p1[1], p2[1], p3[1]])
+    ##r = numpy.array([0.0, 0.75049374588545104, 1.5, 1.5487339576829691])
+    ##y = numpy.array([-1.5, -1.5, -1.4468473596608349, -1.3381362921849833])
+    #A = numpy.zeros((n+1,n+1))
+    #b = numpy.zeros((n+1))
+    #h = numpy.array([r[1]-r[0], r[2]-r[1], r[3]-r[2]])
+    #b[0] = 0.0
+    #b[1] = 6.0 * ( (y[2] - y[1])/h[1] - (y[1] - y[0])/h[0] )
+    #b[2] = 6.0 * ( (y[3] - y[2])/h[2] - (y[2] - y[1])/h[1] )
+    #b[3] = 0.0
+    ## First line
+    #A[0,0] = 1.0
+    ## Second line
+    #A[1,0] = h[0]                   # First column
+    #A[1,1] = 2.0 * (h[0] + h[1])    # Second column
+    #A[1,2] = h[1]                   # Third column
+    ## Third line
+    #A[2,1] = h[1]                   # Second column
+    #A[2,2] = 2.0 * (h[1] + h[2])    # Third column
+    #A[2,2] = h[2]                   # Fourth column
+    ## Fourth line
+    #A[3,3] = 1.0                    # Fifth column
+
+    m = numpy.linalg.solve(A, b)
+    print "A =", A
+    print "b =", b
+    print "h =", h
+    print "m =", m
+    print "A.dot(m) - b =", A.dot(m) - b
+    # Spline coefficients:
+    ai = numpy.zeros((n))
+    bi = numpy.zeros((n))
+    ci = numpy.zeros((n))
+    di = numpy.zeros((n))
+    for i in xrange(n):
+        ai[i] = y[i]
+        bi[i] = (y[i+1] - y[i]) / h[i] - h[i]/2.0*m[i] - h[i]/6.0*(m[i+1]-m[i])
+        ci[i] = m[i] / 2.0
+        di[i] = (m[i+1] - m[i]) / (6.0 * h[i])
+    new_r = numpy.linspace(r[0], r[-1], 100)
+    new_V = numpy.zeros((len(new_r)))
+    #new_dV = numpy.zeros((len(new_r)))
+    new_IntV = numpy.zeros((len(new_r)))
+    last_IntV = V0
+    #last_IntV = 0.0
+    for i in xrange(n):
+        indices = numpy.nonzero((r[i] <= new_r) & (new_r <= r[i+1]))[0]
+        new_V[indices]  = ai[i] + bi[i]*(new_r[indices] - r[i]) +     ci[i]*(new_r[indices]-r[i])**2  +     di[i]*(new_r[indices]-r[i])**3
+        #new_dV[indices] =         bi[i]                         + 2.0*ci[i]*(new_r[indices]-r[i])     + 3.0*di[i]*(new_r[indices]-r[i])**2
+        #new_IntV[indices] = V0 + ai[i]*(new_r[indices]-r[0]) + bi[i]/3.0*(new_r[indices]-r[0])**2 + ci[i]/4.0*(new_r[indices]-r[0])**3 + di[i]/5.0*(new_r[indices]-r[0])**4
+        new_IntV[indices] = ai[i]*(new_r[indices]-r[i]) + bi[i]/3.0*(new_r[indices]-r[i])**2 + ci[i]/4.0*(new_r[indices]-r[i])**3 + di[i]/5.0*(new_r[indices]-r[i])**4 + last_IntV
+        last_IntV = new_IntV[indices][-1]
+
+    return new_r, new_V, new_IntV, r, y
+
 fi = 0
 for folder in globber:
 
@@ -46,6 +161,12 @@ for folder in globber:
 
     assert(len(field_files) == len(pot_files))
     nb_cs = len(field_files)
+
+    if (potential_shape == "HermanSkillman"):
+        new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline()
+        ax1.plot(new_r, new_IntE)
+        ax2.plot(new_r, new_E)
+        ax2.plot(pts_r, pts_E, 'xr', ms=10, markeredgewidth=3)
 
     for cs in xrange(nb_cs):
         data = numpy.loadtxt(pot_files[cs], delimiter=',', skiprows=0, dtype=float)
