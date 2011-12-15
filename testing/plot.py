@@ -36,17 +36,17 @@ def cubic_spline(cs, rV, V, rE, E):
     index = numpy.where(E == E.max())[0][0]
     Emax = E[index]
     rEmax = rE[index]
-    print "index =", index
-    print "Emax =", Emax
-    print "rEmax =", rEmax
+    #print "index =", index
+    #print "Emax =", Emax
+    #print "rEmax =", rEmax
     f = 6.67
     #index = numpy.where((Emax/3.9 <= E) & (E <= Emax/3.8))[0][0]
     index = numpy.where((0.99*Emax/f <= E) & (E <= 1.01*Emax/f))[0][0]
     p1 = (rE[index], E[index])
     p2 = (rE[index+10], E[index+10])
-    print "index =", index
-    print "rE[index] =", rE[index]
-    print "E[index] =", E[index]
+    #print "index =", index
+    #print "rE[index] =", rE[index]
+    #print "E[index] =", E[index]
     #sys.exit(0)
 
     #V0 = -1.5
@@ -107,11 +107,11 @@ def cubic_spline(cs, rV, V, rE, E):
     #A[3,3] = 1.0                    # Fifth column
 
     m = numpy.linalg.solve(A, b)
-    print "A =", A
-    print "b =", b
-    print "h =", h
-    print "m =", m
-    print "A.dot(m) - b =", A.dot(m) - b
+    #print "A =", A
+    #print "b =", b
+    #print "h =", h
+    #print "m =", m
+    #print "A.dot(m) - b =", A.dot(m) - b
     # Spline coefficients:
     ai = numpy.zeros((n))
     bi = numpy.zeros((n))
