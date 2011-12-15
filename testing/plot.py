@@ -162,8 +162,8 @@ for folder in globber:
         rU          = data[:,0]
         U           = data[:,1]
         Coulomb_U   = p0_cs*p1_cs/rU
-        Umax = +4.0
-        Umin = -4.0
+        Umax = +2.0
+        Umin = -2.0
         Coulomb_U[numpy.where(Coulomb_U > Umax)] = Umax
         Coulomb_U[numpy.where(Coulomb_U < Umin)] = Umin
 
@@ -171,8 +171,8 @@ for folder in globber:
         rE          = data[:,0]
         E           = data[:,1]
         Coulomb_E   = p1_cs/(rE*rE)
-        Emax = +6.0
-        Emin = -6.0
+        Emax = +2.0
+        Emin = -2.0
         Coulomb_E[numpy.where(Coulomb_E > Emax)] = Emax
         Coulomb_E[numpy.where(Coulomb_E < Emin)] = Emin
 
