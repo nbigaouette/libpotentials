@@ -469,8 +469,8 @@ void Initialize_HS(const fdouble &base_potential_eV)
         }
     }
 
-    //hs_lut_potential[0].Print_Table();
-    //hs_lut_field[0].Print_Table();
+    //hs_lut_potential[1].Print_Table();
+    //hs_lut_field[1].Print_Table();
     //exit(0);
 
     /*
