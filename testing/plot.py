@@ -47,7 +47,6 @@ def cubic_spline(cs, rV, V, rE, E):
     #print "index =", index
     #print "rE[index] =", rE[index]
     #print "E[index] =", E[index]
-    #sys.exit(0)
 
     #V0 = -1.5
     V0 = V[0]
