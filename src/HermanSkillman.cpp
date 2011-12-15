@@ -129,7 +129,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
         }
 
         //std_cout << "cs="<<cs<<"  HS_E_scaling_factor = " <<HS_E_scaling_factor << "\n";
-        for (int i = 0 ; i <= lut_n ; i++)
+        for (int i = 0 ; i < lut_n ; i++)
         {
             r = lut_pot[cs].Get_x_from_i(i);  // [Bohr]
 
@@ -255,7 +255,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
         // Set neutral's charge state to 1, so it does not clear the lookup tables.
         const fdouble cs_factor = fdouble(std::max(1, cs));
         const int lut_n = hs_lut_potential[cs].Get_n();
-        for (int i = 0 ; i <= lut_n ; i++)
+        for (int i = 0 ; i < lut_n ; i++)
         {
             assert(base_potential < 0.0);
             if (hs_lut_potential[cs].Table(i) < base_potential*cs_factor)
@@ -275,7 +275,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
         // Find index of maximum field
         int iEmax = -1;
         fdouble max_field = 0.0;
-        for (int i = 0 ; i <= lut_n ; i++)
+        for (int i = 0 ; i < lut_n ; i++)
         {
             // The field's lut stores E/r, not E.
             const fdouble r_i = hs_lut_field[cs].Get_x_from_i(i);
