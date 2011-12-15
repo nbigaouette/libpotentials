@@ -29,6 +29,7 @@ namespace libpotentials_double
     const double two                    = 2.0;
     const double three                  = 3.0;
     const double four                   = 4.0;
+    const double six                    = 6.0;
     const double seven                  = 7.0;
     const double eight                  = 8.0;
 
@@ -209,6 +210,7 @@ namespace libpotentials
     const fdouble two                   = fdouble(libpotentials_double::two                    );
     const fdouble three                 = fdouble(libpotentials_double::three                  );
     const fdouble four                  = fdouble(libpotentials_double::four                   );
+    const fdouble six                   = fdouble(libpotentials_double::six                    );
     const fdouble seven                 = fdouble(libpotentials_double::seven                  );
     const fdouble eight                 = fdouble(libpotentials_double::eight                  );
     const fdouble Pi                    = fdouble(libpotentials_double::Pi                     );

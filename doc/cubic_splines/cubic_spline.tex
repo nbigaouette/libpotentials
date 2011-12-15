@@ -1,0 +1,226 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%          Written by Nicolas Bigaouette               %%
+%%                    Winter 2008                       %%
+%%              nbigaouette@gmail.com                   %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt,letterpaper]{article}
+% \documentclass[12pt,letterpaper,draft]{article}
+\newcommand{\mytitle}{Cubic Spline}
+\title{\mytitle}
+\date{}
+\author{Nicolas Bigaouette}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Useful macros
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{macros.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Needed packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Needed for \begin{subequations}...\end{subequations}
+\usepackage{amsmath}
+% Needed for bold Greek letters
+\usepackage{bm}
+% Multiple figures
+\usepackage{subfigure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%
+% Voir http://forums.gentoo.org/viewtopic-t-202973-highlight-fonts+latex.html
+% \usepackage{mathptmx}
+% \usepackage[scaled=.90]{helvet}
+% \usepackage{courier}
+%%%%
+
+% cd /tmp
+% wget http://ftp.ktug.or.kr/tex-archive/macros/latex/contrib/misc/cases.sty
+% sudo mkdir /usr/share/texmf/tex/latex/cases/
+% sudo cp test/cases.sty /usr/share/texmf/tex/latex/cases/
+% sudo texhash
+%\usepackage{cases}                  % http://ftp.ktug.or.kr/tex-archive/macros/latex/contrib/misc/cases.sty
+
+\usepackage{ifpdf}
+\ifpdf
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % PDF compilation with "pdflatex"
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \usepackage[pdftex]{graphicx}
+    \def\pdfshellescape{1}
+    \pdfcompresslevel=9
+    %%%
+    % PDF options
+    % See http://barrault.free.fr/ressources/rapports/pdflatex/
+    \usepackage[pdftex,
+        bookmarks = true,
+        bookmarksnumbered = true,
+        bookmarksopen = true,
+        pdfpagemode = UseOutlines,
+        pdfstartview = FitH,
+        colorlinks,
+        citecolor=black,urlcolor=blue,linkcolor=black,
+        pdfauthor={Nicolas Bigaouette},
+        pdftitle={\mytitle},
+        unicode = true,
+        plainpages = false,pdfpagelabels
+    ]{hyperref}
+\else
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % DVI compilation with "latex"
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \usepackage[dvips]{graphicx}
+    \newcommand{\url}[1]{{\color{blue}#1}}
+\fi
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       Page format
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textheight=21cm
+\textwidth=17.0cm
+\oddsidemargin=0cm
+\evensidemargin=0cm
+\topmargin=0cm
+\headsep=20pt
+\topskip=10pt
+\large
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% These adjust how LaTeX puts figures onto pages with text. These values
+% reduce the likelihood that a figure will end up by itself on a page.
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+
+
+\renewcommand{\labelenumi}{\alph{enumi}) }
+
+\begin{document}
+\maketitle
+% \vspace{-50 pts}
+
+\tableofcontents
+% \newpage
+
+% *******************************************************************
+\section{Generic}
+For a collection of $n+1$ points, there is $n$ intervals. A cubic spline is a way to calculate
+the coefficients of a cubic polynomial on every one of these intervals $i$:
+\begin{align}
+g\pa{x_i} & = a_{i} + b_{i} \pa{r - r_{i}} + c_{i} \pa{r - r_{i}}^2 + d_{i} \pa{r - r_{i}}^3
+\end{align}
+
+For $n+1$ points, we define\footnote{\url{http://people.math.sfu.ca/~stockie/teaching/macm316/notes/splines.pdf}}
+the vector $\vh$ of size $n$ as the intervals size:
+\begin{align}
+h_{i} & = r_{i+1} - r_{i}
+\end{align}
+A spline will solve:
+\begin{align}
+\vA \vm & = \vb
+\end{align}
+A ``natural'' spline will have zero curvature at its boundaries. Such a spline is given by this definition:
+\begin{align}
+\vA =
+\begin{bmatrix}
+1       & 0                 &                   &                   &           &                       &                       &   \\
+h_{0}   & 2\pa{h_{0}+h_{1}} & h_{1}             & 0                 &           &                       &                       &   \\
+0       & h_{1}             & 2\pa{h_{1}+h_{2}} & h_{2}             & 0         &                       & \hdots                &   \\
+0       & 0                 & h_{2}             & 2\pa{h_{2}+h_{3}} & h_{3}     & 0                     &                       &   \\
+        &                   &                   &                   & \ddots    &                       &                       &   \\
+        &                   &                   & 0                 & h_{n-3}   & 2\pa{h_{n-3}+h_{n-2}} & h_{n-2}               & 0 \\
+        &                   & \vdots            &                   & 0         & h_{n-2}               & 2\pa{h_{n-2}+h_{n-1}} & h_{n-1} \\
+        &                   &                   &                   &           &                       & 0                     & 1
+\end{bmatrix}
+\end{align}
+and:
+\begin{align}
+\vb = 6
+\begin{bmatrix}
+0 \\
+\frac{y_{2}-y_{1}}{h_{1}} - \frac{y_{1}-y_{0}}{h_{0}}  \\
+\frac{y_{3}-y_{2}}{h_{2}} - \frac{y_{2}-y_{1}}{h_{1}}  \\
+\vdots \\
+\frac{y_{n-1}-y_{n-2}}{h_{n-2}} - \frac{y_{n-2}-y_{n-3}}{h_{n-3}}  \\
+\frac{y_{n}  -y_{n-1}}{h_{n-1}} - \frac{y_{n-1}-y_{n-2}}{h_{n-2}}  \\
+0
+\end{bmatrix}
+\end{align}
+
+After solving for $\vm$, the cubic polynomials' coefficients for each sections $i$ is obtained:
+\begin{subequations}
+\begin{align}
+a_i & = y_i \\
+b_i & = \frac{y_{i+1}-y_{i}}{h_{i}} - \frac{h_{i} m_{i}}{2} - \frac{h_{i}}{6} \pa{m_{i+1} - m_{i}} \\
+c_i & = \frac{m_{i}}{2} \\
+d_i & = \frac{m_{i+1} - m_{i}}{6 h_{i}}
+\end{align}
+\end{subequations}
+
+
+\section{3 points}
+Specializing to $n+1=3$ points (or two intervals $i$), the system to solve:
+\begin{align}
+\vA \vm & = \vb
+\end{align}
+becomes
+\begin{align}
+\vA =
+\begin{bmatrix}
+1       & 0                 & 0     \\
+h_{0}   & 2\pa{h_{0}+h_{1}} & h_{1} \\
+0       & 0                 & 1
+\end{bmatrix}, \hspace{20pt}
+\vb = 6
+\begin{bmatrix}
+0 \\
+\frac{y_{2}-y_{1}}{h_{1}} - \frac{y_{1}-y_{0}}{h_{0}}  \\
+0
+\end{bmatrix}
+\end{align}
+
+We see that $m_{0} = m_{2} = 0$ and that:
+\begin{align}
+h_{0} m_{0} + 2\pa{h_{0} + h_{1}} m_{1} + h_{1} m_{2} & = 6 \pa{\frac{y_{2}-y_{1}}{h_{1}} - \frac{y_{1}-y_{0}}{h_{0}}} \\
+2\pa{h_{0} + h_{1}} m_{1} & = 6 \pa{\frac{y_{2}-y_{1}}{h_{1}} - \frac{y_{1}-y_{0}}{h_{0}}} \\
+m_{1} & = \pa{ \frac{3}{h_{0} + h_{1}} } \pa{\frac{y_{2}-y_{1}}{h_{1}} - \frac{y_{1}-y_{0}}{h_{0}}}
+\end{align}
+
+Inserting this into the coefficients, we get the coefficients for the first interval:
+\begin{subequations}
+\begin{align}
+a_0 & = y_0 \\
+b_0 & = \frac{y_{1}-y_{0}}{h_{0}} - \frac{h_{0} m_{1}}{6} \\
+c_0 & = 0 \\
+d_0 & = \frac{m_{1}}{6 h_{0}}
+\end{align}
+\end{subequations}
+and for the second interval
+\begin{subequations}
+\begin{align}
+a_1 & = y_1 \\
+b_1 & = \frac{y_{2}-y_{1}}{h_{1}} - \frac{h_{1} m_{1}}{2} + \frac{h_{1} m_{1}}{6} \\
+c_1 & = \frac{m_{1}}{2} \\
+d_1 & = -\frac{m_{1}}{6 h_{1}}
+\end{align}
+\end{subequations}
+
+
+
+
+
+
+
+
+
+
+\end{document}
+
+
