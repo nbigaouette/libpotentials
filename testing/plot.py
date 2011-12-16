@@ -6,6 +6,7 @@ import numpy
 import matplotlib.pyplot as plt
 
 import on_key
+import hs
 
 globber = glob.glob(os.path.join("output", "*"))
 
@@ -155,29 +156,30 @@ for folder in globber:
     assert(len(field_files) == len(pot_files))
     nb_cs = len(field_files)
 
+    Umin = +9.9e60
+    Umax = -9.9e60
+    Emin = +9.9e60
+    Emax = -9.9e60
     for cs in xrange(nb_cs):
         data        = numpy.loadtxt(pot_files[cs], delimiter=',', skiprows=0, dtype=float)
         p1_cs       = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
         rU          = data[:,0]
         U           = data[:,1]
         Coulomb_U   = p0_cs*p1_cs/rU
-        Umax = +2.0
-        Umin = -2.0
-        Coulomb_U[numpy.where(Coulomb_U > Umax)] = Umax
-        Coulomb_U[numpy.where(Coulomb_U < Umin)] = Umin
 
         data        = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
         rE          = data[:,0]
         E           = data[:,1]
         Coulomb_E   = p1_cs/(rE*rE)
-        Emax = +2.0
-        Emin = -2.0
-        Coulomb_E[numpy.where(Coulomb_E > Emax)] = Emax
-        Coulomb_E[numpy.where(Coulomb_E < Emin)] = Emin
 
 
         try:
             if (potential_shape == "HermanSkillman"):
+                #hs_U = hs.HS_Fitting_Function_Xe_Potential(rU, cs)
+                #hs_E = -hs.HS_Fitting_Function_Xe_Potential(rU, cs)
+                #ax1.plot(rU, hs_U, ':' + colors[cs%len(colors)])
+                #ax2.plot(rE, hs_E, ':' + colors[cs%len(colors)])
+
                 new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline(p1_cs, rU, U, rE, E)
                 ax1.plot(new_r, new_IntE, colors[cs%len(colors)])
                 ax2.plot(new_r, new_E, colors[cs%len(colors)])
@@ -190,8 +192,17 @@ for folder in globber:
         ax2.plot(rE, E, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
         ax2.plot(rE, Coulomb_E, ':'+colors[cs%len(colors)], lw=line_width)
 
-    fi += 1
+        # Keep track of min and max
+        if (U.min() < Umin):
+            Umin = U.min()
+        if (U.max() > Umax):
+            Umax = U.max()
+        if (E.min() < Emin):
+            Emin = E.min()
+        if (E.max() > Emax):
+            Emax = E.max()
 
+    fi += 1
 
 ax1.set_ylabel("Potential Energy (Hartree)")
 ax2.set_ylabel("Field (au)")
@@ -204,10 +215,10 @@ ax2.set_xlabel("r (Bohr)")
 ax1.grid(True)
 ax2.grid(True)
 
-
-#ax1.set_xlim((0.0, 4.0))
-#ax1.set_ylim((-7.0, 0.5))
-#ax2.set_ylim((-2.0, 10.0))
+dU = Umax - Umin
+dE = Emax - Emin
+ax1.set_ylim((Umin - 0.1*dU, Umax + 0.1*dU))
+ax2.set_ylim((Emin - 0.1*dE, Emax + 0.1*dE))
 
 plt.suptitle("What an " + p0_name + " feels")
 plt.legend(loc="best")
