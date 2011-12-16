@@ -82,15 +82,25 @@ def main():
     ax2.grid(True)
 
     for cs in css:
-        raw_potential   = HS_Fitting_Function_Xe_Potential(r, cs)
-        raw_field       = HS_Fitting_Function_Xe_Field(r, cs)
+        HS_U = HS_Fitting_Function_Xe_Potential(r, cs)
+        HS_E = HS_Fitting_Function_Xe_Field(r, cs)
 
-        ax1.plot(r, raw_potential, label = str(cs) + "+")
+        indices = np.where(r > HS_Xe_rmax[cs])
+        HS_U[indices] = -float(cs) / r[indices]
+        HS_E[indices] = -float(cs) / (r[indices]*r[indices])
+        #HS_U[indices] = 0.0
+        #HS_E[indices] = 0.0
 
-        ax2.plot(r, raw_field, label = str(cs) + "+")
+        ax1.plot(r, HS_U, label = str(cs) + "+")
+        ax2.plot(r, HS_E, label = str(cs) + "+")
 
 
-    plt.legend(loc='best')
+    ax2.legend(loc='best')
+    ax1.set_ylabel("Potentiel energy (Hartree)")
+    ax2.set_ylabel("Electric field (atomic units)")
+    ax2.set_xlabel("Distance (Bohr)")
+    ax1.set_ylim((-5.0, 0.0))
+    ax2.set_ylim((-0.6, 0.0))
     plt.show()
 
 
