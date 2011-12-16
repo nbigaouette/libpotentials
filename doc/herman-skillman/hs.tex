@@ -1,0 +1,192 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%          Written by Nicolas Bigaouette               %%
+%%                    Winter 2008                       %%
+%%              nbigaouette@gmail.com                   %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt,letterpaper]{article}
+% \documentclass[12pt,letterpaper,draft]{article}
+\newcommand{\mytitle}{Herman Skillman Potential Notes}
+\title{\mytitle}
+\date{}
+\author{Nicolas Bigaouette}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Useful macros
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{macros.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Needed packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Needed for \begin{subequations}...\end{subequations}
+\usepackage{amsmath}
+% Needed for bold Greek letters
+\usepackage{bm}
+% Multiple figures
+\usepackage{subfigure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%
+% Voir http://forums.gentoo.org/viewtopic-t-202973-highlight-fonts+latex.html
+% \usepackage{mathptmx}
+% \usepackage[scaled=.90]{helvet}
+% \usepackage{courier}
+%%%%
+
+% cd /tmp
+% wget http://ftp.ktug.or.kr/tex-archive/macros/latex/contrib/misc/cases.sty
+% sudo mkdir /usr/share/texmf/tex/latex/cases/
+% sudo cp test/cases.sty /usr/share/texmf/tex/latex/cases/
+% sudo texhash
+%\usepackage{cases}                  % http://ftp.ktug.or.kr/tex-archive/macros/latex/contrib/misc/cases.sty
+
+\usepackage{ifpdf}
+\ifpdf
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % PDF compilation with "pdflatex"
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \usepackage[pdftex]{graphicx}
+    \def\pdfshellescape{1}
+    \pdfcompresslevel=9
+    %%%
+    % PDF options
+    % See http://barrault.free.fr/ressources/rapports/pdflatex/
+    \usepackage[pdftex,
+        bookmarks = true,
+        bookmarksnumbered = true,
+        bookmarksopen = true,
+        pdfpagemode = UseOutlines,
+        pdfstartview = FitH,
+        colorlinks,
+        citecolor=black,urlcolor=blue,linkcolor=black,
+        pdfauthor={Nicolas Bigaouette},
+        pdftitle={\mytitle},
+        unicode = true,
+        plainpages = false,pdfpagelabels
+    ]{hyperref}
+\else
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % DVI compilation with "latex"
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \usepackage[dvips]{graphicx}
+    \newcommand{\url}[1]{{\color{blue}#1}}
+\fi
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       Page format
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textheight=21cm
+\textwidth=17.0cm
+\oddsidemargin=0cm
+\evensidemargin=0cm
+\topmargin=0cm
+\headsep=20pt
+\topskip=10pt
+\large
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% These adjust how LaTeX puts figures onto pages with text. These values
+% reduce the likelihood that a figure will end up by itself on a page.
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+
+
+\renewcommand{\labelenumi}{\alph{enumi}) }
+
+\begin{document}
+\maketitle
+% \vspace{-50 pts}
+
+\tableofcontents
+% \newpage
+
+
+
+\section{HS potential}
+The HS potential was obtained using the Cowan-code. The resulting points were fitted using these function:
+\begin{align}
+U\pa{r} & = - \pa{ a   \e{-r b + c} + d   \e{-r e + f} + g   \e{-r h + i} - j } \\
+E\pa{r} & = - \pa{ a b \e{-r b + c} + d e \e{-r e + f} + g h \e{-r h + i} }
+\end{align}
+
+The parameters are given in tables \ref{table:rmax} and \ref{table:params}.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|c|c|} \hline
+Charge state    & $r_{max}$ (Bohr)      \\ \hline \hline
+Neutral         & 12.0                  \\ \hline
+1+              & 3.20671               \\ \hline
+2+              & 3.4419260284993465    \\ \hline
+3+              & 2.5786383389900931    \\ \hline
+4+              & 2.3069998849855851    \\ \hline
+5+              & 2.1424931697942897    \\ \hline
+6+              & 1.9288708307182563    \\ \hline
+\end{tabular}
+\end{center}
+\caption{\label{table:rmax}Distance where HS potential reaches Coulombic values}
+\end{table}
+
+
+\begin{table}
+\hspace{-45pt}
+\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
+  & Neutral         & 1+            & 2+            & 3+            & 4+            & 5+            & 6+            \\ \hline \hline
+a & 3.14083382      & 6.68943368    & 1.08862692    & 1.26082951    & 8.33659368    & 8.13621709    & 7.52331956    \\ \hline
+b & 2.23690529      & 5.46613511    & 1.12845509    & 1.24346292    & 15.53383795   & 15.39455048   & 15.56584267   \\ \hline
+c & 2.45999159      & 3.50223818    & 2.40634711    & 2.48202614    & 4.69224278    & 4.6973397     & 4.77821787    \\ \hline
+d & 1.04922253      & 9.84854609    & 7.5231977     & 7.60391482    & 5.66740119    & 1.33881001    & 2.17218048    \\ \hline
+e & 0.758964055     & 16.33928308   & 11.80857511   & 14.20436211   & 4.93161199    & 1.40783802    & 1.51817071    \\ \hline
+f & 0.916259659     & 4.55862051    & 4.40029841    & 4.63976132    & 3.58851214    & 2.72036815    & 2.38100923    \\ \hline
+g & 6.43949225      & 2.05998631    & 3.5171341     & 5.75320941    & 1.33122023    & 5.60695758    & 5.09462365    \\ \hline
+h & 5.57500308      & 1.79149357    & 4.02105327    & 4.57482337    & 1.36069086    & 4.96351559    & 5.11830058    \\ \hline
+i & 3.46700894      & 2.67105113    & 3.70863489    & 3.45935956    & 2.65699251    & 3.59035494    & 3.70739486    \\ \hline
+j & -2.22471387e-3  & -0.216514733  & -0.33244088   & -0.55091234   & -0.90941801   & -1.33283627   & -1.84326541   \\ \hline
+\end{tabular}
+\caption{\label{table:params}HS parameters}
+\end{table}
+
+\begin{figure}
+\includegraphics[width=0.98\columnwidth]{hs_1}
+\caption{\label{fig:hs:1}HS Potential energy and electric field}
+\end{figure}
+
+Figure \ref{fig:hs:1} shows the HS potential and field. Notice the discontinuity where it becomes
+coulombic. This discontinuity is due to the fact that the even though the potential reaches the
+Coulomb values, at this distance $r_{max}$ the derivative, and thus the field, is discontinuous.
+
+\section{Preventing the discontinuity}
+Since the important aspect in a Molecular Dynamics code is the force, the field cannot have a
+discontinuity without introducing errors. To correct this:
+\begin{enumerate}
+\item The HS field is multiplied by a constant to shift it upward and match Coulomb at $r_{max}$
+\begin{align}
+E'\pa{r} & = \frac{\textrm{Coulomb}\pa{r_{max}}}{E\pa{r_{max}}} E\pa{r}
+\end{align}
+\item This multiplication factor must be applied to the potential too for the field to match the derivative of the potential:
+\begin{align}
+U'\pa{r} & = \frac{\textrm{Coulomb}\pa{r_{max}}}{E\pa{r_{max}}} U\pa{r}
+\end{align}
+\item But since the potential energy is now shifted by this multiplication, an additive constant is added so the potential match the Coulomb values at $r_{max}$:
+\begin{align}
+U''\pa{r} & = U'\pa{r} + \textrm{Coulomb}\pa{r_{max}} - \frac{\textrm{Coulomb}\pa{r_{max}}}{E\pa{r_{max}}} U\pa{r_{max}}
+\end{align}
+\end{enumerate}
+
+This is performed in function Set\_HermanSkillman\_Lookup\_Tables\_Xe() in HermanSkillman.cpp.
+
+
+
+
+\end{document}
+
+
