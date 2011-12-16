@@ -6,6 +6,7 @@ import numpy
 import matplotlib.pyplot as plt
 
 import on_key
+import hs
 
 globber = glob.glob(os.path.join("output", "*"))
 
@@ -174,6 +175,11 @@ for folder in globber:
 
         try:
             if (potential_shape == "HermanSkillman"):
+                #hs_U = hs.HS_Fitting_Function_Xe_Potential(rU, cs)
+                #hs_E = -hs.HS_Fitting_Function_Xe_Potential(rU, cs)
+                #ax1.plot(rU, hs_U, ':' + colors[cs%len(colors)])
+                #ax2.plot(rE, hs_E, ':' + colors[cs%len(colors)])
+
                 new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline(p1_cs, rU, U, rE, E)
                 ax1.plot(new_r, new_IntE, colors[cs%len(colors)])
                 ax2.plot(new_r, new_E, colors[cs%len(colors)])
