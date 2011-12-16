@@ -265,7 +265,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
             }
         }
     }
-
+#ifdef HSSPLINE
     // Do a cubic spline interpolation on the field to prevent the drop from the maximum
     // of field to 0 at cutoff radius. This hard cutoff introduce a lot of numerical heating.
     // The spline should make it smooth and thus no more heating.
@@ -468,6 +468,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
             last_IntV = new_pot;
         }
     }
+#endif // #ifdef HSSPLINE
 
     //hs_lut_potential[1].Print_Table();
     //hs_lut_field[1].Print_Table();

@@ -21,7 +21,8 @@ include makefiles/Makefile.rules
 ### By default, it's double precision.
 CFLAGS          += -DFLOATTYPE_SINGLE
 
-# Don't install all headers
+### Use cubic splines to smooth the HermanSkillman field/potential?
+CFLAGS          += -DHSSPLINE
 
 #################################################################
 # Project specific options
