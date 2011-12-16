@@ -20,8 +20,8 @@ HS_Xe_parameters = np.array([
                 [8.13621709,        15.39455048,    4.6973397,      1.33881001,     1.40783802,     2.72036815,     5.60695758,     4.96351559,     3.59035494,     -1.33283627],       # 5+
                 [7.52331956,        15.56584267,    4.77821787,     2.17218048,     1.51817071,     2.38100923,     5.09462365,     5.11830058,     3.70739486,     -1.84326541]])      # 6+
 
-print "HS_Xe_rmax.shape =", HS_Xe_rmax.shape
-print "HS_Xe_parameters.shape =", HS_Xe_parameters.shape
+#print "HS_Xe_rmax.shape =", HS_Xe_rmax.shape
+#print "HS_Xe_parameters.shape =", HS_Xe_parameters.shape
 
 def HS_Fitting_Function_Xe_Potential(r, cs):
     a = HS_Xe_parameters[cs,0]
