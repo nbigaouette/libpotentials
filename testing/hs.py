@@ -1,11 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import sys, os, glob
 import numpy as np
-import matplotlib.pyplot as plt
-
-import on_key
 
 # Distance (in Bohr) where HS potential reaches the Coulombic values
 HS_Xe_rmax = np.array([
@@ -60,37 +56,44 @@ def HS_Fitting_Function_Xe_Field(r, cs):
     return field
 
 
-r = np.linspace(0.0, 10.0, 1000)
+def main():
+    import matplotlib.pyplot as plt
+    import on_key
 
-css = []
-css.append(0)
-css.append(1)
-css.append(2)
-css.append(3)
-css.append(4)
-css.append(5)
-css.append(6)
+    r = np.linspace(0.0, 10.0, 1000)
 
-fig = on_key.figure()
-axprops = dict()
-ax1 = fig.add_subplot(211, **axprops)
-axprops['sharex'] = ax1
-plt.setp(ax1.get_xticklabels(), visible=False)
-ax2 = fig.add_subplot(212, **axprops)
-plt.subplots_adjust(hspace=0.0)
-ax1.grid(True)
-ax2.grid(True)
+    css = []
+    css.append(0)
+    css.append(1)
+    css.append(2)
+    css.append(3)
+    css.append(4)
+    css.append(5)
+    css.append(6)
 
-for cs in css:
-    raw_potential   = HS_Fitting_Function_Xe_Potential(r, cs)
-    raw_field       = HS_Fitting_Function_Xe_Field(r, cs)
+    fig = on_key.figure()
+    axprops = dict()
+    ax1 = fig.add_subplot(211, **axprops)
+    axprops['sharex'] = ax1
+    plt.setp(ax1.get_xticklabels(), visible=False)
+    ax2 = fig.add_subplot(212, **axprops)
+    plt.subplots_adjust(hspace=0.0)
+    ax1.grid(True)
+    ax2.grid(True)
 
-    ax1.plot(r, raw_potential, label = str(cs) + "+")
+    for cs in css:
+        raw_potential   = HS_Fitting_Function_Xe_Potential(r, cs)
+        raw_field       = HS_Fitting_Function_Xe_Field(r, cs)
 
-    ax2.plot(r, raw_field, label = str(cs) + "+")
+        ax1.plot(r, raw_potential, label = str(cs) + "+")
+
+        ax2.plot(r, raw_field, label = str(cs) + "+")
 
 
-plt.legend(loc='best')
-plt.show()
+    plt.legend(loc='best')
+    plt.show()
 
+
+if __name__ == "__main__":
+    main()
 
