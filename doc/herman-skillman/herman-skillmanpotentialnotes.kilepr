@@ -44,10 +44,10 @@ order=-1
 
 [item:hs.tex]
 archive=true
-column=0
+column=75
 encoding=UTF-8
 highlight=LaTeX
-line=187
+line=241
 mode=LaTeX
 open=true
 order=0
@@ -63,8 +63,8 @@ open=false
 order=-1
 
 [view-settings,view=0,item:hs.tex]
-CursorColumn=0
-CursorLine=187
+CursorColumn=75
+CursorLine=241
 
 [view-settings,view=0,item:macros.tex]
 CursorColumn=29
