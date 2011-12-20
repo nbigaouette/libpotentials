@@ -113,10 +113,13 @@
 
 \section{HS potential}
 The HS potential was obtained using the Cowan-code. The resulting points were fitted using these function:
+\begin{subequations}
 \begin{align}
 U\pa{r} & = - \pa{ a   \e{-r b + c} + d   \e{-r e + f} + g   \e{-r h + i} - j } \\
-E\pa{r} & = - \pa{ a b \e{-r b + c} + d e \e{-r e + f} + g h \e{-r h + i} }
+E\pa{r} = -\grad{U\pa{r}} & = - \pa{ a b \e{-r b + c} + d e \e{-r e + f} + g h \e{-r h + i} }
 \end{align}
+\label{eqn:HS:fit}
+\end{subequations}
 
 The parameters are given in tables \ref{table:rmax} and \ref{table:params}.
 
@@ -156,11 +159,11 @@ j & -2.22471387e-3  & -0.216514733  & -0.33244088   & -0.55091234   & -0.9094180
 \end{table}
 
 \begin{figure}
-\includegraphics[width=0.98\columnwidth]{hs_1}
-\caption{\label{fig:hs:1}HS Potential energy and electric field}
+\includegraphics[width=0.98\columnwidth]{hs_1_raw_fitted}
+\caption{\label{fig:hs:raw_fitted}Raw HS Potential energy and electric field}
 \end{figure}
 
-Figure \ref{fig:hs:1} shows the HS potential and field. Notice the discontinuity where it becomes
+Figure \ref{fig:hs:raw_fitted} shows the HS potential and field. Notice the discontinuity where it becomes
 coulombic. This discontinuity is due to the fact that the even though the potential reaches the
 Coulomb values, at this distance $r_{max}$ the derivative, and thus the field, is discontinuous.
 
@@ -181,9 +184,73 @@ U'\pa{r} & = \frac{\textrm{Coulomb}\pa{r_{max}}}{E\pa{r_{max}}} U\pa{r}
 U''\pa{r} & = U'\pa{r} + \textrm{Coulomb}\pa{r_{max}} - \frac{\textrm{Coulomb}\pa{r_{max}}}{E\pa{r_{max}}} U\pa{r_{max}}
 \end{align}
 \end{enumerate}
+This addition constant does not change the field.
+
+Figure \ref{fig:hs:smooth_scaled} shows this scaling and how it prevent discontinuities at the boundary between Coulombic and HS.
+
+\begin{figure}
+\includegraphics[width=0.98\columnwidth]{hs_2_smooth_scaled}
+\caption{\label{fig:hs:smooth_scaled}Coulomb-HS smooth boundary (doted line is Coulomb)}
+\end{figure}
+
 
 This is performed in function Set\_HermanSkillman\_Lookup\_Tables\_Xe() in HermanSkillman.cpp.
 
+
+
+
+\section{Cutoff}
+\subsection{Hard Cutoff}
+In the code, the depth of the potential is chosen. In the ``Symmetric'' potential case, it will affect the width of the charge distribution. In the HS case, fixing the max potential depth causes problems.
+Figure \ref{fig:hs:hard_cutoff} shows what a hard cutoff creates. The potential is ``capped'' at a maximum value but since the derivative of this section is zero, the field becomes null. The distance
+at which the cutoff occurs will have a discrepancy in the field. A particle crossing that boundary
+will feel the drop in the field and will numerically heat. Because of that problem, a system
+consisting of many electrons and ions will create energy rendering any measurement of the
+energy futile, as is the case in an IBH study. To have a energy conserving system, the field has
+to go to zero smoothly.
+
+\begin{figure}
+\includegraphics[width=0.98\columnwidth]{hs_3_hard_cutoff}
+\caption{\label{fig:hs:hard_cutoff}HS with hard cutoff (doted line is Coulomb)}
+\end{figure}
+
+\subsection{Cubic Spline Cutoff}
+Even though the HS potential is fitted using the analytic function \eqref{eqn:HS:fit}, making the field go from its maximum value to zero smoothly is hard. This is accomplished using a cubic spline of three points. See libpotentials.git/doc/cubic\_spline/cubic\_spline.pdf for how to do the spline.
+
+The first of the three points is taken to be $r=0$ and $E=0$. The second and third points are taken really close to each other: the third point is the 10$^{\textrm{th}}$ point after the second.
+
+Taking these points arbitrarily will create problems though: the potential and field must match with $E = -\grad{U}$. To enforce this constraint, a bisection method is used to find the right placement of the second (and thus also the third) point. The bisection will find the distance where the second point is to be taken by checking if the field's integration from 0 to this distance matches the HS potential at that distance.
+
+Instead of finding the optimal distance, the code will search for an optimal fraction of the maximum field. The optimal distance is then obtained by finding where the field match the field.
+
+First, the index of the maximum field is found and the bisection is performed between where the field is half and one tenth of that maximum. The bisection starts with the middle point (one sixth) as the fraction:
+\begin{enumerate}
+\item Find the index where the field is the maximum times the fraction;
+\item Put the spline's second point there, and the spline's third point a bit further (an offset of 10);
+\item Calculate the spline's parameters and the resulting potential at the third point's location;
+\begin{itemize}
+\item If the calculated potential is higher then the HS potential at the point's location, the spline's field gets too high. Increase the fraction (thus reducing the spline's maximum field) and start again.
+\item If the calculated potential is lower then the Hs potential at the point's location, the spline's field is too low. Decrease the fraction (thus increasing the spline's maximum field) and start again.
+\end{itemize}
+\item When the upper and lower bounds for the fraction converge, stop bisection.
+\end{enumerate}
+
+This procedure is done for every charge state. Figure \ref{fig:hs:spline_cutoff} shows the resulting potential. Note that the deepest potential has the right value (in this case 1.5 Hartree) and both the potential and field are smooth.
+
+\begin{figure}
+\includegraphics[width=0.98\columnwidth]{hs_4_spline}
+\caption{\label{fig:hs:spline_cutoff}HS with spline cutoff (doted line is Coulomb)}
+\end{figure}
+
+With such a potential, the energy of a system will stay constant over time and the physics can then be trusted. A nice addition too is that since the system does not (numerically) heat anymore, a bigger time step can be used.
+
+The only issue is that, as can be seen on figure \ref{fig:hs:spline_cutoff_and_symmetric} where the Symmmetric potential is also plotted, the maximum field value is lower then the symmetric case. When an electron collide with an ion (thus coming from large distances) the HS field will increase faster than the Symmetric potential, but the Symmetric will have a slightly higher maximum field. It could affect the IBH.
+
+
+\begin{figure}
+\includegraphics[width=0.98\columnwidth]{hs_4_spline_and_symmetric}
+\caption{\label{fig:hs:spline_cutoff_and_symmetric}HS with spline cutoff compared to Symmetric potential (doted line is Coulomb)}
+\end{figure}
 
 
 
