@@ -265,6 +265,7 @@ void Initialize_HS(const fdouble &base_potential_eV)
             }
         }
     }
+
 #ifdef HSSPLINE
     // Do a cubic spline interpolation on the field to prevent the drop from the maximum
     // of field to 0 at cutoff radius. This hard cutoff introduce a lot of numerical heating.
