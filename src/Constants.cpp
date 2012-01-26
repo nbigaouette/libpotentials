@@ -161,7 +161,7 @@ void Print_Constants()
     Print(au_to_si_vel);
     Print(si_to_au_vel);
     Print(au_to_si_acc);
-    Print(au_to_si_acc);
+    Print(si_to_au_acc);
     std_cout << "----------------------------------------------------------------------\n";
     std_cout << " Laser Pulse: E(t) = A*sin(2*pi*t/T)^2, I(t) = E(t)^2 = A^2*sin(2*pi*t/T)^4\n";
     std_cout << " NOTE: one period contains two pulses!";
