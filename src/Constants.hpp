@@ -314,8 +314,8 @@ namespace libpotentials
     const fdouble si_to_au_pot          = fdouble(libpotentials_double::si_to_au_pot           );
     const fdouble au_to_si_vel          = fdouble(libpotentials_double::au_to_si_vel           );
     const fdouble si_to_au_vel          = fdouble(libpotentials_double::si_to_au_vel           );
-    const fdouble au_to_si_acc           = fdouble(libpotentials_double::au_to_si_acc           );
-    const fdouble si_to_au_acc           = fdouble(libpotentials_double::si_to_au_acc           );
+    const fdouble au_to_si_acc          = fdouble(libpotentials_double::au_to_si_acc           );
+    const fdouble si_to_au_acc          = fdouble(libpotentials_double::si_to_au_acc           );
     const fdouble b_to_m2               = fdouble(libpotentials_double::b_to_m2                );
     const fdouble m2_to_b               = fdouble(libpotentials_double::m2_to_b                );
     const fdouble Mb_to_m2              = fdouble(libpotentials_double::Mb_to_m2               );
