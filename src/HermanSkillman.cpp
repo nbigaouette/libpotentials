@@ -176,7 +176,7 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 }
 
 // **************************************************************
-void Initialize_HS(const fdouble &base_potential_eV)
+void Initialize_HS_Base_Potential(const fdouble &base_potential_eV)
 /**
  * Initialize Herman-Skillman potential
  * @param   base_potential_eV  Potential depth wanted [eV]
