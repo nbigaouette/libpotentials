@@ -110,7 +110,7 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using the Herman-Skillman (HS) potential                        ##\n";
         std_cout << "### for close range interaction                                    ###\n";
-        Initialize_HS(base_potential_depth);
+        Initialize_HS_Base_Potential(base_potential_depth);
 
         // Same as symmetric. Necessary for ion-ion interactions
         libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
