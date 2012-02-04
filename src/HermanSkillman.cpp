@@ -196,18 +196,74 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
         hs_min_rad[cs] = cutoff_radius;
     }
 
-    // Change lookup tables values using a quadratic potential inside cutoff radius
+    // Change lookup tables values using a smoothed potential/field inside cutoff radius
     for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
         // Find index of cutoff radius
         const int index = hs_lut_potential[cs].Get_i_from_x(hs_min_rad[cs]);
 
+        const double dr = hs_lut_potential[cs].Get_dx();
+        const double r0 = hs_min_rad[cs];
+
         // Get the last two points of the potential curve before cutoff
-        const fdouble H0 = hs_lut_potential[cs].Table(index);
-        const fdouble H1 = hs_lut_potential[cs].Table(index+1);
+        const double H0 = hs_lut_potential[cs].Table(index);
+        const double H1 = hs_lut_potential[cs].Table(index+1);
+        const double F0 = hs_lut_field[cs].Table(index)   *  r0;
+        const double F1 = hs_lut_field[cs].Table(index+1) * (r0 + dr);
 
-        const fdouble dr = hs_lut_potential[cs].Get_dx();
+        const double diffF0 = (F1 - F0) / dr;
 
+        const double r1 = (
+                2.0*F0*r0 - r0*r0*diffF0
+            ) / (
+                2.0*F0 - 2.0*r0*diffF0
+            );
+        assert(r1 > 0.0);
+        assert(r1 < r0);
+        const double B = F0 - (r0-r1)*diffF0/2.0;
+        const double A = B / (r1*r1);
+        const double C = H0 + A*r0*r0*r0/3.0 - A*r0*r0*r1;
+
+        if (cs == 1)
+        {
+            std_cout << "index = " << index << "\n";
+            std_cout << "HS_Fitting_Function_Xe_Potential(1.0 bohr, 1+) = " << HS_Fitting_Function_Xe_Potential(1.0, 1) << "\n";
+            std_cout << "hs_lut_potential[cs].Table(index) = " << hs_lut_potential[cs].Table(index) << "\n";
+            std_cout << "hs_lut_potential[cs].Table(index+1) = " << hs_lut_potential[cs].Table(index+1) << "\n";
+            std_cout << "r1 = " << r1 << "\n";
+
+            std_cout << "A = " << A << "\n";
+            std_cout << "B = " << B << "\n";
+            std_cout << "C = " << C << "\n";
+
+            std_cout << "Hs(0.5 bohr) = " << hs_lut_potential[cs].read(0.5) << "\n";
+            std_cout << "Hs(1.0 bohr) = " << hs_lut_potential[cs].read(1.0) << "\n";
+            std_cout << "HsF(0.5 bohr) = " << hs_lut_field[cs].read(0.5) << "\n";
+            std_cout << "HsF(1.0 bohr) = " << hs_lut_field[cs].read(1.0) << "\n";
+            std_cout << "H0 = " << H0 << "\n";
+            std_cout << "H1 = " << H1 << "\n";
+            std_cout << "F0 = " << F0 << "\n";
+            std_cout << "F1 = " << F1 << "\n";
+            assert(A > 0.0);
+            assert(B > 0.0);
+            assert(C < 0.0);
+            assert(hs_lut_potential[cs].read(r0) < 0.0);
+            assert(hs_lut_field[cs].read(r0)     > 0.0);
+        }
+
+        for (int i = 0 ; i < index ; i++)
+        {
+            const double r = hs_lut_potential[cs].Get_x_from_i(i);
+            //hs_lut_potential[cs].Set(i, fdouble(-A*std::pow(r,3)/3.0 - A*std::pow(r,2)*r1 + C));
+            hs_lut_potential[cs].Set(i, fdouble(-A*std::pow(r,3)/3.0 - A*std::pow(r1,2)*r + A*r*r*r1 + B*r + C));
+            if (i == 0)
+                hs_lut_field[cs].Set(i, 0.0 ); // We store E/r but diverge at r == 0
+            else
+                hs_lut_field[cs].Set(i, fdouble((-A*std::pow(r-r1,2) + B) / r) ); // We store E/r
+        }
+
+        /*
+         // Quadratic potential inside cutoff radius
         const fdouble A = (H0 - H1) / (2.0 * hs_min_rad[cs] * dr);
         const fdouble B = H0 + hs_min_rad[cs] * (H0 - H1) / (2.0 * dr);
 
@@ -216,6 +272,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
             hs_lut_potential[cs].Set(i, -A*std::pow(hs_lut_potential[cs].Get_x_from_i(i), 2) + B);
             hs_lut_field[cs].Set(    i, -2.0*A*hs_lut_potential[cs].Get_x_from_i(i));
         }
+        */
     }
 }
 
