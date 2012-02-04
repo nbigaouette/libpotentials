@@ -182,6 +182,41 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
  * @param   cutoff_radius   Cutoff radius under which a smoothing is wanted [m]
  */
 {
+    const fdouble cutoff_radius = cutoff_radius_m*libpotentials::m_to_bohr;
+
+    // We'll need one lookup table per charge state
+    std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
+    // LUTs stored in atomic units
+    Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
+
+    hs_min_rad.resize(hs_lut_potential.size());
+
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
+    {
+        hs_min_rad[cs] = cutoff_radius;
+    }
+
+    // Change lookup tables values using a quadratic potential inside cutoff radius
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
+    {
+        // Find index of cutoff radius
+        const int index = hs_lut_potential[cs].Get_i_from_x(hs_min_rad[cs]);
+
+        // Get the last two points of the potential curve before cutoff
+        const fdouble H0 = hs_lut_potential[cs].Table(index);
+        const fdouble H1 = hs_lut_potential[cs].Table(index+1);
+
+        const fdouble dr = hs_lut_potential[cs].Get_dx();
+
+        const fdouble A = (H0 - H1) / (2.0 * hs_min_rad[cs] * dr);
+        const fdouble B = H0 + hs_min_rad[cs] * (H0 - H1) / (2.0 * dr);
+
+        for (int i = 0 ; i < index ; i++)
+        {
+            hs_lut_potential[cs].Set(i, -A*std::pow(hs_lut_potential[cs].Get_x_from_i(i), 2) + B);
+            hs_lut_field[cs].Set(    i, -2.0*A*hs_lut_potential[cs].Get_x_from_i(i));
+        }
+    }
 }
 
 // **************************************************************
