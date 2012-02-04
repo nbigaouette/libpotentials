@@ -57,9 +57,9 @@ int main(int argc, char *argv[])
 
         Potentials_Initialize("output",
                                 potential_shape,
-                                fdouble(1.5 * libpotentials::Eh_to_eV),     // base potential
-                                fdouble(0.5 * libpotentials::bohr_to_m),    // Simple cutoff radius
-                                1);                                 // Super Gaussian order (m=1 for gaussian)
+                                1.5 * libpotentials::Eh_to_eV, // base potential
+                                0.25 * libpotentials::bohr_to_m, // Cutoff radius [m]
+                                1);  // Super Gaussian order (m=1 for gaussian)
 
         Particle p0;
         Particle p1;
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
         const int N = 10000;
         const fdouble xmin = fdouble(0.001 * libpotentials::bohr_to_m);
-        const fdouble xmax = fdouble(11.000 * libpotentials::bohr_to_m);
+        const fdouble xmax = fdouble(5.00 * libpotentials::bohr_to_m);
         const fdouble dx = (xmax - xmin) / fdouble(N);
 
         fdouble r;
