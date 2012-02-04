@@ -176,6 +176,15 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 }
 
 // **************************************************************
+void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
+/**
+ * Initialize Herman-Skillman potential with a given cutoff radius
+ * @param   cutoff_radius   Cutoff radius under which a smoothing is wanted [m]
+ */
+{
+}
+
+// **************************************************************
 void Initialize_HS_Base_Potential(const fdouble &base_potential_eV)
 /**
  * Initialize Herman-Skillman potential with a given potential depth
