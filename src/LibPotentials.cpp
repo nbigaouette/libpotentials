@@ -134,10 +134,6 @@ void Potentials_Initialize(const std::string _io_basename,
 
         Initialize_Simple(cutoff_base_potential, cutoff_radius);
 
-        std_cout << "### Cutoff radius  = " << libpotentials_private::cutoff_radius*libpotentials::m_to_bohr << " bohr\n";
-        std_cout << "### Base potential = " << libpotentials_private::cutoff_base_potential << " eV";
-        std_cout <<                   " = " << libpotentials_private::cutoff_base_potential*libpotentials::eV_to_Eh << " Eh\n";
-
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Simple;
         Calculate_Potential       = &Calculate_Potential_Cutoff_Simple;
         Set_Field                 = &Set_Field_Cutoff_Simple;
@@ -228,6 +224,11 @@ void Potentials_Initialize(const std::string _io_basename,
         std_cout << "    ### Exiting\n";
         abort();
     }
+
+    std_cout << "### Libpotential Cutoff radius  = " << libpotentials_private::cutoff_radius*libpotentials::m_to_bohr << " bohr\n";
+    std_cout << "### Libpotential Base potential = " << libpotentials_private::cutoff_base_potential << " eV";
+    std_cout << "###                             = " << libpotentials_private::cutoff_base_potential*libpotentials::eV_to_Eh << " Eh\n";
+
 
     Log_Git_Info(io_basename);
 
