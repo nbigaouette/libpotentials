@@ -9,6 +9,7 @@
 #include "Structure_Potentials.hpp"
 #include "Constants.hpp"
 #include "Global.hpp"
+#include "LookUpTable.hpp"
 
 #include "Potentials_Coulomb.hpp"
 #include "Potentials_Symmetric.hpp"
@@ -23,6 +24,25 @@
 #ifndef DEBUGP
 #define DEBUGP(x)           std_cout << __FILE__ << ":" << __LINE__ << ":\n    " << (x)
 #endif // #ifndef DEBUGP
+
+namespace libpotentials_private
+{
+    // The base potential well giving the bottom of the potential well.
+    extern fdouble cutoff_base_potential;   // [eV]
+    // The cutoff radius where Coulomb (or HS) potential becomes smoothed
+    extern fdouble cutoff_radius;           // [m]
+
+//     extern fdouble *tl_erf;             // Error function lookup table
+//     extern const int    tl_n;           // Number of points of the lookup table
+//     extern const fdouble tl_Rmax;       // Maximum value of R: erf(4) = 0.999999984582742
+//     extern const fdouble tl_dR;         // Step
+//     extern const fdouble tl_one_over_dR;
+//
+//     void initialize_erf_lookup_table();
+
+    extern LookUpTable<fdouble> lut_potential;
+    extern LookUpTable<fdouble> lut_field;
+}
 
 extern bool is_libpotentials_initialized;
 
