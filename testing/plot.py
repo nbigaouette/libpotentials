@@ -139,6 +139,10 @@ def cubic_spline(cs, rV, V, rE, E):
     return new_r, new_V, new_IntV, r, y
 
 fi = 0
+Umin = +9.9e60
+Umax = -9.9e60
+Emin = +9.9e60
+Emax = -9.9e60
 for folder in globber:
 
     # Skip files
@@ -156,10 +160,6 @@ for folder in globber:
     assert(len(field_files) == len(pot_files))
     nb_cs = len(field_files)
 
-    Umin = +9.9e60
-    Umax = -9.9e60
-    Emin = +9.9e60
-    Emax = -9.9e60
     for cs in xrange(nb_cs):
         data        = numpy.loadtxt(pot_files[cs], delimiter=',', skiprows=0, dtype=float)
         p1_cs       = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
