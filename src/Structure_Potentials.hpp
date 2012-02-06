@@ -19,7 +19,6 @@ struct potential_paramaters {
     fdouble  r;              // Distance between 2 particles             [m]
     fdouble  r2;             // Distance between 2 particles (squared)   [m]
     fdouble  one_over_r;     // Inverse of distance                      [m^-1]
-    fdouble  cutoff_radius;  // Minimum radius where Coulombic           [m]
 
     fdouble  kQ2;            // Charge of particle 2 times k             [V.m]
     fdouble  B;              // Potential right on top of particle 2     [V]
@@ -47,8 +46,6 @@ struct potential_paramaters {
     fdouble  gd_sigma;       // Width of gaussian distribution (NPS eq. 21) [m]
 
     // ********** Symmetric Charge distribution parameters **********
-    fdouble  sym_sigma1;     // Width of gaussian distribution 1         [m]
-    fdouble  sym_sigma2;     // Width of gaussian distribution 2         [m]
     int     sym_cs1;        // Charge state of particle 1               [-]
     int     sym_cs2;        // Charge state of particle 2               [-]
 
@@ -62,7 +59,6 @@ struct potential_paramaters {
         r = 0.0;
         r2 = 0.0;
         one_over_r = 0.0;
-        cutoff_radius = 0.0;
         kQ2 = 0.0;
         B = 0.0;
         kQ2_over_B = 0.0;
@@ -75,8 +71,6 @@ struct potential_paramaters {
         hs_cs2 = 0;
         hs_lut_i = 0;
         gd_sigma = 0.0;
-        sym_sigma1 = 0.0;
-        sym_sigma2 = 0.0;
         sym_cs1 = 0;
         sym_cs2 = 0;
     }

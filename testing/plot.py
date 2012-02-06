@@ -27,7 +27,7 @@ ax2 = fig.add_subplot(212, **axprops)
 plt.subplots_adjust(hspace=0.0)
 
 colors  = ['b', 'r', 'm', 'c', 'g', 'y']
-symbols = ['-', '--', ':', '-.']
+symbols = ['-', '--', '-.', ':']
 line_width = 2
 
 def cubic_spline(cs, rV, V, rE, E):
@@ -139,6 +139,10 @@ def cubic_spline(cs, rV, V, rE, E):
     return new_r, new_V, new_IntV, r, y
 
 fi = 0
+Umin = +9.9e60
+Umax = -9.9e60
+Emin = +9.9e60
+Emax = -9.9e60
 for folder in globber:
 
     # Skip files
@@ -156,10 +160,6 @@ for folder in globber:
     assert(len(field_files) == len(pot_files))
     nb_cs = len(field_files)
 
-    Umin = +9.9e60
-    Umax = -9.9e60
-    Emin = +9.9e60
-    Emax = -9.9e60
     for cs in xrange(nb_cs):
         data        = numpy.loadtxt(pot_files[cs], delimiter=',', skiprows=0, dtype=float)
         p1_cs       = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
@@ -173,19 +173,19 @@ for folder in globber:
         Coulomb_E   = p1_cs/(rE*rE)
 
 
-        try:
-            if (potential_shape == "HermanSkillman"):
-                #hs_U = hs.HS_Fitting_Function_Xe_Potential(rU, cs)
-                #hs_E = -hs.HS_Fitting_Function_Xe_Potential(rU, cs)
-                #ax1.plot(rU, hs_U, ':' + colors[cs%len(colors)])
-                #ax2.plot(rE, hs_E, ':' + colors[cs%len(colors)])
-
-                new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline(p1_cs, rU, U, rE, E)
-                ax1.plot(new_r, new_IntE, colors[cs%len(colors)])
-                ax2.plot(new_r, new_E, colors[cs%len(colors)])
-                ax2.plot(pts_r, pts_E, colors[cs%len(colors)] + 'x', ms=10, markeredgewidth=3)
-        except:
-            pass
+        #try:
+        #    if (potential_shape == "HermanSkillman"):
+        #        #hs_U = hs.HS_Fitting_Function_Xe_Potential(rU, cs)
+        #        #hs_E = -hs.HS_Fitting_Function_Xe_Potential(rU, cs)
+        #        #ax1.plot(rU, hs_U, ':' + colors[cs%len(colors)])
+        #        #ax2.plot(rE, hs_E, ':' + colors[cs%len(colors)])
+        #
+        #        new_r, new_E, new_IntE, pts_r, pts_E = cubic_spline(p1_cs, rU, U, rE, E)
+        #        ax1.plot(new_r, new_IntE, colors[cs%len(colors)])
+        #        ax2.plot(new_r, new_E, colors[cs%len(colors)])
+        #        ax2.plot(pts_r, pts_E, colors[cs%len(colors)] + 'x', ms=10, markeredgewidth=3)
+        #except:
+        #    pass
 
         ax1.plot(rU, U, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
         ax1.plot(rU, Coulomb_U, ':'+colors[cs%len(colors)], lw=line_width)

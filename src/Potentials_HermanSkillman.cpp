@@ -1,10 +1,34 @@
+/****************************************************************
 
+****************************************************************/
+
+#include <iostream> // cout
 #include <cmath>
+#include <cfloat>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream> // cout
+#include <cstring>  // memset
+#include <vector>
 
+#include <StdCout.hpp>
 #include <Assert.hpp>
 
-#include "HermanSkillman.hpp"
+#include "LibPotentials.hpp"
 #include "Constants.hpp"
+#include "Code_Functions_Declarations.hpp"
+#include "LookUpTable.hpp"
+
+#include "Potentials_Symmetric.hpp"
+#include "Potentials_HermanSkillman.hpp"
+#include "Potentials_Coulomb.hpp"
+
+
+
+using namespace libpotentials;
+
+bool USING_HS = false;
+
 
 std::vector<fdouble> hs_min_rad;
 std::vector<LookUpTable<fdouble> > hs_lut_potential;
@@ -28,6 +52,16 @@ const double HS_Xe_parameters[HS_Xe_MaxNbCS][10] = {
 /* 6+ */        {7.52331956,        15.56584267,    4.77821787,     2.17218048,     1.51817071,     2.38100923,     5.09462365,     5.11830058,     3.70739486,     -1.84326541},
 };
 
+
+
+
+// **************************************************************
+bool Is_HS_used()
+{
+    return USING_HS;
+}
+
+// **************************************************************
 double HS_Fitting_Function_Xe_Potential(const double r, const int cs)
 {
     const double a = HS_Xe_parameters[cs][0];
@@ -49,6 +83,7 @@ double HS_Fitting_Function_Xe_Potential(const double r, const int cs)
     return potential;
 }
 
+// **************************************************************
 double HS_Fitting_Function_Xe_Field(const double r, const int cs)
 {
     const double a = HS_Xe_parameters[cs][0];
@@ -69,6 +104,7 @@ double HS_Fitting_Function_Xe_Field(const double r, const int cs)
     return field;
 }
 
+// **************************************************************
 template <class Integer>
 inline std::string IntToStr(const Integer integer, const int width = 0, const char fill = ' ')
 {
@@ -82,6 +118,21 @@ inline std::string IntToStr(const Integer integer, const int width = 0, const ch
     return (MyStream.str());
 }
 
+// **************************************************************
+void Initialize_HermanSkillman(const fdouble cutoff_base_potential, const fdouble cutoff_radius)
+{
+    // HS will fallback to symmetric if charge state is not HS fitted or if distance is more then
+    // the HS cutoff.
+    Initialize_Symmetric(cutoff_base_potential, cutoff_radius);
+
+    if (cutoff_base_potential > 0.0)
+        Initialize_HS_Base_Potential(cutoff_base_potential);
+    else if (cutoff_radius > 0.0)
+        Initialize_HS_Cutoff_Radius(cutoff_radius);
+
+}
+
+// **************************************************************
 void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut_pot,
                                          std::vector<LookUpTable<fdouble> > &lut_field)
 {
@@ -176,12 +227,104 @@ void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut
 }
 
 // **************************************************************
-void Initialize_HS(const fdouble &base_potential_eV)
+void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
 /**
- * Initialize Herman-Skillman potential
+ * Initialize Herman-Skillman potential with a given cutoff radius
+ * @param   cutoff_radius   Cutoff radius under which a smoothing is wanted [m]
+ */
+{
+    USING_HS = true;
+    const fdouble cutoff_radius = cutoff_radius_m*libpotentials::m_to_bohr;
+
+    // We'll need one lookup table per charge state
+    std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
+    // LUTs stored in atomic units
+    Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
+
+    hs_min_rad.resize(hs_lut_potential.size());
+
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
+    {
+        hs_min_rad[cs] = cutoff_radius;
+    }
+
+    // Change lookup tables values using a smoothed potential/field inside cutoff radius
+    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
+    {
+        // Find index of cutoff radius
+        const int index = hs_lut_potential[cs].Get_i_from_x(hs_min_rad[cs]);
+        assert(index > 0);
+
+        const double dr = hs_lut_potential[cs].Get_dx();
+        const double r0 = hs_min_rad[cs];
+
+        // Get the last two points of the potential curve before cutoff
+        const double H0 = hs_lut_potential[cs].Table(index);
+        const double H1 = hs_lut_potential[cs].Table(index+1);
+        const double F0 = hs_lut_field[cs].Table(index)   *  r0;
+        const double F1 = hs_lut_field[cs].Table(index+1) * (r0 + dr);
+
+        const double diffF0 = (F1 - F0) / dr;
+
+        const double r1 = (
+                2.0*F0*r0 - r0*r0*diffF0
+            ) / (
+                2.0*F0 - 2.0*r0*diffF0
+            );
+        assert(r1 > 0.0);
+        assert(r1 < r0);
+        const double B = F0 - (r0-r1)*diffF0/2.0;
+        const double A = B / (r1*r1);
+        const double C = H0 + A*r0*r0*r0/3.0 - A*r0*r0*r1;
+
+        if (cs == 1)
+        {
+            std_cout << "index = " << index << "\n";
+            std_cout << "HS_Fitting_Function_Xe_Potential(1.0 bohr, 1+) = " << HS_Fitting_Function_Xe_Potential(1.0, 1) << "\n";
+            std_cout << "hs_lut_potential[cs].Table(index) = " << hs_lut_potential[cs].Table(index) << "\n";
+            std_cout << "hs_lut_potential[cs].Table(index+1) = " << hs_lut_potential[cs].Table(index+1) << "\n";
+            std_cout << "r1 = " << r1 << "\n";
+
+            std_cout << "A = " << A << "\n";
+            std_cout << "B = " << B << "\n";
+            std_cout << "C = " << C << "\n";
+
+            std_cout << "Hs(0.5 bohr) = " << hs_lut_potential[cs].read(0.5) << "\n";
+            std_cout << "Hs(1.0 bohr) = " << hs_lut_potential[cs].read(1.0) << "\n";
+            std_cout << "HsF(0.5 bohr) = " << hs_lut_field[cs].read(0.5) << "\n";
+            std_cout << "HsF(1.0 bohr) = " << hs_lut_field[cs].read(1.0) << "\n";
+            std_cout << "H0 = " << H0 << "\n";
+            std_cout << "H1 = " << H1 << "\n";
+            std_cout << "F0 = " << F0 << "\n";
+            std_cout << "F1 = " << F1 << "\n";
+            assert(A > 0.0);
+            assert(B > 0.0);
+            assert(C < 0.0);
+            assert(hs_lut_potential[cs].read(r0) < 0.0);
+            assert(hs_lut_field[cs].read(r0)     > 0.0);
+        }
+
+        for (int i = 0 ; i < index ; i++)
+        {
+            const double r = hs_lut_potential[cs].Get_x_from_i(i);
+            //hs_lut_potential[cs].Set(i, fdouble(-A*std::pow(r,3)/3.0 - A*std::pow(r,2)*r1 + C));
+            hs_lut_potential[cs].Set(i, fdouble(-A*std::pow(r,3)/3.0 - A*std::pow(r1,2)*r + A*r*r*r1 + B*r + C));
+            if (i == 0)
+                hs_lut_field[cs].Set(i, 0.0 ); // We store E/r but diverge at r == 0
+            else
+                hs_lut_field[cs].Set(i, fdouble((-A*std::pow(r-r1,2) + B) / r) ); // We store E/r
+        }
+    }
+}
+
+// **************************************************************
+void Initialize_HS_Base_Potential(const fdouble &base_potential_eV)
+/**
+ * Initialize Herman-Skillman potential with a given potential depth
  * @param   base_potential_eV  Potential depth wanted [eV]
  */
 {
+    USING_HS = true;
     const fdouble base_potential = -std::abs(base_potential_eV)*libpotentials::eV_to_Eh;
 
     // We'll need one lookup table per charge state
@@ -608,3 +751,131 @@ void Initialize_HS(const fdouble &base_potential_eV)
     */
 }
 
+// **************************************************************
+void Potentials_Set_Parameters_HS(
+    void *p1, void *p2,
+    potential_paramaters &potparams)
+/**
+ * p1 is the particle of interest, p2 is "the other" particle
+ * acting on p1.
+ *
+ */
+{
+    Check_if_LibPotentials_is_initialized();
+
+    set_vector_between_particles(Get_Position(p1), Get_Position(p2),
+                                  potparams.dr, potparams.r2,
+                                  potparams.r, potparams.one_over_r);
+
+    potparams.kQ2           = one_over_4Pieps0 * Get_Charge(p2);
+    potparams.hs_cs1        = Get_Charge_State(p1);
+    potparams.hs_cs2        = Get_Charge_State(p2);
+
+    // Fits are in atomic units
+    const fdouble distance_au = potparams.r * si_to_au_length;
+
+    // Find the right lookup table to use.
+    // LUT indices: 0 == neutral, 1 == 1+, etc.
+    // The max() will pick up an ion if present. If two electrons, abs() will make it a 1+
+    potparams.hs_lut_i = std::abs(std::max(potparams.hs_cs1, potparams.hs_cs2));
+
+    if (
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
+        (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
+    )
+    {
+        // Coulombic
+        Potentials_Set_Parameters_ChargeDistribution_Symmetric(p1, p2, potparams);
+    }
+}
+
+// **************************************************************
+fdouble Calculate_Potential_Cutoff_HS(
+    void *p1, void *p2,
+    potential_paramaters &potparams)
+/**
+ */
+{
+    Check_if_LibPotentials_is_initialized();
+
+    fdouble phi12 = 0.0;   // Electrostatic potential [Volt]
+
+    // Fits are in atomic units
+    const fdouble distance_au = potparams.r * si_to_au_length;
+
+    if (
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
+        (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
+    )
+    {
+        // Coulombic
+        phi12 = Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams);
+    }
+    else
+    {
+        // Get the lookup table's value. NOTE: The potential ENERGY of an electron in an atomic potential is stored [Hartree].
+        phi12 = std::abs(hs_lut_potential[potparams.hs_lut_i].read(distance_au)); // [Hartree]
+
+        // We get |LUT|/|cs1*cs2|
+        if (potparams.hs_cs1 > 0)
+            phi12 /= fdouble(potparams.hs_cs1);
+        if (potparams.hs_cs2 > 0)
+            phi12 /= fdouble(potparams.hs_cs2);
+
+        phi12 *= fdouble(potparams.hs_cs2);
+        phi12 *= au_to_si_pot;
+    }
+
+    //std_cout << "(cs1,cs2)=(" << Get_Charge_State(p1) << ", " << Get_Charge_State(p2) << ")  r = " << distance_au << " Bohr   phi12 = " << phi12 << " Volt   (Coulomb: cs1*cs2/r = " << (fdouble(Get_Charge_State(p1)*Get_Charge_State(p2))/distance_au)*au_to_si_pot << ")     hs_lut_potential[potparams.hs_lut_i].Get_XMax() = " << hs_lut_potential[potparams.hs_lut_i].Get_XMax() << "\n";
+
+    return phi12;
+}
+
+// **************************************************************
+void Set_Field_Cutoff_HS(
+    void *p1, void *p2,
+    potential_paramaters &potparams,
+    fdouble &phi, fdouble E[3])
+{
+    Check_if_LibPotentials_is_initialized();
+
+    fdouble E_over_r = 0.0;   // Electrostatic field over distance r
+
+    // Fits are in atomic units
+    fdouble distance_au = potparams.r * si_to_au_length;
+
+    if (
+        (potparams.hs_cs1 >= 0 and potparams.hs_cs2 >= 0) or                // Two ions
+        (potparams.hs_lut_i >= hs_lut_potential.size())   or                // Too high charge state
+        (distance_au >= hs_lut_potential[potparams.hs_lut_i].Get_XMax())    // Outside lookup table range
+    )
+    {
+        // Electron or high charge state ion
+        assert(p1 != NULL);
+        assert(p2 != NULL);
+        Set_Field_Cutoff_ChargeDistribution_Symmetric(p1, p2, potparams, phi, E);
+    }
+    else
+    {
+        E_over_r = hs_lut_field[potparams.hs_lut_i].read(distance_au);
+
+        // We get LUT/|cs1*cs2|
+        if (potparams.hs_cs1 > 0)
+            E_over_r /= fdouble(potparams.hs_cs1);
+        if (potparams.hs_cs2 > 0)
+            E_over_r /= fdouble(potparams.hs_cs2);
+
+        E_over_r *= fdouble(potparams.hs_cs2);
+        E_over_r *= au_to_si_field;
+        E_over_r /= au_to_si_length;
+
+        for (int d = 0 ; d < 3 ; d++)
+        {
+            E[d]  += potparams.dr[d] * E_over_r;
+        }
+    }
+}
+
+// ********** End of file ***************************************

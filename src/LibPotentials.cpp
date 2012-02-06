@@ -3,36 +3,81 @@
 
 #include "LibPotentials.hpp"
 #include "Constants.hpp"
-#include "Potentials.hpp"
-#include "Global.hpp"
 #include "Code_Functions_Declarations.hpp"
 #include "Git_Diff.hpp"
 #include "Version.hpp"
 
-extern void Initialize_Simple(const fdouble &minr);
 extern void Initialize_SuperGaussian(const int &m);
 extern void Initialize_HS(const fdouble &base_potential);
 
 std::string io_basename;
 
-// **************************************************************
-bool Is_HS_used()
+bool is_libpotentials_initialized = false;
+
+namespace libpotentials_private
 {
-    return USING_HS;
+    fdouble cutoff_base_potential;
+    fdouble cutoff_radius;
+    bool cutoff_radius_linear_in_CS;
+
+//     // Error function lookup table erf(R)
+//     fdouble *tl_erf;
+//     const int    tl_n = 1000;    // Number of points of the lookup table
+//     const fdouble tl_Rmax = 6.0; // Maximum value of R: erf(4) = 0.999999984582742
+//     const fdouble tl_dR = tl_Rmax / (tl_n-1); // Step
+//     const fdouble tl_one_over_dR = 1.0 / tl_dR;
+//
+//     // **********************************************************
+//     void initialize_erf_lookup_table()
+//     {
+//         tl_erf = (fdouble *) calloc_and_check(tl_n, sizeof(fdouble));
+//         // Populating the lookup table
+//         for (int i = 0 ; i < tl_n ; i++)
+//         {
+//             tl_erf[i] = nr::int_erf(i*tl_dR);
+//         }
+//     }
+
+    LookUpTable<fdouble> lut_potential;
+    LookUpTable<fdouble> lut_field;
+}
+
+// **************************************************************
+// ********** Function pointers for... **************************
+// ...setting the parameters of the potential/field calculation
+void   (*Potentials_Set_Parameters)(void *p1, void *p2, potential_paramaters &potparams);
+// ...calculating the potential
+fdouble (*Calculate_Potential)(      void *p1, void *p2, potential_paramaters &potparams);
+// ...setting the electric field
+void   (*Set_Field)(                void *p1, void *p2, potential_paramaters &potparams, fdouble &phi, fdouble E[3]);
+
+// **************************************************************
+void Check_if_LibPotentials_is_initialized(void)
+{
+#ifdef YDEBUG
+    if (!is_libpotentials_initialized)
+    {
+        std_cout << "ERROR!!!\n";
+        std_cout << "is_libpotentials_initialized = " << (is_libpotentials_initialized ? "yes" : "no") << "\n";
+        std_cout << "Potentials library is not initialized, please call Potentials_Initialize()\n";
+        std_cout << "Exiting\n";
+        abort();
+    }
+#endif
 }
 
 // **************************************************************
 void Potentials_Initialize(const std::string _io_basename,
                            const std::string potential_shape,
-                           const fdouble base_potential_depth,
-                           const fdouble input_s_rmin,
+                           const fdouble cutoff_base_potential,
+                           const fdouble cutoff_radius,
                            const int input_sg_m)
 /**
  * Initialize potentials library.
  * @param   potential_shape         String containing the type of close
  *                                  range potential to use
- * @param   base_potential_depth    Potential depth of a 1+ ion [eV]
- * @param   input_s_rmin            Simple cutoff distance [m]
+ * @param   cutoff_base_potential   Potential depth of a 1+ ion [eV] (== -1 if cutoff radius is wanted)
+ * @param   cutoff_radius           Radius at which Coulomb/HS potential becomes the smoothed value (== -1 if a base potential is wanted) [m]
  * @param   input_sg_m              Super-Gaussian "m" parameter
  */
 {
@@ -40,9 +85,27 @@ void Potentials_Initialize(const std::string _io_basename,
 
     io_basename = _io_basename;
 
-    libpotentials_private::base_pot_well_depth = base_potential_depth;
+    if (cutoff_base_potential <= 0.0 and cutoff_radius <= 0.0)
+    {
+        std_cout
+            << "Error in processing cutoff_base_potential=" << cutoff_base_potential << " or cutoff_radius=" << cutoff_radius << "\n"
+            << "Only one of these two should be negative (negative value enables the other one).\n"
+            << "Aborting\n";
+        std_cout.Flush();
+        abort();
+    }
+    else if (cutoff_base_potential > 0.0 and cutoff_radius > 0.0)
+    {
+        std_cout
+            << "Error in processing cutoff_base_potential=" << cutoff_base_potential << " or cutoff_radius=" << cutoff_radius << "\n"
+            << "Only one of these two should be negative (negative value enables the other one).\n"
+            << "Aborting\n";
+        std_cout.Flush();
+        abort();
+    }
 
-    USING_HS = false;
+    libpotentials_private::cutoff_base_potential = cutoff_base_potential;
+    libpotentials_private::cutoff_radius         = cutoff_radius;
 
     Potentials_Set_Parameters = NULL;
     Calculate_Potential       = NULL;
@@ -55,9 +118,10 @@ void Potentials_Initialize(const std::string _io_basename,
 
     if (potential_shape == "PureCoulomb")
     {
-        fdouble r_temp = 0.0;
         std_cout << "### Using a pure Coulomb interaction                               ###\n";
-        Initialize_Simple(r_temp);
+
+        libpotentials_private::cutoff_base_potential = 0.0;
+        libpotentials_private::cutoff_radius         = 0.0;
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Simple;
         Calculate_Potential       = &Calculate_Potential_Cutoff_Simple;
@@ -67,7 +131,12 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using a simple cutoff                                          ###\n";
         std_cout << "### for close range interaction                                    ###\n";
-        Initialize_Simple(input_s_rmin);
+
+        Initialize_Simple(cutoff_base_potential, cutoff_radius);
+
+        std_cout << "### Cutoff radius  = " << libpotentials_private::cutoff_radius*libpotentials::m_to_bohr << " bohr\n";
+        std_cout << "### Base potential = " << libpotentials_private::cutoff_base_potential << " eV";
+        std_cout <<                   " = " << libpotentials_private::cutoff_base_potential*libpotentials::eV_to_Eh << " Eh\n";
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Simple;
         Calculate_Potential       = &Calculate_Potential_Cutoff_Simple;
@@ -78,6 +147,8 @@ void Potentials_Initialize(const std::string _io_basename,
         std_cout << "### Using an harmonic potential                                    ###\n";
         std_cout << "### for close range interaction                                    ###\n";
 
+        Initialize_Harmonic(cutoff_base_potential, cutoff_radius);
+
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Harmonic;
         Calculate_Potential       = &Calculate_Potential_Cutoff_Harmonic;
         Set_Field                 = &Set_Field_Cutoff_Harmonic;
@@ -87,7 +158,8 @@ void Potentials_Initialize(const std::string _io_basename,
         std_cout << "### Using a super-gaussian potential                               ###\n";
         std_cout << "### for close range interaction                                    ###\n";
         std_cout << "### with m = " << input_sg_m << "\n";
-        Initialize_SuperGaussian(input_sg_m);
+
+        Initialize_SuperGaussian(input_sg_m, cutoff_base_potential, cutoff_radius);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_SuperGaussian;
         Calculate_Potential       = &Calculate_Potential_Cutoff_SuperGaussian;
@@ -102,6 +174,8 @@ void Potentials_Initialize(const std::string _io_basename,
         libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
 
+        Initialize_GaussianDistribution(cutoff_base_potential, cutoff_radius);
+
         Potentials_Set_Parameters = &Potentials_Set_Parameters_GaussianDistribution;
         Calculate_Potential       = &Calculate_Potential_Cutoff_GaussianDistribution;
         Set_Field                 = &Set_Field_Cutoff_GaussianDistribution;
@@ -110,13 +184,12 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using the Herman-Skillman (HS) potential                        ##\n";
         std_cout << "### for close range interaction                                    ###\n";
-        Initialize_HS(base_potential_depth);
+
+        Initialize_HermanSkillman(cutoff_base_potential, cutoff_radius);
 
         // Same as symmetric. Necessary for ion-ion interactions
         libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
         libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
-
-        USING_HS = true;
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_HS;
         Calculate_Potential       = &Calculate_Potential_Cutoff_HS;
@@ -131,6 +204,8 @@ void Potentials_Initialize(const std::string _io_basename,
         libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
         std_cout <<                                            "Done!...                ###\n";
+
+        Initialize_Symmetric(cutoff_base_potential, cutoff_radius);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_ChargeDistribution_Symmetric;
         Calculate_Potential       = &Calculate_Potential_Cutoff_ChargeDistribution_Symmetric;
