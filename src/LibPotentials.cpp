@@ -3,7 +3,6 @@
 
 #include "LibPotentials.hpp"
 #include "Constants.hpp"
-#include "Global.hpp"
 #include "Code_Functions_Declarations.hpp"
 #include "Git_Diff.hpp"
 #include "Version.hpp"

@@ -8,7 +8,6 @@
 #include "Vectors.hpp"
 #include "Structure_Potentials.hpp"
 #include "Constants.hpp"
-#include "Global.hpp"
 #include "LookUpTable.hpp"
 
 #include "Potentials_Coulomb.hpp"
