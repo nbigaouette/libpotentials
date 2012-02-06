@@ -201,6 +201,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
     {
         // Find index of cutoff radius
         const int index = hs_lut_potential[cs].Get_i_from_x(hs_min_rad[cs]);
+        assert(index > 0);
 
         const double dr = hs_lut_potential[cs].Get_dx();
         const double r0 = hs_min_rad[cs];
