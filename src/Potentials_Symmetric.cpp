@@ -59,7 +59,6 @@ void Initialize_Symmetric(const fdouble cutoff_base_potential, const fdouble cut
     else if (cutoff_radius > 0.0)
     {
         // NOTE: "sqrt_2/two" because here, the calculation is done for a single gaussian distribution particle.
-        //
         sigma = cutoff_radius / eight * (sqrt_2/two);
         libpotentials_private::cutoff_base_potential = one_over_4Pieps0 * e0 / (sigma * sqrt_Pi);
     }
