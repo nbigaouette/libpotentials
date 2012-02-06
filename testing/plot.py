@@ -27,7 +27,7 @@ ax2 = fig.add_subplot(212, **axprops)
 plt.subplots_adjust(hspace=0.0)
 
 colors  = ['b', 'r', 'm', 'c', 'g', 'y']
-symbols = ['-', '--', ':', '-.']
+symbols = ['-', '--', '-.', ':']
 line_width = 2
 
 def cubic_spline(cs, rV, V, rE, E):
