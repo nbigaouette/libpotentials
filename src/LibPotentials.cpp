@@ -122,7 +122,7 @@ void Potentials_Initialize(const std::string _io_basename,
         else if (cutoff_base_potential > 0.0)
             Initialize_HS_Base_Potential(cutoff_base_potential);
         else if (cutoff_radius > 0.0)
-            Initialize_HS_Cutoff_Radius(cutoff_radius * libpotentials::m_to_bohr);
+            Initialize_HS_Cutoff_Radius(cutoff_radius);
         else
         {
             std_cout
