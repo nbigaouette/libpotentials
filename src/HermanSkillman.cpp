@@ -262,18 +262,6 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
             else
                 hs_lut_field[cs].Set(i, fdouble((-A*std::pow(r-r1,2) + B) / r) ); // We store E/r
         }
-
-        /*
-         // Quadratic potential inside cutoff radius
-        const fdouble A = (H0 - H1) / (2.0 * hs_min_rad[cs] * dr);
-        const fdouble B = H0 + hs_min_rad[cs] * (H0 - H1) / (2.0 * dr);
-
-        for (int i = 0 ; i < index ; i++)
-        {
-            hs_lut_potential[cs].Set(i, -A*std::pow(hs_lut_potential[cs].Get_x_from_i(i), 2) + B);
-            hs_lut_field[cs].Set(    i, -2.0*A*hs_lut_potential[cs].Get_x_from_i(i));
-        }
-        */
     }
 }
 
