@@ -78,7 +78,7 @@ void Potentials_Initialize(const std::string _io_basename,
  * @param   potential_shape         String containing the type of close
  *                                  range potential to use
  * @param   cutoff_base_potential   Potential depth of a 1+ ion [eV] (== -1 if cutoff radius is wanted)
- * @param   cutoff_radius           Radius at which Coulomb/HS potential becomes the smoothed value (== -1 if a base potential is wanted)
+ * @param   cutoff_radius           Radius at which Coulomb/HS potential becomes the smoothed value (== -1 if a base potential is wanted) [m]
  * @param   input_sg_m              Super-Gaussian "m" parameter
  */
 {
