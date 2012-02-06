@@ -7,7 +7,7 @@
 namespace libpotentials_private
 {
     // The base potential well giving the bottom of the potential well.
-    extern fdouble base_pot_well_depth; // [eV]
+    extern fdouble cutoff_base_potential;   // [eV]
 
 //     extern fdouble *tl_erf;             // Error function lookup table
 //     extern const int    tl_n;           // Number of points of the lookup table

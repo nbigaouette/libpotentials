@@ -13,7 +13,7 @@
 
 namespace libpotentials_private
 {
-    fdouble base_pot_well_depth;
+    fdouble cutoff_base_potential;
 
 //     // Error function lookup table erf(R)
 //     fdouble *tl_erf;

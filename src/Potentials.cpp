@@ -295,12 +295,12 @@ void Potentials_Set_Parameters_Harmonic(
         // by 1.0, which is not done.
         if (Q2 > std::numeric_limits<fdouble>::min())
         {   // Positive charge (ion), positive potential
-            potparams.B = libpotentials_private::base_pot_well_depth*fdouble(charge_state2);
+            potparams.B = libpotentials_private::cutoff_base_potential*fdouble(charge_state2);
             //potparams.B *= eV_to_J * (1.0 / e0); // *= 1.0
         }
         else
         {   // Negative charge (electron), negative potential
-            potparams.B = -libpotentials_private::base_pot_well_depth;
+            potparams.B = -libpotentials_private::cutoff_base_potential;
             //potparams.B *= (1.0 / e0) * eV_to_J; // *= 1.0
         }
 
@@ -416,14 +416,14 @@ void Potentials_Set_Parameters_SuperGaussian(
         // by 1.0, which is not done.
         if (Q2 > std::numeric_limits<fdouble>::min())
         {   // Positive charge (ion), positive potential
-            potparams.B = libpotentials_private::base_pot_well_depth*fdouble(charge_state2);
+            potparams.B = libpotentials_private::cutoff_base_potential*fdouble(charge_state2);
             //potparams.B *= eV_to_J * (1.0 / e0); // *= 1.0
         }
         else
         {   // Negative charge (electron), negative potential
             // B is the (negative of the)
             // ionization potential of the ion.
-            potparams.B = -libpotentials_private::base_pot_well_depth;
+            potparams.B = -libpotentials_private::cutoff_base_potential;
             //potparams.B *= eV_to_J * (1.0 / e0); // *= 1.0
         }
 
@@ -685,7 +685,7 @@ void Potentials_Set_Parameters_GaussianDistribution(
     else if( charge_state2 != 0 )
     {
       //fdouble Ip =element.IpsLowest[std::abs(charge_state2)];
-      fdouble Ip = libpotentials_private::base_pot_well_depth;
+      fdouble Ip = libpotentials_private::cutoff_base_potential;
       //charges are not equal
       //take the higher charge as the distribution
       //Thus set the parameters for the guassian
@@ -693,7 +693,7 @@ void Potentials_Set_Parameters_GaussianDistribution(
       //NOTE: it will always do this for p2=electron
       // unless p1 is also an electron
         if ((charge_state2 < charge_state1) && (charge_state1 != 0)){
-          Ip = libpotentials_private::base_pot_well_depth;
+          Ip = libpotentials_private::cutoff_base_potential;
           if (charge_state2 < 0)
             Q = -Get_Charge(p1);
           else
@@ -729,7 +729,7 @@ void Potentials_Set_Parameters_GaussianDistribution(
 
           // If p1 is an electron use Ip[0]
           if (charge_state1 < 0 )
-            potparams.B = -libpotentials_private::base_pot_well_depth;
+            potparams.B = -libpotentials_private::cutoff_base_potential;
           else //else p1 is an ion
             potparams.B = -Ip;
         }
@@ -744,7 +744,7 @@ void Potentials_Set_Parameters_GaussianDistribution(
         Assert_isinf_isnan(potparams.kQ2);
 
         potparams.gd_sigma = potparams.kQ2_over_B * sqrt_2_over_pi;
-/*        std_cout << "Id(p1)="<<Get_Id(p1)<<"  B="<<potparams.B<<"  Cs(p1)="<<Get_Charge_State(p1)<<" Cs(p2)="<<Get_Charge_State(p2)<<" kQ2_over_B="<<potparams.kQ2_over_B<<" well="<<libpotentials_private::base_pot_well_depth<<"\n";*/
+/*        std_cout << "Id(p1)="<<Get_Id(p1)<<"  B="<<potparams.B<<"  Cs(p1)="<<Get_Charge_State(p1)<<" Cs(p2)="<<Get_Charge_State(p2)<<" kQ2_over_B="<<potparams.kQ2_over_B<<" well="<<libpotentials_private::cutoff_base_potential<<"\n";*/
         // Radius where the Coulomb potential and its first derivative are
         // equal to a the gaussian charge distribution potential.
         potparams.cutoff_radius = libpotentials::eight* potparams.gd_sigma;
@@ -847,7 +847,7 @@ void Potentials_Set_Parameters_ChargeDistribution_Symmetric(
     if (potparams.sym_cs2 != 0)
     {
         potparams.kQ2 = one_over_4Pieps0 * fdouble(potparams.sym_cs2) * e0;
-        potparams.gd_sigma = one_over_4Pieps0 * e0 / (libpotentials_private::base_pot_well_depth * sqrt_Pi);
+        potparams.gd_sigma = one_over_4Pieps0 * e0 / (libpotentials_private::cutoff_base_potential * sqrt_Pi);
         potparams.cutoff_radius = libpotentials::eight* potparams.gd_sigma;
     }
     else

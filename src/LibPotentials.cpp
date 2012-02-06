@@ -59,7 +59,7 @@ void Potentials_Initialize(const std::string _io_basename,
         abort();
     }
 
-    libpotentials_private::base_pot_well_depth = cutoff_base_potential;
+    libpotentials_private::cutoff_base_potential = cutoff_base_potential;
 
     USING_HS = false;
 
