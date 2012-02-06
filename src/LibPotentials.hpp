@@ -18,8 +18,8 @@
 
 void Potentials_Initialize(const std::string _io_basename,
                            const std::string potential_shape,
-                           const fdouble base_potential_depth,
-                           const fdouble input_s_rmin,
+                           const fdouble cutoff_base_potential,
+                           const fdouble cutoff_radius,
                            const int input_sg_m);
 void Potentials_Finalize();
 

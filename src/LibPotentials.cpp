@@ -24,15 +24,15 @@ bool Is_HS_used()
 // **************************************************************
 void Potentials_Initialize(const std::string _io_basename,
                            const std::string potential_shape,
-                           const fdouble base_potential_depth,
-                           const fdouble input_s_rmin,
+                           const fdouble cutoff_base_potential,
+                           const fdouble cutoff_radius,
                            const int input_sg_m)
 /**
  * Initialize potentials library.
  * @param   potential_shape         String containing the type of close
  *                                  range potential to use
- * @param   base_potential_depth    Potential depth of a 1+ ion [eV]
- * @param   input_s_rmin            Simple cutoff distance [m]
+ * @param   cutoff_base_potential   Potential depth of a 1+ ion [eV] (== -1 if cutoff radius is wanted)
+ * @param   cutoff_radius           Radius at which Coulomb/HS potential becomes the smoothed value (== -1 if a base potential is wanted)
  * @param   input_sg_m              Super-Gaussian "m" parameter
  */
 {
@@ -40,7 +40,7 @@ void Potentials_Initialize(const std::string _io_basename,
 
     io_basename = _io_basename;
 
-    libpotentials_private::base_pot_well_depth = base_potential_depth;
+    libpotentials_private::base_pot_well_depth = cutoff_base_potential;
 
     USING_HS = false;
 
@@ -67,7 +67,7 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using a simple cutoff                                          ###\n";
         std_cout << "### for close range interaction                                    ###\n";
-        Initialize_Simple(input_s_rmin);
+        Initialize_Simple(cutoff_radius);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Simple;
         Calculate_Potential       = &Calculate_Potential_Cutoff_Simple;
@@ -110,8 +110,28 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using the Herman-Skillman (HS) potential                        ##\n";
         std_cout << "### for close range interaction                                    ###\n";
-//         Initialize_HS_Base_Potential(base_potential_depth);
-        Initialize_HS_Cutoff_Radius(input_s_rmin);
+        if (cutoff_base_potential <= 0.0 and cutoff_radius <= 0.0)
+        {
+            std_cout
+                << "Error in processing cutoff_base_potential=" << cutoff_base_potential << " or cutoff_radius=" << cutoff_radius << "\n"
+                << "Only one of these two should be negative (negative value enables the other one).\n"
+                << "Aborting\n";
+            std_cout.Flush();
+            abort();
+        }
+        else if (cutoff_base_potential > 0.0)
+            Initialize_HS_Base_Potential(cutoff_base_potential);
+        else if (cutoff_radius > 0.0)
+            Initialize_HS_Cutoff_Radius(cutoff_radius * libpotentials::m_to_bohr);
+        else
+        {
+            std_cout
+                << "Error in processing cutoff_base_potential=" << cutoff_base_potential << " or cutoff_radius=" << cutoff_radius << "\n"
+                << "Only one of these two should be negative (negative value enables the other one).\n"
+                << "Aborting\n";
+            std_cout.Flush();
+            abort();
+        }
 
         // Same as symmetric. Necessary for ion-ion interactions
         libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
