@@ -12,3 +12,4 @@ src/Version.hpp
 *.o
 src/Git_Diff.cpp
 src/Version.cpp
+*.kate-swp

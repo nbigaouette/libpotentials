@@ -45,8 +45,10 @@ int main(int argc, char *argv[])
     std::vector<std::string> potential_shapes;
     potential_shapes.push_back("HermanSkillman");
     potential_shapes.push_back("Symmetric");
-//     potential_shapes.push_back("SuperGaussian");
-//     potential_shapes.push_back("PureCoulomb");
+    potential_shapes.push_back("Simple");
+    potential_shapes.push_back("GaussianDistribution");
+    potential_shapes.push_back("SuperGaussian");
+    //potential_shapes.push_back("PureCoulomb");
 
     for (unsigned int pi = 0 ; pi < potential_shapes.size() ; pi++)
     {
@@ -57,8 +59,9 @@ int main(int argc, char *argv[])
 
         Potentials_Initialize("output",
                                 potential_shape,
-                                -1.5 * libpotentials::Eh_to_eV, // base potential
-                                0.25 * libpotentials::bohr_to_m, // Cutoff radius [m]
+                                -20.98,
+                                /*1.5 * libpotentials::Eh_to_eV,*/ // base potential (negative to ignore) [eV]
+                                0.123 * libpotentials::bohr_to_m, // Cutoff radius (negative to ignore) [m]
                                 1);  // Super Gaussian order (m=1 for gaussian)
 
         Particle p0;
@@ -86,7 +89,7 @@ int main(int argc, char *argv[])
         charge_states.push_back(1);
         charge_states.push_back(2);
         charge_states.push_back(3);
-        charge_states.push_back(4);
+        //charge_states.push_back(4);
         //charge_states.push_back(5);
         //charge_states.push_back(6);
         //charge_states.push_back(7);

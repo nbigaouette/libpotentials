@@ -14,6 +14,8 @@
 namespace libpotentials_private
 {
     fdouble cutoff_base_potential;
+    fdouble cutoff_radius;
+    bool cutoff_radius_linear_in_CS;
 
 //     // Error function lookup table erf(R)
 //     fdouble *tl_erf;
