@@ -57,11 +57,12 @@ int main(int argc, char *argv[])
         const std::string cmd = std::string("mkdir -p output/") + potential_shape;
         system(cmd.c_str());
 
+        fdouble cutoff_base_potential = -1.5 * libpotentials::Eh_to_eV;
+        fdouble cutoff_radius         = +1.0 * libpotentials::bohr_to_m;
         Potentials_Initialize("output",
                                 potential_shape,
-                                -20.98,
-                                /*1.5 * libpotentials::Eh_to_eV,*/ // base potential (negative to ignore) [eV]
-                                0.123 * libpotentials::bohr_to_m, // Cutoff radius (negative to ignore) [m]
+                                cutoff_base_potential, // base potential (negative to ignore) [eV]
+                                cutoff_radius, // Cutoff radius (negative to ignore) [m]
                                 1);  // Super Gaussian order (m=1 for gaussian)
 
         Particle p0;
