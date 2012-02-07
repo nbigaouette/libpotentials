@@ -199,7 +199,7 @@ void Potentials_Initialize(const std::string _io_basename,
         libpotentials_private::lut_potential.Initialize(erf_over_x,                 0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Potential LookUpTable");
         libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
-        std_cout <<                                            "Done!...                ###\n";
+        std_cout << "###                                     Done!                      ###\n";
 
         Initialize_Symmetric(cutoff_base_potential, cutoff_radius);
 
