@@ -125,7 +125,7 @@ void Initialize_HermanSkillman(const fdouble cutoff_base_potential, const fdoubl
     // the HS cutoff.
     Initialize_Symmetric(cutoff_base_potential, cutoff_radius);
 
-    if (cutoff_base_potential > 0.0)
+    if      (cutoff_base_potential > 0.0)
         Initialize_HS_Base_Potential(cutoff_base_potential);
     else if (cutoff_radius > 0.0)
         Initialize_HS_Cutoff_Radius(cutoff_radius);
