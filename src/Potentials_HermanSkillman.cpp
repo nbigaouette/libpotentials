@@ -260,7 +260,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
 
         // Get the last two points of the potential curve before cutoff
         const double H0 = hs_lut_potential[cs].Table(index);
-        const double H1 = hs_lut_potential[cs].Table(index+1);
+        //const double H1 = hs_lut_potential[cs].Table(index+1);
         const double F0 = hs_lut_field[cs].Table(index)   *  r0;
         const double F1 = hs_lut_field[cs].Table(index+1) * (r0 + dr);
 
@@ -483,7 +483,6 @@ void Initialize_HS_Base_Potential(const fdouble &base_potential_eV)
             const fdouble two   = libpotentials::two;
             const fdouble three = libpotentials::three;
             const fdouble four  = libpotentials::four;
-            const fdouble five  = fdouble(5.0);
             const fdouble six   = libpotentials::six;
             // For a 3 points "natural" spline, the solution "m" to "A.m = b" is easy:
             const fdouble m[n+1] = {0.0, (three / (h[0]-h[1])) * ( (y[2]-y[1])/h[1] - (y[1]-y[0])/h[0] ), 0.0};
@@ -505,9 +504,7 @@ void Initialize_HS_Base_Potential(const fdouble &base_potential_eV)
             //}
 
             // For the two regions defined by the three points, calculate the cubic spline
-            fdouble new_field = 0.0;
             fdouble pot_at_end_section = 0.0;
-            fdouble old_pot   = 0.0;
             fdouble x = 0.0;
             // Set neutral's charge state to 1, so it does not clear the lookup tables.
             const fdouble cs_factor = fdouble(std::max(1, cs));
@@ -571,7 +568,6 @@ void Initialize_HS_Base_Potential(const fdouble &base_potential_eV)
         const fdouble two   = libpotentials::two;
         const fdouble three = libpotentials::three;
         const fdouble four  = libpotentials::four;
-        const fdouble five  = fdouble(5.0);
         const fdouble six   = libpotentials::six;
         // For a 3 points "natural" spline, the solution "m" to "A.m = b" is easy:
         const fdouble m[n+1] = {0.0, (three / (h[0]-h[1])) * ( (y[2]-y[1])/h[1] - (y[1]-y[0])/h[0] ), 0.0};
