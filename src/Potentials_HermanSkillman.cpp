@@ -243,6 +243,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
 
     hs_min_rad.resize(hs_lut_potential.size());
 
+    // Set every charge states cutoff radius to the wanted value
     for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
         hs_min_rad[cs] = cutoff_radius;
