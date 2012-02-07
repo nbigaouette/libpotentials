@@ -69,8 +69,8 @@ void Check_if_LibPotentials_is_initialized(void)
 // **************************************************************
 void Potentials_Initialize(const std::string _io_basename,
                            const std::string potential_shape,
-                           const fdouble cutoff_base_potential,
-                           const fdouble cutoff_radius,
+                           fdouble &cutoff_base_potential,
+                           fdouble &cutoff_radius,
                            const int input_sg_m)
 /**
  * Initialize potentials library.
@@ -228,6 +228,10 @@ void Potentials_Initialize(const std::string _io_basename,
     std_cout << "### Libpotential Cutoff radius  = " << libpotentials_private::cutoff_radius*libpotentials::m_to_bohr << " bohr\n";
     std_cout << "### Libpotential Base potential = " << libpotentials_private::cutoff_base_potential << " eV";
     std_cout << "###                             = " << libpotentials_private::cutoff_base_potential*libpotentials::eV_to_Eh << " Eh\n";
+
+    // Return modified values to main code
+    cutoff_base_potential = libpotentials_private::cutoff_base_potential;
+    cutoff_radius         = libpotentials_private::cutoff_radius;
 
 
     Log_Git_Info(io_basename);

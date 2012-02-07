@@ -48,8 +48,8 @@ extern bool is_libpotentials_initialized;
 void Check_if_LibPotentials_is_initialized(void);
 void Potentials_Initialize(const std::string _io_basename,
                            const std::string potential_shape,
-                           const fdouble cutoff_base_potential,
-                           const fdouble cutoff_radius,
+                           fdouble &cutoff_base_potential,
+                           fdouble &cutoff_radius,
                            const int input_sg_m);
 void Potentials_Finalize();
 
