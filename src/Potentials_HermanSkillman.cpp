@@ -277,6 +277,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
         const double A = B / (r1*r1);
         const double C = H0 + A*r0*r0*r0/3.0 - A*r0*r0*r1;
 
+        /*
         if (cs == 1)
         {
             std_cout << "index = " << index << "\n";
@@ -303,6 +304,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
             assert(hs_lut_potential[cs].read(r0) < 0.0);
             assert(hs_lut_field[cs].read(r0)     > 0.0);
         }
+        */
 
         for (int i = 0 ; i < index ; i++)
         {
