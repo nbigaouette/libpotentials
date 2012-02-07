@@ -317,6 +317,9 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
                 hs_lut_field[cs].Set(i, fdouble((-A*std::pow(r-r1,2) + B) / r) ); // We store E/r
         }
     }
+
+    // Store the potential of a 1+ at r == 0 as being the cutoff_base_potential
+    libpotentials_private::cutoff_base_potential = Eh_to_eV * std::abs(hs_lut_potential[1].Table(0));
 }
 
 // **************************************************************
