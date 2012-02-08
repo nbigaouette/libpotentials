@@ -243,15 +243,92 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
 
     hs_min_rad.resize(hs_lut_potential.size());
 
-    // Set every charge states cutoff radius to the wanted value
-    for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
-    {
-        hs_min_rad[cs] = cutoff_radius;
-    }
 
     // Change lookup tables values using a smoothed potential/field inside cutoff radius
     for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
+        // Set every charge states cutoff radius to the wanted value
+        hs_min_rad[cs] = cutoff_radius;
+
+        // Flag to enable/disable the cutoff setting.
+        // If false:
+        //      The cutoff radius from input file (called "r0") will separate the regions where the
+        //      potential/field are either HS (r>r0) or a smoothed harmonic value (r<r0).
+        // If true:
+        //      The cutoff radius from input file will be used to find where a symmetric field
+        //      would be maximum (r = Symmetric_r1). Then, a bisection is used to find the HS
+        //      cutoff radius that will place the maximum of the HS field at the same radius r1.
+        const bool hs_do_bisection_r0_matching_symmetric = false;
+        //const bool hs_do_bisection_r0_matching_symmetric = true;
+
+        // Set the HS's cutoff radius to a value which will put the maximum of the electric field
+        // at the same radius as the Symmetric case.
+        if (hs_do_bisection_r0_matching_symmetric)
+        {
+            // Find the radius at which the derivative of the symmetric field is 0.
+            // Setting y = r/(sqrt(2)*sigma)
+            // http://www.wolframalpha.com/input/?i=diff%28erf%28y%29%2F%282*y^2%29+-+exp%28-y^2%29%2F%28sqrt%28pi%29+*+y%29%2Cy%29
+            // But note that the symmetric potential was modified to have sigma *= sqrt_2/2 so
+            // it would be the same as the Gaussian Distribution. Thus divided r1 here by sqrt2/2.
+            const double Symmetric_y1 = 0.9678571637866073;
+            const double Symmetric_r1 = (libpotentials_double::m_to_bohr * Potentials_Symmetric::sigma)
+                                        * (libpotentials_double::sqrt_2 * Symmetric_y1)
+                                        / (sqrt_2/two);
+
+            // Do a bisection to find the right cutoff radius that will match "r1", the distance
+            // where the HS field is maximum, to "Symmetric_r1", the distance where the
+            // symmetric field is maximum.
+            double cutoff_r_left, cutoff_r_right, cutoff_found_r; // [Bohr]
+            // Initial conditions
+            cutoff_r_left  = 0.0; // [Bohr]
+            cutoff_r_right = 10.0;// [Bohr]
+
+            // Start bisection!
+            // See http://en.wikipedia.org/wiki/Bisection_method#Practical_considerations
+            cutoff_found_r = cutoff_r_right + (cutoff_r_left - cutoff_r_right) / 2.0;
+
+            while (std::abs(cutoff_found_r - cutoff_r_left) > 1.0e-100 && std::abs(cutoff_found_r - cutoff_r_right) > 1.0e-100)
+            {
+                // Find index of cutoff radius
+                const int index = hs_lut_potential[cs].Get_i_from_x(cutoff_found_r);
+                assert(index > 0);
+
+                const double dr = hs_lut_potential[cs].Get_dx();
+                const double r0 = cutoff_found_r;
+
+                // Get the last two points of the potential curve before cutoff
+                //const double H0 = hs_lut_potential[cs].Table(index);
+                //const double H1 = hs_lut_potential[cs].Table(index+1);
+                const double F0 = hs_lut_field[cs].Table(index)   *  r0;
+                const double F1 = hs_lut_field[cs].Table(index+1) * (r0 + dr);
+
+                const double diffF0 = (F1 - F0) / dr;
+
+                // r1 is the distance where the field is maximum
+                const double r1 = (
+                        2.0*F0*r0 - r0*r0*diffF0
+                    ) / (
+                        2.0*F0 - 2.0*r0*diffF0
+                    );
+                assert(r1 > 0.0);
+                assert(r1 < r0);
+
+                //log("cs=%2d   [r_left,r,r_right] = [%10.5g,%10.5g,%10.5g]     (r1,r0)=(%10.5g,%10.5g)", cs, cutoff_r_left, cutoff_found_r, cutoff_r_right, r1, r0);
+
+                if (r1 >= Symmetric_r1)
+                {
+                    cutoff_r_right = cutoff_found_r;
+                }
+                else
+                {
+                    cutoff_r_left = cutoff_found_r;
+                }
+                cutoff_found_r = cutoff_r_right + (cutoff_r_left - cutoff_r_right) / 2.0;
+            }
+            hs_min_rad[cs] = fdouble(cutoff_found_r);
+            std_cout << "Bisection end: cs = " << cs << "  HS(r="<<cutoff_found_r<<")\n";
+        }
+
         // Find index of cutoff radius
         const int index = hs_lut_potential[cs].Get_i_from_x(hs_min_rad[cs]);
         assert(index > 0);
