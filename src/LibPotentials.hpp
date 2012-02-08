@@ -24,6 +24,12 @@
 #define DEBUGP(x)           std_cout << __FILE__ << ":" << __LINE__ << ":\n    " << (x)
 #endif // #ifndef DEBUGP
 
+namespace potentials
+{
+    // See Git_Info.cpp (generated dynamically from Git_Info.cpp_template & Makefile.rules)
+    void Log_Git_Info(std::string basename = "");
+}
+
 namespace libpotentials_private
 {
     // The base potential well giving the bottom of the potential well.

@@ -10,6 +10,5 @@ src/Version.hpp
 *.toc
 *.swp.*
 *.o
-src/Git_Diff.cpp
-src/Version.cpp
 *.kate-swp
+src/Git_Info.cpp

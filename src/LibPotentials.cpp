@@ -4,8 +4,6 @@
 #include "LibPotentials.hpp"
 #include "Constants.hpp"
 #include "Code_Functions_Declarations.hpp"
-#include "Git_Diff.hpp"
-#include "Version.hpp"
 
 extern void Initialize_SuperGaussian(const int &m);
 extern void Initialize_HS(const fdouble &base_potential);
@@ -232,9 +230,6 @@ void Potentials_Initialize(const std::string _io_basename,
     // Return modified values to main code
     cutoff_base_potential = libpotentials_private::cutoff_base_potential;
     cutoff_radius         = libpotentials_private::cutoff_radius;
-
-
-    Log_Git_Info(io_basename);
 
     std_cout << "###----------------------------------------------------------------###\n"
              << "###            Potentials library initialization done.             ###\n"
