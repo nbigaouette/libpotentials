@@ -176,7 +176,7 @@ void Potentials_Initialize(const std::string _io_basename,
     }
     else if (potential_shape == "HermanSkillman")
     {
-        std_cout << "### Using the Herman-Skillman (HS) potential                        ##\n";
+        std_cout << "### Using the Herman-Skillman (HS) potential                       ###\n";
         std_cout << "### for close range interaction                                    ###\n";
 
         Initialize_HermanSkillman(cutoff_base_potential, cutoff_radius);

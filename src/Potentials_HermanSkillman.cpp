@@ -326,7 +326,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
                 cutoff_found_r = cutoff_r_right + (cutoff_r_left - cutoff_r_right) / 2.0;
             }
             hs_min_rad[cs] = fdouble(cutoff_found_r);
-            std_cout << "Bisection end: cs = " << cs << "  HS(r="<<cutoff_found_r<<")\n";
+            //std_cout << "Bisection end: cs = " << cs << "  HS(r="<<cutoff_found_r<<")\n";
         }
 
         // Find index of cutoff radius
