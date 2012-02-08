@@ -399,6 +399,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
 
     // Store the potential of a 1+ at r == 0 as being the cutoff_base_potential
     libpotentials_private::cutoff_base_potential = Eh_to_eV * std::abs(hs_lut_potential[1].Table(0));
+    libpotentials_private::cutoff_radius = hs_min_rad[0] * bohr_to_m;
 }
 
 // **************************************************************
