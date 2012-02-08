@@ -267,6 +267,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
 
         const double diffF0 = (F1 - F0) / dr;
 
+        // r1 is the distance where the field is maximum
         const double r1 = (
                 2.0*F0*r0 - r0*r0*diffF0
             ) / (
