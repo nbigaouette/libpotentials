@@ -258,8 +258,8 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
         //      The cutoff radius from input file will be used to find where a symmetric field
         //      would be maximum (r = Symmetric_r1). Then, a bisection is used to find the HS
         //      cutoff radius that will place the maximum of the HS field at the same radius r1.
-        const bool hs_do_bisection_r0_matching_symmetric = false;
-        //const bool hs_do_bisection_r0_matching_symmetric = true;
+        //const bool hs_do_bisection_r0_matching_symmetric = false;
+        const bool hs_do_bisection_r0_matching_symmetric = true;
 
         // Set the HS's cutoff radius to a value which will put the maximum of the electric field
         // at the same radius as the Symmetric case.
