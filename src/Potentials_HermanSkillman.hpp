@@ -17,7 +17,7 @@ extern std::vector<LookUpTable<fdouble> > hs_lut_field;
 bool Is_HS_used();
 void Initialize_HermanSkillman(const fdouble cutoff_base_potential, const fdouble cutoff_radius);
 void Initialize_HS_Base_Potential(const fdouble &base_potential_eV);
-void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m);
+void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m, const bool scale_radius_to_symmetric = true);
 void Set_HermanSkillman_Lookup_Tables_Xe(std::vector<LookUpTable<fdouble> > &lut_pot,
                                          std::vector<LookUpTable<fdouble> > &lut_field);
 
