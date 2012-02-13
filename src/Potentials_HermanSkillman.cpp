@@ -121,6 +121,15 @@ inline std::string IntToStr(const Integer integer, const int width = 0, const ch
 // **************************************************************
 void Initialize_HermanSkillman(const fdouble cutoff_base_potential, const fdouble cutoff_radius)
 {
+    USING_HS = true;
+
+    // We'll need one lookup table per charge state
+    std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
+    // LUTs stored in atomic units
+    Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
+
+    hs_min_rad.resize(hs_lut_potential.size());
+
     // HS will fallback to symmetric if charge state is not HS fitted or if distance is more then
     // the HS cutoff.
     Initialize_Symmetric(cutoff_base_potential, cutoff_radius);
@@ -233,16 +242,7 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m)
  * @param   cutoff_radius   Cutoff radius under which a smoothing is wanted [m]
  */
 {
-    USING_HS = true;
     const fdouble cutoff_radius = cutoff_radius_m*libpotentials::m_to_bohr;
-
-    // We'll need one lookup table per charge state
-    std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
-    // LUTs stored in atomic units
-    Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
-
-    hs_min_rad.resize(hs_lut_potential.size());
-
 
     // Change lookup tables values using a smoothed potential/field inside cutoff radius
     for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
@@ -409,15 +409,7 @@ void Initialize_HS_Base_Potential(const fdouble &base_potential_eV)
  * @param   base_potential_eV  Potential depth wanted [eV]
  */
 {
-    USING_HS = true;
     const fdouble base_potential = -std::abs(base_potential_eV)*libpotentials::eV_to_Eh;
-
-    // We'll need one lookup table per charge state
-    std_cout << "FIXME: Dynamically choose between atom types for HS (" << __FILE__ << ", line " << __LINE__ << ")\n";
-    // LUTs stored in atomic units
-    Set_HermanSkillman_Lookup_Tables_Xe(hs_lut_potential, hs_lut_field);
-
-    hs_min_rad.resize(hs_lut_potential.size());
 
     // Find the radius where the HS potential is equal to "base_potential"
     // by doing a bisection, for all supported charge states.
