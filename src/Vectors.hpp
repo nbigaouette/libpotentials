@@ -90,7 +90,7 @@ void Get_r21(const Double r1[3], const Double r2[3], Double r21[3])
 
 // **************************************************************
 template <class Double>
-Double Get_Distance_Squared(Double r1[3], Double r2[3])
+Double Get_Distance_Squared(const Double r1[3], const Double r2[3])
 /**
  * r21 is the vector groing from position r2 to position r1
  * r21 = r1 - r2
@@ -116,7 +116,7 @@ Double Get_Distance_Squared(Double r1[3], Double r2[3])
 
 // **************************************************************
 template <class Double>
-Double Get_Distance(Double r1[3], Double r2[3])
+Double Get_Distance(const Double r1[3], const Double r2[3])
 /**
  * r21 is the vector groing from position r2 to position r1
  * r21 = r1 - r2
@@ -139,7 +139,7 @@ Double Get_Distance(Double r1[3], Double r2[3])
 // **************************************************************
 template <class Double>
 void set_vector_between_particles(
-        Double r1[3], Double r2[3],
+        const Double r1[3], const Double r2[3],
         Double r21[3], Double &r212, Double &r, Double &one_over_r)
 /**
  * r21 is the vector groing from position r2 to position r1
