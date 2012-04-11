@@ -28,6 +28,10 @@ struct potential_paramaters {
     // ********** Simple potential parameters **********************
     // None
 
+    // ********** Simple potential (CJ, treecode) parameters *******
+    int     scj_cs;         // Charge state to consider: max(cs1,cs2)
+    fdouble scj_cr;         // Cutoff Radius                            [m]
+
     // ********** Harmonic potential parameters ********************
     fdouble  h_A;            // Amplitude of potential (NPS eq. 6)       [V.m^-2]
     fdouble  h_A_r;          // Amplitude times distance                 [V.m^-1]
@@ -62,6 +66,8 @@ struct potential_paramaters {
         kQ2 = 0.0;
         B = 0.0;
         kQ2_over_B = 0.0;
+        scj_cs = 0;
+        scj_cr = 0.0;
         h_A = 0.0;
         h_A_r = 0.0;
         sg_sigma = 0.0;
