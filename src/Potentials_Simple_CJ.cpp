@@ -72,7 +72,7 @@ void Potentials_Set_Parameters_Simple_CJ(
     }
 
     potparams.scj_cs = std::max(std::abs(Get_Charge_State(p1)), std::abs(charge_state2));
-    potparams.scj_cr = (m_to_bohr*libpotentials_private::cutoff_radius) + half * (fdouble(potparams.scj_cs)-one) * one_over_seven;
+    potparams.scj_cr = bohr_to_m * ((m_to_bohr*libpotentials_private::cutoff_radius) + half * (fdouble(potparams.scj_cs)-one) * one_over_seven);
 }
 
 // **************************************************************
