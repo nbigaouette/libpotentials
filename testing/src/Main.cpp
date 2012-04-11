@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
     potential_shapes.push_back("HermanSkillman");
     potential_shapes.push_back("Symmetric");
     potential_shapes.push_back("Simple");
+    potential_shapes.push_back("SimpleCJ");
     potential_shapes.push_back("GaussianDistribution");
     potential_shapes.push_back("SuperGaussian");
     //potential_shapes.push_back("PureCoulomb");

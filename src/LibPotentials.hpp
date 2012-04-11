@@ -17,6 +17,7 @@
 #include "Potentials_HermanSkillman.hpp"
 #include "Potentials_ScreenedCoulomb.hpp"
 #include "Potentials_Simple.hpp"
+#include "Potentials_Simple_CJ.hpp"
 #include "Potentials_SuperGaussian.hpp"
 
 

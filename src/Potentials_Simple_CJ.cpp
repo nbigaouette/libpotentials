@@ -18,7 +18,7 @@
 #include "Constants.hpp"
 #include "Code_Functions_Declarations.hpp"
 
-#include "Potentials_Simple.hpp"
+#include "Potentials_Simple_CJ.hpp"
 #include "Potentials_Coulomb.hpp"
 
 
@@ -26,11 +26,16 @@ using namespace libpotentials;
 
 
 // **************************************************************
-void Initialize_Simple(const fdouble cutoff_base_potential, const fdouble cutoff_radius)
+void Initialize_Simple_CJ(const fdouble cutoff_base_potential, const fdouble cutoff_radius)
 {
     if (cutoff_base_potential > 0.0)
     {
-        libpotentials_private::cutoff_radius         = one / (cutoff_base_potential * libpotentials::eV_to_Eh)  * libpotentials::bohr_to_m;
+        std_cout
+            << "ERROR: Cannot initialize potential library using a potential depth for\n"
+            <<  "      the \"SimpleCJ\" potential shape!\n"
+            << "       Use a cutoff radius instead."<< std::endl;
+        std_cout.Flush();
+        abort();
     }
     else if (cutoff_radius > 0.0)
     {
@@ -39,7 +44,7 @@ void Initialize_Simple(const fdouble cutoff_base_potential, const fdouble cutoff
 }
 
 // **************************************************************
-void Potentials_Set_Parameters_Simple(
+void Potentials_Set_Parameters_Simple_CJ(
     void *p1, void *p2,
     potential_paramaters &potparams)
 /**
@@ -65,10 +70,13 @@ void Potentials_Set_Parameters_Simple(
     {
         potparams.kQ2 = 0.0;
     }
+
+    potparams.scj_cs = std::max(std::abs(Get_Charge_State(p1)), std::abs(charge_state2));
+    potparams.scj_cr = bohr_to_m * ((m_to_bohr*libpotentials_private::cutoff_radius) + half * (fdouble(potparams.scj_cs)-one) * one_over_seven);
 }
 
 // **************************************************************
-fdouble Calculate_Potential_Cutoff_Simple(
+fdouble Calculate_Potential_Cutoff_Simple_CJ(
     void *p1, void *p2,
     potential_paramaters &potparams)
 {
@@ -76,23 +84,23 @@ fdouble Calculate_Potential_Cutoff_Simple(
 
     fdouble potential;
 
-    if (potparams.r > libpotentials_private::cutoff_radius)
+    if (potparams.r > potparams.scj_cr)
         potential = Coulomb_Potential(potparams.kQ2, potparams.r);
     else
-        potential = Coulomb_Potential(potparams.kQ2, libpotentials_private::cutoff_radius);
+        potential = Coulomb_Potential(potparams.kQ2, potparams.scj_cr);
 
     return potential;
 }
 
 // **************************************************************
-void Set_Field_Cutoff_Simple(
+void Set_Field_Cutoff_Simple_CJ(
     void *p1, void *p2,
     potential_paramaters &potparams,
     fdouble &phi, fdouble E[3])
 {
     Check_if_LibPotentials_is_initialized();
 
-    if (potparams.r > libpotentials_private::cutoff_radius)
+    if (potparams.r > potparams.scj_cr)
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
     // Simple cutoff means the potential is constant for distance
     // less then the cutoff radius. If the potential is constant, then

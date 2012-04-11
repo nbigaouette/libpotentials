@@ -56,6 +56,8 @@ void Initialize_GaussianDistribution(const fdouble cutoff_base_potential, const 
         libpotentials_private::cutoff_base_potential= one_over_4Pieps0 * e0 / Potentials_Symmetric::sigma * sqrt_2_over_pi;
     }
 
+    Assert_isinf_isnan(Potentials_Symmetric::sigma);
+    Assert_isinf_isnan(libpotentials_private::cutoff_base_potential);
 }
 
 // **************************************************************
@@ -193,7 +195,7 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 
         phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
     }
-    else
+    else if (Get_Charge_State(p2) != 0)
     {
         // Else, use the lookup table for erf(x)/x
         phi12 = potparams.kQ2 / (potparams.gd_sigma * sqrt_2) *
@@ -220,7 +222,7 @@ void Set_Field_Cutoff_GaussianDistribution(
 
         //std_cout << "High range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")\n";
     }
-    else
+    else if (Get_Charge_State(p2) != 0)
     {
         // Else, use the lookup table
         // Get E/r
