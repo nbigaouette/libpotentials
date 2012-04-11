@@ -30,7 +30,12 @@ void Initialize_Simple_CJ(const fdouble cutoff_base_potential, const fdouble cut
 {
     if (cutoff_base_potential > 0.0)
     {
-        libpotentials_private::cutoff_radius         = 1.0 / (cutoff_base_potential * libpotentials::eV_to_Eh)  * libpotentials::bohr_to_m;
+        std_cout
+            << "ERROR: Cannot initialize potential library using a potential depth for\n"
+            <<  "      the \"SimpleCJ\" potential shape!\n"
+            << "       Use a cutoff radius instead."<< std::endl;
+        std_cout.Flush();
+        abort();
     }
     else if (cutoff_radius > 0.0)
     {
