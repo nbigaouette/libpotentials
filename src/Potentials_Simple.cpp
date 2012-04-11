@@ -30,11 +30,11 @@ void Initialize_Simple(const fdouble cutoff_base_potential, const fdouble cutoff
 {
     if (cutoff_base_potential > 0.0)
     {
-        libpotentials_private::cutoff_radius         = 1.0 / (cutoff_base_potential * libpotentials::eV_to_Eh)  * libpotentials::bohr_to_m;
+        libpotentials_private::cutoff_radius         = one / (cutoff_base_potential * libpotentials::eV_to_Eh)  * libpotentials::bohr_to_m;
     }
     else if (cutoff_radius > 0.0)
     {
-        libpotentials_private::cutoff_base_potential = 1.0 / (cutoff_radius * libpotentials::m_to_bohr) * libpotentials::Eh_to_eV;
+        libpotentials_private::cutoff_base_potential = one / (cutoff_radius * libpotentials::m_to_bohr) * libpotentials::Eh_to_eV;
     }
 }
 

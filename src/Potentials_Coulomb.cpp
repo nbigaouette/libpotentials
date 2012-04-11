@@ -89,7 +89,7 @@ void Potentials_Set_Parameters_Coulomb(
 
     if (charge_state2 != 0)
     {
-        potparams.kQ2 = one_over_4Pieps0 * charge_state2 * e0;
+        potparams.kQ2 = one_over_4Pieps0 * fdouble(charge_state2) * e0;
     }
     else
     {
