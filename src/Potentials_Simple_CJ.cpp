@@ -84,10 +84,10 @@ fdouble Calculate_Potential_Cutoff_Simple_CJ(
 
     fdouble potential;
 
-    if (potparams.r > libpotentials_private::cutoff_radius)
+    if (potparams.r > potparams.scj_cr)
         potential = Coulomb_Potential(potparams.kQ2, potparams.r);
     else
-        potential = Coulomb_Potential(potparams.kQ2, libpotentials_private::cutoff_radius);
+        potential = Coulomb_Potential(potparams.kQ2, potparams.scj_cr);
 
     return potential;
 }
@@ -100,7 +100,7 @@ void Set_Field_Cutoff_Simple_CJ(
 {
     Check_if_LibPotentials_is_initialized();
 
-    if (potparams.r > libpotentials_private::cutoff_radius)
+    if (potparams.r > potparams.scj_cr)
         Set_Coulomb_Field(phi, E, potparams.dr, potparams.r2);
     // Simple cutoff means the potential is constant for distance
     // less then the cutoff radius. If the potential is constant, then
