@@ -161,12 +161,14 @@ for folder in globber:
     nb_cs = len(field_files)
 
     for cs in xrange(nb_cs):
+        print "Loading", pot_files[cs], "..."
         data        = numpy.loadtxt(pot_files[cs], delimiter=',', skiprows=0, dtype=float)
         p1_cs       = int(pot_files[cs].replace(folder,"").replace("/poten_", "").replace(".csv", ""))
         rU          = data[:,0]
         U           = data[:,1]
         Coulomb_U   = p0_cs*p1_cs/rU
 
+        print "Loading", field_files[cs], "..."
         data        = numpy.loadtxt(field_files[cs], delimiter=',', skiprows=0, dtype=float)
         rE          = data[:,0]
         E           = data[:,1]
