@@ -203,7 +203,11 @@ void Initialize_HermanSkillman(const fdouble cutoff_base_potential, const fdoubl
     // the HS cutoff.
     Initialize_Symmetric(cutoff_base_potential, cutoff_radius);
 
-    if      (cutoff_base_potential > 0.0)
+    // If both radius and base potential are positive, we reloaded from a snapshot. Call the
+    // radius cutoff function with the scaling disabled.
+    if      (cutoff_base_potential > 0.0 and cutoff_radius > 0.0)
+        Initialize_HS_Cutoff_Radius(cutoff_radius, false);
+    else if (cutoff_base_potential > 0.0)
         Initialize_HS_Base_Potential(cutoff_base_potential);
     else if (cutoff_radius > 0.0)
         Initialize_HS_Cutoff_Radius(cutoff_radius);
@@ -408,6 +412,10 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m, const bool scal
     // Store the potential of a 1+ at r == 0 as being the cutoff_base_potential
     libpotentials_private::cutoff_base_potential = Eh_to_eV * std::abs(hs_lut_potential[1].Table(0));
     libpotentials_private::cutoff_radius = hs_min_rad[1] * bohr_to_m;
+
+    log("Initialize_HS_Cutoff_Radius()  libpotentials_private::cutoff_base_potential = %15.13g\n", libpotentials_private::cutoff_base_potential);
+    log("Initialize_HS_Cutoff_Radius()  libpotentials_private::cutoff_radius = %15.13g\n", libpotentials_private::cutoff_radius);
+
 }
 
 // **************************************************************
