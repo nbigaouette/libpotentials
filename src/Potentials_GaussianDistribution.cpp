@@ -56,6 +56,8 @@ void Initialize_GaussianDistribution(const fdouble cutoff_base_potential, const 
         libpotentials_private::cutoff_base_potential= one_over_4Pieps0 * e0 / Potentials_Symmetric::sigma * sqrt_2_over_pi;
     }
 
+    Assert_isinf_isnan(Potentials_Symmetric::sigma);
+    Assert_isinf_isnan(libpotentials_private::cutoff_base_potential);
 }
 
 // **************************************************************
