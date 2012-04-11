@@ -80,19 +80,12 @@ void Potentials_Initialize(const std::string _io_basename,
  */
 {
     is_libpotentials_initialized = true;
+    log("Potentials_Initialize() cutoff_base_potential = %15.13g\n", cutoff_base_potential);
+    log("Potentials_Initialize() cutoff_radius = %15.13g\n", cutoff_radius);
 
     io_basename = _io_basename;
 
     if (cutoff_base_potential <= 0.0 and cutoff_radius <= 0.0)
-    {
-        std_cout
-            << "Error in processing cutoff_base_potential=" << cutoff_base_potential << " or cutoff_radius=" << cutoff_radius << "\n"
-            << "Only one of these two should be negative (negative value enables the other one).\n"
-            << "Aborting\n";
-        std_cout.Flush();
-        abort();
-    }
-    else if (cutoff_base_potential > 0.0 and cutoff_radius > 0.0)
     {
         std_cout
             << "Error in processing cutoff_base_potential=" << cutoff_base_potential << " or cutoff_radius=" << cutoff_radius << "\n"
@@ -234,9 +227,9 @@ void Potentials_Initialize(const std::string _io_basename,
         abort();
     }
 
-    std_cout << "### Libpotential Cutoff radius  = " << libpotentials_private::cutoff_radius*libpotentials::m_to_bohr << " bohr\n";
-    std_cout << "### Libpotential Base potential = " << libpotentials_private::cutoff_base_potential << " eV\n";
-    std_cout << "###                             = " << libpotentials_private::cutoff_base_potential*libpotentials::eV_to_Eh << " Eh\n";
+    log("### Libpotential Cutoff radius  = %15.7g bohr             ###\n", libpotentials_private::cutoff_radius*libpotentials::m_to_bohr);
+    log("### Libpotential Base potential = %15.7g eV               ###\n", libpotentials_private::cutoff_base_potential);
+    log("###                             = %15.7g Eh               ###\n", libpotentials_private::cutoff_base_potential*libpotentials::eV_to_Eh);
 
     // Return modified values to main code
     cutoff_base_potential = libpotentials_private::cutoff_base_potential;
