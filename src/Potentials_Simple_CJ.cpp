@@ -39,7 +39,7 @@ void Initialize_Simple_CJ(const fdouble cutoff_base_potential, const fdouble cut
     }
     else if (cutoff_radius > 0.0)
     {
-        libpotentials_private::cutoff_base_potential = 1.0 / (cutoff_radius * libpotentials::m_to_bohr) * libpotentials::Eh_to_eV;
+        libpotentials_private::cutoff_base_potential = one / (cutoff_radius * libpotentials::m_to_bohr) * libpotentials::Eh_to_eV;
     }
 }
 
