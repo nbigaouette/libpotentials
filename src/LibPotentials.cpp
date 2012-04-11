@@ -136,6 +136,17 @@ void Potentials_Initialize(const std::string _io_basename,
         Calculate_Potential       = &Calculate_Potential_Cutoff_Simple;
         Set_Field                 = &Set_Field_Cutoff_Simple;
     }
+    else if (potential_shape == "SimpleCJ")
+    {
+        std_cout << "### Using a simple cutoff similarely to treecode's                 ###\n";
+        std_cout << "### for close range interaction                                    ###\n";
+
+        Initialize_Simple_CJ(cutoff_base_potential, cutoff_radius);
+
+        Potentials_Set_Parameters = &Potentials_Set_Parameters_Simple_CJ;
+        Calculate_Potential       = &Calculate_Potential_Cutoff_Simple_CJ;
+        Set_Field                 = &Set_Field_Cutoff_Simple_CJ;
+    }
     else if (potential_shape == "Harmonic")
     {
         std_cout << "### Using an harmonic potential                                    ###\n";
