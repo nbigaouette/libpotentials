@@ -9,7 +9,7 @@ const fdouble sc_alpha = fdouble(0.1 * 1.0e-10); // See Mijoule2006, PRA 73, 033
 
 struct potential_paramaters {
 
-    // ********** Pontential parameters *****************************
+    // ********** Potential parameters *****************************
     // See "Notes on Potential Shapes" (NPS) and "Notes on Gaussian
     // Particles" (NGP) documents.
     //     Name             Comment                                     [Units]
@@ -25,10 +25,10 @@ struct potential_paramaters {
     fdouble  kQ2_over_B;     // kQ2 divided B                            [m]
 
 
-    // ********** Simple pontential parameters **********************
+    // ********** Simple potential parameters **********************
     // None
 
-    // ********** Harmonic pontential parameters ********************
+    // ********** Harmonic potential parameters ********************
     fdouble  h_A;            // Amplitude of potential (NPS eq. 6)       [V.m^-2]
     fdouble  h_A_r;          // Amplitude times distance                 [V.m^-1]
 
