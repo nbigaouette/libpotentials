@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 import on_key
 import hs
+import colors_and_symbols as colsym
 
 globber = glob.glob(os.path.join("output", "*"))
 
@@ -26,8 +27,6 @@ plt.setp(ax1.get_xticklabels(), visible=False)
 ax2 = fig.add_subplot(212, **axprops)
 plt.subplots_adjust(hspace=0.0)
 
-colors  = ['b', 'r', 'm', 'c', 'g', 'y']
-symbols = ['-', '--', '-.', ':']
 line_width = 2
 
 def cubic_spline(cs, rV, V, rE, E):
@@ -189,10 +188,10 @@ for folder in globber:
         #except:
         #    pass
 
-        ax1.plot(rU, U, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
-        ax1.plot(rU, Coulomb_U, ':'+colors[cs%len(colors)], lw=line_width)
-        ax2.plot(rE, E, symbols[fi]+colors[cs%len(colors)], label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
-        ax2.plot(rE, Coulomb_E, ':'+colors[cs%len(colors)], lw=line_width)
+        ax1.plot(rU, U, colsym.symbol(fi)+colsym.color(cs), label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
+        ax1.plot(rU, Coulomb_U,       ':'+colsym.color(cs), lw=line_width)
+        ax2.plot(rE, E, colsym.symbol(fi)+colsym.color(cs), label = str(p1_cs) + "+ " + potential_shape, lw=line_width)
+        ax2.plot(rE, Coulomb_E,       ':'+colsym.color(cs), lw=line_width)
 
         # Keep track of min and max
         if (U.min() < Umin):
