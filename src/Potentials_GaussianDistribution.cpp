@@ -195,7 +195,7 @@ fdouble Calculate_Potential_Cutoff_GaussianDistribution(
 
         phi12 = Coulomb_Potential(potparams.kQ2, potparams.r);
     }
-    else
+    else if (Get_Charge_State(p2) != 0)
     {
         // Else, use the lookup table for erf(x)/x
         phi12 = potparams.kQ2 / (potparams.gd_sigma * sqrt_2) *
@@ -222,7 +222,7 @@ void Set_Field_Cutoff_GaussianDistribution(
 
         //std_cout << "High range field:    Expansion: dr = (" << m_to_bohr*potparams.dr[0] << ", " << m_to_bohr*potparams.dr[1] << ", " << m_to_bohr*potparams.dr[2] << ")   E = (" << E[0] <<", "<< E[1] <<", "<< E[2] << ")\n";
     }
-    else
+    else if (Get_Charge_State(p2) != 0)
     {
         // Else, use the lookup table
         // Get E/r
