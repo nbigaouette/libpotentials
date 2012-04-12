@@ -28,7 +28,7 @@ using namespace libpotentials;
 // **************************************************************
 void Initialize_Simple_CJ(const fdouble cutoff_base_potential, const fdouble cutoff_radius)
 {
-    if (cutoff_base_potential > 0.0)
+    if (cutoff_base_potential > 0.0 and cutoff_radius < 0.0)
     {
         std_cout
             << "ERROR: Cannot initialize potential library using a potential depth for\n"
