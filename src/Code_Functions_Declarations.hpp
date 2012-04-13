@@ -27,9 +27,6 @@ extern void    Print_name(void *b);
 extern int     Get_Id(void *b);
 extern void    Set_Id(void *b, int id);
 
-extern int     Get_Indx(void *b);
-extern void    Set_Indx(void *b, int i);
-
 extern int     Get_Is_on(void *b);
 extern void    Set_Is_on(void *b, int i);
 
@@ -57,17 +54,11 @@ extern void    Set_E(void *b, fdouble E[3]);
 extern int     Get_NextIon(void *b);
 extern void    Set_NextIon(void *b, fdouble n);
 
-extern int     Get_ClosestIon(void *b);
-extern void    Set_ClosestIon(void *b, int i);
-
 extern fdouble Get_ClosestIon_Distance(void *b);
 extern void    Set_ClosestIon_Distance(void *b, fdouble d);
 
 extern int     Get_Nghb_id(void *b);
 extern void    Set_Nghb_id(void *b, int i);
-
-extern int     Get_Nghb_indx(void *b);
-extern void    Set_Nghb_indx(void *b, int i);
 
 extern int     Get_Rcb_mark(void *b);
 extern void    Set_Rcb_mark(void *b, int i);
@@ -77,9 +68,6 @@ extern void    Set_Rcb_indx(void *b, int i);
 
 extern int     Get_Imp_mark(void *b);
 extern void    Set_Imp_mark(void *b, int i);
-
-extern int     Get_Coll(void *b);
-extern void    Set_Coll(void *b, int c);
 
 extern char *  Get_Name(void *b);
 extern void    Print_name(void *b);
