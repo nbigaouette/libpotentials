@@ -166,6 +166,32 @@ void set_vector_between_particles(
     one_over_r = Double(1.0) / r;
 }
 
+// **************************************************************
+template <class Double>
+void Rodrigues_Rotation(const Double v[3], const Double k[3], const Double theta,
+                        Double vrot[3])
+/**
+ * Rotate in 3D vector "v" around axis "k" of angle "theta".
+ * See https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+ * @param   v       Vector to rotate
+ * @param   k       Unit vector around which the rotation in to be taken
+ * @param   theta   Angle of rotation
+ * @param   vrot    Rotated vector to return
+ */
+{
+    const Double sinTheta = std::sin(theta);
+    const Double cosTheta = std::cos(theta);
+    const Double k_dot_v  = Vector_Dot_Product(k, v);
+    Double k_cross_v[3];
+    Vector_Cross_Product(k_cross_v, k, v);
+    const Double one_minus_cosTheta = Double(1.0) - cosTheta;
+
+    for (int d = 0 ; d < 3 ; d++)
+    {
+        vrot[d] = (v[d] * cosTheta) + (k_cross_v[d] * sinTheta) + (k[d] * k_dot_v * one_minus_cosTheta);
+    }
+}
+
 #endif // INC_VECTORS_hpp
 
 // ********** End of file ***************************************
