@@ -26,6 +26,7 @@ endif
 # CFLAGS          += -Weffc++
 CFLAGS          += -Wno-unused-parameter # Disable: "warning: unused parameter [...]"
 CFLAGS          += -Wno-unknown-pragmas
+CFLAGS          += -Werror=return-type
 
 RPATH           := -Wl,-rpath,
 
