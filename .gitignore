@@ -1,5 +1,4 @@
 .kdev4
-src/Version.hpp
 *~
 *.pyc
 *.log
