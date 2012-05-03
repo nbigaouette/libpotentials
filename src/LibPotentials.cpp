@@ -38,6 +38,20 @@ namespace libpotentials_private
 
     LookUpTable<fdouble> lut_potential;
     LookUpTable<fdouble> lut_field;
+
+    enum potential_type
+    {
+        POTENTIAL_SHAPE_PureCoulomb,
+        POTENTIAL_SHAPE_Simple,
+        POTENTIAL_SHAPE_SimpleCJ,
+        POTENTIAL_SHAPE_Harmonic,
+        POTENTIAL_SHAPE_SuperGaussian,
+        POTENTIAL_SHAPE_GaussianDistribution,
+        POTENTIAL_SHAPE_HermanSkillman,
+        POTENTIAL_SHAPE_Symmetric,
+        POTENTIAL_SHAPE_ScreenedCoulomb
+    };
+    int using_potential_type;
 }
 
 // **************************************************************
@@ -111,6 +125,8 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using a pure Coulomb interaction                               ###\n";
 
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_PureCoulomb;
+
         libpotentials_private::cutoff_base_potential = 0.0;
         libpotentials_private::cutoff_radius         = 0.0;
 
@@ -123,6 +139,8 @@ void Potentials_Initialize(const std::string _io_basename,
         std_cout << "### Using a simple cutoff                                          ###\n";
         std_cout << "### for close range interaction                                    ###\n";
 
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_Simple;
+
         Initialize_Simple(cutoff_base_potential, cutoff_radius);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Simple;
@@ -133,6 +151,8 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using a simple cutoff similarely to treecode's                 ###\n";
         std_cout << "### for close range interaction                                    ###\n";
+
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_SimpleCJ;
 
         Initialize_Simple_CJ(cutoff_base_potential, cutoff_radius);
 
@@ -145,6 +165,8 @@ void Potentials_Initialize(const std::string _io_basename,
         std_cout << "### Using an harmonic potential                                    ###\n";
         std_cout << "### for close range interaction                                    ###\n";
 
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_Harmonic;
+
         Initialize_Harmonic(cutoff_base_potential, cutoff_radius);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_Harmonic;
@@ -155,6 +177,8 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using a super-gaussian potential                               ###\n";
         std_cout << "### for close range interaction                                    ###\n";
+
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_SuperGaussian;
         std_cout << "### with m = " << input_sg_m << "\n";
 
         Initialize_SuperGaussian(input_sg_m, cutoff_base_potential, cutoff_radius);
@@ -172,6 +196,8 @@ void Potentials_Initialize(const std::string _io_basename,
         libpotentials_private::lut_field.Initialize(erf_over_x3_minus_exp_over_x2,  0.0, fdouble(4.5*std::sqrt(2.0)), 10000, "Field LookUpTable");
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
 
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_GaussianDistribution;
+
         Initialize_GaussianDistribution(cutoff_base_potential, cutoff_radius);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_GaussianDistribution;
@@ -182,6 +208,8 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using the Herman-Skillman (HS) potential                       ###\n";
         std_cout << "### for close range interaction                                    ###\n";
+
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_HermanSkillman;
 
         Initialize_HermanSkillman(cutoff_base_potential, cutoff_radius);
 
@@ -203,6 +231,8 @@ void Potentials_Initialize(const std::string _io_basename,
         std_cout << "### Initializing the lookup tables done.                           ###\n" << std::flush;
         std_cout << "###                                     Done!                      ###\n";
 
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_Symmetric;
+
         Initialize_Symmetric(cutoff_base_potential, cutoff_radius);
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_ChargeDistribution_Symmetric;
@@ -213,6 +243,8 @@ void Potentials_Initialize(const std::string _io_basename,
     {
         std_cout << "### Using the Coulomb potential screened with                       ##\n";
         std_cout << "### parameter alpha = " << sc_alpha * libpotentials::m_to_angstrom << "                                        ###\n";
+
+        libpotentials_private::using_potential_type = libpotentials_private::POTENTIAL_SHAPE_ScreenedCoulomb;
 
         Potentials_Set_Parameters = &Potentials_Set_Parameters_ScreenedCoulomb;
         Calculate_Potential       = &Calculate_Potential_Cutoff_ScreenedCoulomb;
@@ -385,5 +417,35 @@ fdouble erf_over_x3_minus_exp_over_x2(fdouble x)
     return value;
 }
 
+// **************************************************************
+fdouble Calculate_Potential_Right_On_Top(void *p)
+/**
+ * Calculate the potential at r == 0 of the particle p.
+ * @param   p       Void pointer to particle
+ * @return          Potential due to particle "p" at r == 0 [V]
+ */
+{
+    // Don't call Potentials_Set_Parameters() but set needed values explicitly
+    potential_paramaters potparams;
+    potparams.r  = 0.0;
+    potparams.r2 = 0.0;
+    potparams.dr[0] = 0.0;
+    potparams.dr[1] = 0.0;
+    potparams.dr[2] = 0.0;
+    potparams.one_over_r = std::numeric_limits<fdouble>::max();
+    potparams.sym_cs1 = 0;
+    potparams.sym_cs2 = Get_Charge_State(p);
+    potparams.kQ2 = libpotentials::one_over_4Pieps0 * fdouble(potparams.sym_cs2) * libpotentials::e0;
+
+    // WARNING: Only works for Symmetric potential for now.
+    if (libpotentials_private::using_potential_type != libpotentials_private::POTENTIAL_SHAPE_Symmetric)
+    {
+        std_cout << "ERROR: Cannot call Calculate_Potential_Right_On_Top() for other potential than the Symmetric one.\n";
+        std_cout.Flush();
+        abort();
+    }
+
+    return Calculate_Potential_Cutoff_ChargeDistribution_Symmetric(NULL, NULL, potparams);
+}
 
 // ********** End of file ***************************************

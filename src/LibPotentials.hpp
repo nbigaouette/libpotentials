@@ -69,6 +69,7 @@ bool Is_HS_used();
 fdouble erf_over_x(fdouble x);
 fdouble erf_over_x3_minus_exp_over_x2(fdouble x);
 
+fdouble Calculate_Potential_Right_On_Top(void *p);
 
 // **************************************************************
 // ********** Function pointers for... **************************
