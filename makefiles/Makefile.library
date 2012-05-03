@@ -101,7 +101,7 @@ $(DESTDIR_LIB):
 
 .PHONY: install_static
 install_static: $(DESTDIR_LIB)/lib$(LIB).a
-$(DESTDIR_LIB)/lib$(LIB).a: $(build_dir)/lib$(LIB).a $(DESTDIR_LIB)
+$(DESTDIR_LIB)/lib$(LIB).a: $(build_dir)/lib$(LIB).a $(DESTDIR_LIB) PASSED_UNIT_TESTS
 	############################################################
 	######## Installing static library to $(DESTDIR_LIB)... ####
 	$(SUDO) $(INSTALL) $< $@
@@ -110,7 +110,7 @@ $(DESTDIR_LIB)/lib$(LIB).a: $(build_dir)/lib$(LIB).a $(DESTDIR_LIB)
 
 .PHONY: install_shared
 install_shared: $(DESTDIR_LIB)/lib$(LIB).so
-$(DESTDIR_LIB)/lib$(LIB).so: $(build_dir)/lib$(LIB).so $(DESTDIR_LIB)
+$(DESTDIR_LIB)/lib$(LIB).so: $(build_dir)/lib$(LIB).so $(DESTDIR_LIB) PASSED_UNIT_TESTS
 	############################################################
 	######## Installing shared library to $(DESTDIR_LIB)... ####
 	$(SUDO) $(INSTALL_EXEC) $< $@
@@ -140,5 +140,12 @@ uninstall: force
 	$(SUDO) $(RM) $(DESTDIR_LIB)/lib$(LIB)*
 	######## Removing library headers from $(DESTDIR_INC)... ###
 	$(SUDO) $(RM) -r $(INSTALLED_HEADERS)
+
+
+# Library has no binary, but a test binary. Run it instead.
+.PHONY: r run
+r: run
+run: $(TEST_BIN)
+	$(SOFTLIMIT) ./$(TEST_BIN) $(NAME_ARGUMENT) $(INPUT_ARGUMENT) $(OTHER_ARGUMENT) $(UTF_ARGUMENT) 2>&1 | tee output/make_run.log
 
 ############ End of file ########################################
