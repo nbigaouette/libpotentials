@@ -11,3 +11,4 @@
 *.o
 *.kate-swp
 src/Git_Info.cpp
+potentials_testing
