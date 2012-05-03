@@ -5,6 +5,7 @@
 
 #ifdef YDEBUG
 #include <stdexcept>
+#include <limits>  // http://www.cplusplus.com/reference/std/limits/numeric_limits/
 #endif // #ifdef YDEBUG
 
 // **************************************************************
