@@ -3,6 +3,10 @@
 
 #include <cmath>
 
+#ifdef YDEBUG
+#include <stdexcept>
+#endif // #ifdef YDEBUG
+
 // **************************************************************
 //                      Vector operations
 // **************************************************************
@@ -185,6 +189,22 @@ void Rodrigues_Rotation(const Double v[3], const Double k[3], const Double theta
     Double k_cross_v[3];
     Vector_Cross_Product(k_cross_v, k, v);
     const Double one_minus_cosTheta = Double(1.0) - cosTheta;
+
+#ifdef YDEBUG
+    // Vector to rotate must not be 0
+    const Double v_norm = Vector_Length<Double>(v);
+    if (v_norm < 100.0*std::numeric_limits<Double>::min())
+    {
+        throw std::runtime_error("Vector to rotate cannot be 0!");
+    }
+
+    // Rotation axis k MUST be unitary!
+    const Double k_norm = Vector_Length<Double>(k);
+    if (not (1.0-1.0e-7 < k_norm && k_norm < 1.0+1.0e-7))
+    {
+        throw std::runtime_error("Rotation axis MUST be unitary!");
+    }
+#endif // #ifdef YDEBUG
 
     for (int d = 0 ; d < 3 ; d++)
     {
