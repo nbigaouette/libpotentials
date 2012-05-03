@@ -51,7 +51,7 @@ namespace libpotentials_private
         POTENTIAL_SHAPE_Symmetric,
         POTENTIAL_SHAPE_ScreenedCoulomb
     };
-    int using_potential_type;
+    potential_type using_potential_type;
 }
 
 // **************************************************************
