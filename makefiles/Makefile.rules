@@ -333,6 +333,16 @@ VPATH            = $(subst $(space),$(column),$(SRCDIRS) ):$(subst $(space),$(co
 
 #################################################################
 # Call "make test" for building test suite
+ifeq ($(I_KNOW_I_WILL_BREAK_THE_CODE_I_HAVE_BEEN_WARNED),1)
+TEST_SOURCES    :=
+TEST_NAMES      :=
+TEST_OBJ        :=
+TEST_BIN        :=
+TEST_CFLAGS     :=
+TEST_LDFLAGS    :=
+UTF_ARGUMENT    :=
+FORCENOTEST     := 0
+else
 TEST_SOURCES     = $(foreach DIR,$(TESTDIRS) .,$(wildcard $(DIR)/*.$(SRCEXT) ) )
 TEST_NAMES       = $(notdir $(subst .$(SRCEXT),,$(TEST_SOURCES) ) )
 TEST_OBJ         = $(addprefix $(build_dir)/,$(addsuffix .o, $(TEST_NAMES) ) )
@@ -341,6 +351,7 @@ TEST_CFLAGS      =
 TEST_LDFLAGS     = -lboost_unit_test_framework $(build_dir)/lib$(LIB).a
 UTF_ARGUMENT    := --log_level=test_suite --log_sink=stderr
 FORCENOTEST     := 0
+endif
 
 # Phony target for testing
 .PHONY: t test testing
@@ -348,12 +359,17 @@ t: testing
 test: testing
 testing: $(TEST_BIN)
 
+.PHONY: PASSED_UNIT_TESTS
+ifeq ($(I_KNOW_I_WILL_BREAK_THE_CODE_I_HAVE_BEEN_WARNED),1)
+PASSED_UNIT_TESTS:
+else
 PASSED_UNIT_TESTS: $(TEST_BIN)
 ifeq ($(FORCENOTEST),0)
 	# ################################################################
 	#                       RUNNING UNIT TESTS
 	# ################################################################
 	./$(TEST_BIN) $(UTF_ARGUMENT)
+endif
 endif
 
 
