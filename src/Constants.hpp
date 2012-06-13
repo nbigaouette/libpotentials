@@ -179,6 +179,8 @@ namespace libpotentials_double
     const double au_to_si_acc           = au_to_si_vel / au_to_si_time; // m.s^-2 . bohr^-1.aut^2
     const double si_to_au_acc           = one / au_to_si_acc;   // au . m.s^-1
 
+    const double au_to_si_vpot          = au_to_si_pot * au_to_si_time / au_to_si_length; // (V.s.m^-1) . au^-1
+    const double si_to_au_vpot          = 1.0 / au_to_si_vpot;  // au . (V.s.m^-1)^-1
 
     // ********** Other Usefull Conversions
     // Cross sections (area): Barn (b), Megabarnes (Mb) http://en.wikipedia.org/wiki/Barn_(unit)
@@ -316,6 +318,8 @@ namespace libpotentials
     const fdouble si_to_au_vel          = fdouble(libpotentials_double::si_to_au_vel           );
     const fdouble au_to_si_acc          = fdouble(libpotentials_double::au_to_si_acc           );
     const fdouble si_to_au_acc          = fdouble(libpotentials_double::si_to_au_acc           );
+    const fdouble au_to_si_vpot         = fdouble(libpotentials_double::au_to_si_vpot          );
+    const fdouble si_to_au_vpot         = fdouble(libpotentials_double::si_to_au_vpot          );
     const fdouble b_to_m2               = fdouble(libpotentials_double::b_to_m2                );
     const fdouble m2_to_b               = fdouble(libpotentials_double::m2_to_b                );
     const fdouble Mb_to_m2              = fdouble(libpotentials_double::Mb_to_m2               );
