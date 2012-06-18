@@ -317,6 +317,13 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m, const bool scal
 {
     const fdouble cutoff_radius = cutoff_radius_m*libpotentials::m_to_bohr;
 
+    std_cout
+        << "Calling Initialize_HS_Cutoff_Radius():\n"
+        << "    The cutoff radius from input file (" << cutoff_radius << " bohr) will be used\n"
+        << "    to find where a symmetric field would be maximum (r = Symmetric_r1). Then, a\n"
+        << "    bisection is performed to find the HS cutoff radius that will place the maximum\n"
+        << "    of the HS field at the same radius r1." << std::endl;
+
     // Change lookup tables values using a smoothed potential/field inside cutoff radius
     for (int cs = 0 ; cs < int(hs_lut_potential.size()) ; cs++)
     {
