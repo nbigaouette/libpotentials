@@ -94,8 +94,8 @@ void Potentials_Initialize(const std::string _io_basename,
  */
 {
     is_libpotentials_initialized = true;
-    log("Potentials_Initialize() cutoff_base_potential = %15.13g\n", cutoff_base_potential);
-    log("Potentials_Initialize() cutoff_radius = %15.13g\n", cutoff_radius);
+    log("Potentials_Initialize() cutoff_base_potential = %15.13g eV\n", cutoff_base_potential);
+    log("Potentials_Initialize() cutoff_radius = %15.13g bohr\n", cutoff_radius*libpotentials::m_to_bohr);
 
     io_basename = _io_basename;
 

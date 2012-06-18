@@ -413,8 +413,8 @@ void Initialize_HS_Cutoff_Radius(const fdouble &cutoff_radius_m, const bool scal
     libpotentials_private::cutoff_base_potential = Eh_to_eV * std::abs(hs_lut_potential[1].Table(0));
     libpotentials_private::cutoff_radius = hs_min_rad[1] * bohr_to_m;
 
-    log("Initialize_HS_Cutoff_Radius()  libpotentials_private::cutoff_base_potential = %15.13g\n", libpotentials_private::cutoff_base_potential);
-    log("Initialize_HS_Cutoff_Radius()  libpotentials_private::cutoff_radius = %15.13g\n", libpotentials_private::cutoff_radius);
+    log("Initialize_HS_Cutoff_Radius()  libpotentials_private::cutoff_base_potential = %15.13g eV\n", libpotentials_private::cutoff_base_potential);
+    log("Initialize_HS_Cutoff_Radius()  libpotentials_private::cutoff_radius = %15.13g bohr\n", libpotentials_private::cutoff_radius * libpotentials::m_to_bohr);
 
 }
 
